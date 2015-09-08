@@ -1,19 +1,18 @@
 var dataset = [
   {
-    name: "a",
     x: 475,
     y: 200,
-    link: "b"
+    r: Math.random() * 10 + 2,
   },
   {
-    name: "b",
     x: 400,
     y: 100,
+    r: Math.random() * 10 + 2,
 
   },
   {
-    name: "c",
     x: 100,
     y: 300,
+    r: Math.random() * 10 + 2,
   }
 ];
