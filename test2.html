@@ -1,0 +1,52 @@
+<canvas id="canvas"></canvas>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="nodes.js"></script>
+<script>
+  var num = 200;
+
+  var canvas = document.getElementById("canvas");
+  var width = canvas.width = 960;
+  var height = canvas.height = 500;
+  var ctx = canvas.getContext("2d");
+
+  d3.timer(step);
+
+  function step() {
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    $(dataset).each(function(index, p) {
+      p.x += Math.round(2 * Math.random() - 1);
+      p.y += Math.round(2 * Math.random() - 1);
+      if (p.x < 0) p.y = width;
+      if (p.x > width) p.y = 0;
+      if (p.y < 0) p.y = height;
+      if (p.y > height) p.y = 0;
+      drawPoint(p);
+      connectNodes(dataset[0], dataset[1]);
+      connectNodes(dataset[0], dataset[2]);
+      connectNodes(dataset[1], dataset[2])
+    });
+  };
+
+  function drawPoint(p) {
+    ctx.fillRect(p.x, p.y, 5, 5);
+  };
+
+  function connectNodes(p, other) {
+    var edge = new Path2D();
+    edge.moveTo(p.x, p.y)
+    edge.lineTo(other.x, other.y)
+    edge.closePath();
+    ctx.stroke(edge);
+  }
+
+</script>
+<style>
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+</style>
