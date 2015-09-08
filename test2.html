@@ -5,7 +5,7 @@
 <script>
   var map = {};
   map.width = 960;
-  map.height = 500;
+  map.height = 800;
 
   map.canvas =
     d3.select('body')
@@ -30,10 +30,10 @@
     $(dataset).each(function(index, p) {
       p.x += Math.round(4 * Math.random() - 2);
       p.y += Math.round(4 * Math.random() - 2);
-      if (p.x < 0) p.y = map.width;
-      if (p.x > map.width) p.y = 0;
-      if (p.y < 0) p.y = map.height;
-      if (p.y > map.height) p.y = 0;
+      if (p.x < 0) p.x = 0;
+      if (p.x > map.width) p.x = map.width;
+      if (p.y < 0) p.y = 0;
+      if (p.y > map.height) p.y = map.height;
     });
   }
 
@@ -44,11 +44,22 @@
     $(dataset).each(function(index, d) {
       map.canvas.moveTo(d.x, d.y);
       map.canvas.arc(d.x, d.y, d.r, 0, 2 * Math.PI);
+      map.canvas.labelNode(d);
       map.connectNodes(dataset[0], dataset[1]);
-      map.connectNodes(dataset[1], dataset[2])
+      map.connectNodes(dataset[1], dataset[2]);
+      map.connectNodes(dataset[3], dataset[4]);
     })
+    map.canvas.fillStyle = "#FF0000"
     map.canvas.fill();
   };
+
+  map.canvas.labelNode = function(p) {
+    var textXOffset = (p.x);
+    var textYOffset = (p.y - p.r - 10);
+    map.canvas.font="15px Arial";
+    map.canvas.textAlign = "center";
+    map.canvas.fillText(p.name, textXOffset, textYOffset);
+  }
 
   map.connectNodes = function(p, other) {
     var edge = new Path2D();
