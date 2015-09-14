@@ -9,7 +9,8 @@ var storage = multer.diskStorage({
     cb(null, 'data/')
   },
   filename: function(req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now())
+    var parsed = file.originalname.replace(/\.[^/.]+$/, "")
+    cb(null, parsed + '-' + Date.now())
   }
 });
 
@@ -26,10 +27,14 @@ router.post('/', function(req, res) {
   handler(req, res, function(err) {
     //Something went wrong
     if (err) {
-      res.status(500).send("Did not upload file")
-      return
+      res.status(500).send("Failed to upload file.");
+      return;
     }
     //Upload was successful
+    if (req.file == undefined) {
+      res.status(500).send("No file specified.");
+      return;
+    }
     res.json({
       destination: req.file.destination,
       filename: req.file.filename,

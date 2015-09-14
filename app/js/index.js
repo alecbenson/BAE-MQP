@@ -30,10 +30,13 @@ $(function() {
               errorMsg.innerHTML = error + ': Bad or null KML.';
             }
           );
+        getDataSources();
       },
       error: function(xhr, desc, err) {}
     });
   });
+
+  getDataSources();
 
   //Bind submit button to form submission
   $(document).on("click", ".btn-submit", function() {
@@ -60,3 +63,30 @@ $(function() {
     $("#loading").fadeOut();
   });
 });
+
+function getDataSources() {
+  $.ajax({
+    url: "/datasources",
+    type: "GET",
+    dataType: "JSON",
+    processData: false,
+    contentType: false,
+    success: function(data, status) {
+      console.log("Data:" + data)
+      var files = JSON.parse(data);
+      renderDatasourceBoxes(files);
+    },
+    error: function(xhr, desc, err) {
+      console.log("Failed: " + desc + err)
+    }
+  });
+};
+
+function renderDatasourceBoxes(files) {
+  $("#datasources").empty();
+  var dataDiv = $("#datasources");
+  $.each(files, function(index, file) {
+    var check = "<div class='checkbox'><label><input type='checkbox'>" + file + "</label></div>";
+    $(dataDiv).append(check);
+  });
+}

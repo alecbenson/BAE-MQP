@@ -26,7 +26,7 @@
 
       <!-- Uploading controls -->
       <div class="nav-section">
-        <form action="/uploadfile" method="POST" enctype="multipart/form-data" id="uploadform">
+        <form action="/upload" method="POST" enctype="multipart/form-data" id="uploadform">
 
           <!-- Browse button -->
           <span class="btn btn-default btn-file">
@@ -49,12 +49,11 @@
       <!-- Data sources section -->
       <div class="nav-section">
         <h4>Data sources</h4>
-        <div class="btn-group-vertical" role="group" aria-label="...">
-          <button type="button" class="btn btn-default">First</button>
-          <button type="button" class="btn btn-default">Second</button>
+        <div id="datasources" class="btn-group-vertical" role="group" aria-label="...">
+
         </div>
       </div>
-      
+
     </div>
 
     <div id="cesiumContainer"></div>
