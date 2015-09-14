@@ -23,9 +23,9 @@
       <div class="nav-section">
         <h3>Controls</h3>
       </div>
-      <div class="nav-section">
 
-        <!-- Form for uploading data -->
+      <!-- Uploading controls -->
+      <div class="nav-section">
         <form action="/uploadfile" method="POST" enctype="multipart/form-data" id="uploadform">
 
           <!-- Browse button -->
@@ -37,14 +37,24 @@
 
           <!-- Upload button -->
           <div>
-            <a class="btn btn-large btn-danger btn-submit">
+            <a class="btn btn-large btn-success btn-submit">
               <i class="fa fa-upload fa-2x pull-left"></i>Upload
             </a>
-            <i id="loading" class="fa fa-spinner fa-spin fa-2x"></i>
+            <i id="loading" class="fa fa-spinner fa-2x fa-spin"></i>
           </div>
         </form>
         </span>
       </div>
+
+      <!-- Data sources section -->
+      <div class="nav-section">
+        <h4>Data sources</h4>
+        <div class="btn-group-vertical" role="group" aria-label="...">
+          <button type="button" class="btn btn-default">First</button>
+          <button type="button" class="btn btn-default">Second</button>
+        </div>
+      </div>
+      
     </div>
 
     <div id="cesiumContainer"></div>

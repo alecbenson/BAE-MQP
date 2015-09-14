@@ -1,10 +1,9 @@
+var viewer = new Cesium.Viewer('cesiumContainer', {
+  animation: true,
+  timeline: true
+});
+
 $(function() {
-
-  var viewer = new Cesium.Viewer('cesiumContainer', {
-    animation: true,
-    timeline: true
-  });
-
   //Handle form submission events
   $(document).on("submit", "#uploadform", function(event) {
     event.preventDefault();
@@ -16,7 +15,22 @@ $(function() {
       data: new FormData(this),
       processData: false,
       contentType: false,
-      success: function(data, status) {},
+      success: function(data, status) {
+        var path = "/data/" + data.filename;
+
+        //Remove previous KML entities
+        viewer.entities.removeAll();
+
+        //Load the KML object
+        viewer.dataSources.add(Cesium.KmlDataSource.load(path))
+          .then(function(kmlData) { //success
+              viewer.flyTo(kmlData.entities);
+            },
+            function(error) { //failure
+              errorMsg.innerHTML = error + ': Bad or null KML.';
+            }
+          );
+      },
       error: function(xhr, desc, err) {}
     });
   });
