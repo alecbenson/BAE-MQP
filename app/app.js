@@ -7,7 +7,7 @@
   var compression = require('compression');
   var url = require('url');
   var request = require('request');
-  var upload = require('./upload')
+  var upload = require('./js/upload')
 
   var yargs = require('yargs').options({
     'port': {
@@ -47,7 +47,6 @@
   });
 
   var app = express();
-  var upload = require('./upload');
   app.use('/uploadfile', upload)
   app.use(compression());
   app.use(express.static(__dirname));

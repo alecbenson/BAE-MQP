@@ -8,41 +8,47 @@
   <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
   <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
-  <title>Hello World!</title>
-  <script src="/Build/Cesium/Cesium.js"></script>
+  <title>Graph Visualizer</title>
+  <script src="/cesium/Build/Cesium/Cesium.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="js/lib/bootstrap.min.js"></script>
 
-  <style>
-    @import url(/Build/Cesium/Widgets/widgets.css);
-    html,
-    body,
-    #cesiumContainer {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/cesium/Build/Cesium/Widgets/widgets.css">
+  <link href="css/index.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 
-    .toolbar-left {
-      display: block;
-      position: absolute;
-      top: 5px;
-      left: 5px;
-    }
-  </style>
-</head>
+  <body>
+    <div id="nav-pane">
+      <div class="nav-section">
+        <h3>Controls</h3>
+      </div>
+      <div class="nav-section">
 
-<body>
-  <div id="cesiumContainer"></div>
-  <script src="index.js"></script>
-  <div class="toolbar-left">
-    <form action="/uploadfile" method="POST" enctype="multipart/form-data">
-      <input type="file" name="file" class="cesium-button" id="datasource"></input>
-      <br>
-      <input type="submit" class = "cesium-button" value="Upload Data">
-    </form>
-  </div>
-</body>
+        <!-- Form for uploading data -->
+        <form action="/uploadfile" method="POST" enctype="multipart/form-data" id="uploadform">
+
+          <!-- Browse button -->
+          <span class="btn btn-default btn-file">
+            <i class="fa fa-folder-open pull-left"></i>Data
+            <input type="file" name="file" class="btn-default" id="datasource"></input>
+            <span id="file-selection"></span>
+          </span>
+
+          <!-- Upload button -->
+          <div>
+            <a class="btn btn-large btn-danger btn-submit">
+              <i class="fa fa-upload fa-2x pull-left"></i>Upload
+            </a>
+            <i id="loading" class="fa fa-spinner fa-spin fa-2x"></i>
+          </div>
+        </form>
+        </span>
+      </div>
+    </div>
+
+    <div id="cesiumContainer"></div>
+    <script src="/js/index.js"></script>
+  </body>
 
 </html>
