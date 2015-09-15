@@ -8,20 +8,11 @@ $(function() {
   getDataSources();
   bindSubmissionButton();
   bindFileSelectionText();
-  bindAjaxSpinner();
   bindDeleteDataSource();
 });
 
-
-function bindAjaxSpinner() {
-  $(document).ajaxStart(function() {
-    $("#loading").fadeIn();
-  }).ajaxStop(function() {
-    $("#loading").fadeOut();
-  });
-}
-
 function getDataSources() {
+  $("#loading").show();
   $.ajax({
     url: "/datasources",
     type: "GET",
@@ -34,6 +25,9 @@ function getDataSources() {
     },
     error: function(xhr, desc, err) {
       console.log("Failed: " + desc + err)
+    },
+    complete: function(xhr, status) {
+      $("#loading").hide();
     }
   });
 };
@@ -70,16 +64,11 @@ function bindSubmission() {
 }
 
 function deleteDataSource(fileName) {
-  var payload = {"file": fileName}
   $.ajax({
-    url: "/datasources",
+    url: "/datasources/" + fileName,
     type: "DELETE",
-    data: JSON.stringify(payload),
-    dataType: "JSON",
-    processData: false,
-    contentType: false,
     success: function(data, status) {
-      console.log("Deleted!")
+      getDataSources();
     },
     error: function(xhr, desc, err) {
       console.log("Failed: " + desc + err)
@@ -89,7 +78,6 @@ function deleteDataSource(fileName) {
 
 function bindDeleteDataSource() {
   $(document).on("click", ".btn-delete", function() {
-    console.log("ID is " + $(this).attr('id'));
     deleteDataSource($(this).attr('id'));
   });
 }
@@ -104,7 +92,7 @@ function renderDatasourceBoxes(files) {
   var dataDiv = $("#datasources");
   $(dataDiv).empty();
   $.each(files, function(index, file) {
-    var del = "<span class='btn-delete' id='" + file + "'><i class='fa fa-minus-square'></i></span>";
+    var del = "<span class='btn-delete' id='" + file + "'><i class='fa fa-trash-o'></i></span>";
     var check = "<div class='checkbox'><label><input type='checkbox'>" + file + "</label> " + del + "</div>";
     $(dataDiv).append(check);
   });

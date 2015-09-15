@@ -8,14 +8,14 @@ router.get('/', function(req, res) {
   res.json(files);
 });
 
-router.delete('/', function(req, res) {
-  var deleteSource = req.params.file;
+router.delete('/:deleteSource', function(req, res) {
+  var deleteSource = req.params.deleteSource;
   if (deleteSource == undefined) {
-    res.status(404).send()
+    res.status(404).send();
     return;
   }
-  var del = deleteDataSource(deleteDataSource)
-  req.json(del);
+  deleteDataSource(deleteSource);
+  res.status(200).send();
 });
 
 //Get the contents of the directory
@@ -25,11 +25,10 @@ function getContents() {
   return JSON.stringify(files);
 }
 
-//Delete the data Source
+//Delete the data Source provided by 'file'.
 function deleteDataSource(file) {
   var path = "./data/" + file;
-  deleted = fs.unlinkSync(file)
-  return JSON.stringify(file)
+  deleted = fs.unlinkSync(path)
 }
 
 module.exports = router;
