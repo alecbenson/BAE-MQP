@@ -9,6 +9,7 @@ $(function() {
   bindSubmissionButton();
   bindFileSelectionText();
   bindAjaxSpinner();
+  bindDeleteDataSource();
 });
 
 
@@ -68,6 +69,31 @@ function bindSubmission() {
   });
 }
 
+function deleteDataSource(fileName) {
+  var payload = {"file": fileName}
+  $.ajax({
+    url: "/datasources",
+    type: "DELETE",
+    data: JSON.stringify(payload),
+    dataType: "JSON",
+    processData: false,
+    contentType: false,
+    success: function(data, status) {
+      console.log("Deleted!")
+    },
+    error: function(xhr, desc, err) {
+      console.log("Failed: " + desc + err)
+    }
+  });
+}
+
+function bindDeleteDataSource() {
+  $(document).on("click", ".btn-delete", function() {
+    console.log("ID is " + $(this).attr('id'));
+    deleteDataSource($(this).attr('id'));
+  });
+}
+
 function bindSubmissionButton() {
   $(document).on("click", ".btn-submit", function() {
     $("#uploadform").submit();
@@ -78,7 +104,8 @@ function renderDatasourceBoxes(files) {
   var dataDiv = $("#datasources");
   $(dataDiv).empty();
   $.each(files, function(index, file) {
-    var check = "<div class='checkbox'><label><input type='checkbox'>" + file + "</label></div>";
+    var del = "<span class='btn-delete' id='" + file + "'><i class='fa fa-minus-square'></i></span>";
+    var check = "<div class='checkbox'><label><input type='checkbox'>" + file + "</label> " + del + "</div>";
     $(dataDiv).append(check);
   });
 }
