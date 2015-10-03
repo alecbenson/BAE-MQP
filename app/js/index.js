@@ -44,23 +44,34 @@ function bindSubmission() {
       processData: false,
       contentType: false,
       success: function(data, status) {
-        //Remove previous KML entities
-        viewer.entities.removeAll();
-        //Load the KML object
-        var path = "/data/" + data.filename;
-        viewer.dataSources.add(Cesium.KmlDataSource.load(path))
-          .then(function(kmlData) { //success
-              viewer.flyTo(kmlData.entities);
-            },
-            function(error) { //failure
-              errorMsg.innerHTML = error + ': Bad or null KML.';
-            }
-          );
-        getDataSources();
+        loadJSONFile(data.filename);
       },
       error: function(xhr, desc, err) {}
     });
   });
+}
+
+function loadKML(filename) {
+  //Remove previous KML entities
+  viewer.entities.removeAll();
+  //Load the KML object
+  var path = "/data/" + filename;
+  viewer.dataSources.add(Cesium.KmlDataSource.load(path))
+    .then(function(kmlData) { //success
+        viewer.flyTo(kmlData.entities);
+      },
+      function(error) { //failure
+        errorMsg.innerHTML = error + ': Bad or null KML.';
+      }
+    );
+  getDataSources();
+}
+
+function loadJSONFile(filename) {
+  var path = "/data/" + filename;
+  var dataSource = new TrackDataSource();
+  dataSource.loadUrl(path);
+  viewer.dataSources.add(dataSource)
 }
 
 function deleteDataSource(fileName) {
