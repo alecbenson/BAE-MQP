@@ -2,7 +2,7 @@ var TrackDataSource = function(name) {
 
   this._name = name;
   this._entityCollection = new Cesium.EntityCollection,
-  this._clock = new Cesium.DataSourceClock();
+    this._clock = new Cesium.DataSourceClock();
   this._clock.startTime = Cesium.JulianDate.fromIso8601("2015-09-30");
   this._clock.stopTime = Cesium.JulianDate.fromIso8601("2015-10-01");
   this._clock.currentTime = Cesium.JulianDate.fromIso8601("2015-09-30");
@@ -24,8 +24,8 @@ Object.defineProperties(TrackDataSource.prototype, {
     }
   },
   clock: {
-    get : function() {
-        return this._clock;
+    get: function() {
+      return this._clock;
     }
   },
   entities: {
@@ -94,6 +94,20 @@ TrackDataSource.prototype.loadUrl = function(url) {
   });
 };
 
+TrackDataSource.prototype.connect = function(first, other) {
+  var edgeName = first.id + " " + other.id;
+  var orangeOutlined = viewer.entities.add({
+    name: 'Edge connecting ' + first.id + " with " + other.id,
+    polyline: {
+      positions: Cesium.Cartesian3.fromDegreesArrayHeights([first.lon, first.lat, first.ele, other.lon, other.lat, other.ele]),
+      width: 3,
+      material: new Cesium.PolylineOutlineMaterialProperty({
+        color: Cesium.Color.BLUE,
+      })
+    }
+  });
+}
+
 TrackDataSource.prototype.load = function(data) {
   if (!Cesium.defined(data)) {
     throw new Cesium.DeveloperError('data is required.');
@@ -114,6 +128,7 @@ TrackDataSource.prototype.load = function(data) {
     var id = trackData.id
     var time = trackData.time
 
+    //Draw the vertice on the map
     var pinBuilder = new Cesium.PinBuilder();
     entities.add({
       id: id,
@@ -124,8 +139,14 @@ TrackDataSource.prototype.load = function(data) {
         verticalOrigin: Cesium.VerticalOrigin.BOTTOM
       }
     });
-  }
 
+    //Connect vertices with polylines
+    if(i >= 0 && i < (data.length - 1)) {
+      var next = data[i + 1];
+      TrackDataSource.prototype.connect(trackData, next);
+    }
+
+  }
   entities.resumeEvents();
   this._changed.raiseEvent(this);
   this._setLoading(false);
