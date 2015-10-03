@@ -45,6 +45,7 @@ function bindSubmission() {
       contentType: false,
       success: function(data, status) {
         loadJSONFile(data.filename);
+        getDataSources();
       },
       error: function(xhr, desc, err) {}
     });
