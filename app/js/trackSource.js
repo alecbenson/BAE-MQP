@@ -109,23 +109,52 @@ TrackDataSource.prototype.connect = function(first, other) {
   });
 }
 
-TrackDataSource.prototype.addSample = function(entities, data) {
-  var property = new Cesium.SampledPositionProperty();
-  var position = Cesium.Cartesian3.fromDegreesArrayHeights([data.lon, data.lat, data.ele]);
+TrackDataSource.prototype.addSample = function(property, data) {
+  var entities = this._entityCollection;
+  var position = Cesium.Cartesian3.fromDegrees(data.lon, data.lat, data.ele);
   var time = Cesium.JulianDate.fromIso8601(data.time);
   property.addSample(time, position);
 
   //Create a point for the sample data
   var entity = entities.add({
-    position: Cesium.Cartesian3.fromDegrees(data.lon, data.lat),
+    position: position,
     point: {
-      pixelSize: 10,
+      pixelSize: 5,
       color: Cesium.Color.BLUE,
       outlineColor: Cesium.Color.CYAN,
       outlineWidth: 2
     }
   });
   return property;
+}
+
+TrackDataSource.prototype.setTimeWindow = function(vertices) {
+  currentStart = undefined;
+  currentStop = undefined;
+
+  for (var i = 0; i < vertices.length; i++) {
+    var time = Cesium.JulianDate.fromIso8601(vertices[i].time);
+    if (currentStart == undefined) {
+      currentStart = time
+      continue;
+    }
+    if (currentStop == undefined) {
+      currentStop = time
+      continue;
+    }
+
+    if (Cesium.JulianDate.compare(currentStart, time) > 0) {
+      currentStart = time
+    }
+
+    if (Cesium.JulianDate.compare(currentStart, time) < 0) {
+      currentStop = time
+    }
+  }
+
+  this._clock.startTime = currentStart;
+  this._clock.stopTime = currentStop;
+  this._clock.clockRange = Cesium.ClockRange.LOOP_STOP;
 }
 
 TrackDataSource.prototype.load = function(data) {
@@ -139,10 +168,37 @@ TrackDataSource.prototype.load = function(data) {
   entities.removeAll();
 
   //Iterate through each vertice, and add a sample point
+  var position = new Cesium.SampledPositionProperty();
+
   for (var i = 0; i < data.vertices.length; i++) {
     var trackData = data.vertices[i];
-    TrackDataSource.prototype.addSample(entities, trackData);
+    this.addSample(position, trackData);
   }
+
+  var entity = entities.add({
+    position: position,
+    point: {
+      pixelSize: 20,
+      color: Cesium.Color.RED,
+      outlineColor: Cesium.Color.CYAN,
+      outlineWidth: 2
+    }
+  });
+
+  this.setTimeWindow(data.vertices);
+
+  //Also set the availability of the entity to match our simulation time.
+  entity.availability = new Cesium.TimeIntervalCollection();
+  entity.availability.addInterval({
+    start: this._clock.startTime,
+    stop: this._clock.stopTime
+  });
+
+  //Set interpolation
+  entity.position.setInterpolationOptions({
+    interpolationDegree: 5,
+    interpolationAlgorithm: Cesium.LagrangePolynomialApproximation
+  });
 
   //Handle appropriate cesium events
   entities.resumeEvents();
