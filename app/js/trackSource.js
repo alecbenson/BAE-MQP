@@ -3,9 +3,9 @@ var TrackDataSource = function(name) {
   this._name = name;
   this._entityCollection = new Cesium.EntityCollection;
   this._clock = new Cesium.DataSourceClock();
-  this._clock.startTime = Cesium.JulianDate.fromIso8601("2015-10-03");
-  this._clock.stopTime = Cesium.JulianDate.fromIso8601("2015-10-04");
-  this._clock.currentTime = Cesium.JulianDate.fromIso8601("2015-10-03");
+  this._clock.startTime = Cesium.JulianDate.fromIso8601("2000-01-01");
+  this._clock.stopTime = Cesium.JulianDate.fromIso8601("2000-01-01");
+  this._clock.currentTime = Cesium.JulianDate.fromIso8601("2000-01-01");
   this._clock.clockRange = Cesium.ClockRange.LOOP_STOP;
   this._clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER;
   this._clock.multiplier = 1;
@@ -128,16 +128,14 @@ TrackDataSource.prototype.connect = function(edge) {
  * @param property - the sampled position property to add the sample to
  * @param data - the data to create the sample out of
  */
-TrackDataSource.prototype.addSample = function(property, data) {
+TrackDataSource.prototype._addSample = function(property, data) {
   var entities = this._entityCollection;
   var position = Cesium.Cartesian3.fromDegrees(data.lon, data.lat, data.ele);
   var time = Cesium.JulianDate.fromIso8601(data.time);
   property.addSample(time, position);
 
   //Create a point for the sample data
-  var entity = entities.add({
-    id: data.id,
-    name: "Point " + data.id,
+  var entity = {
     position: position,
     point: {
       pixelSize: 5,
@@ -145,7 +143,14 @@ TrackDataSource.prototype.addSample = function(property, data) {
       outlineColor: Cesium.Color.CYAN,
       outlineWidth: 2,
     }
-  });
+  };
+  //Set the name and ID of the entity
+  if (data.id !== undefined) {
+    entity.id = data.id;
+    entity.name = "Point " + data.id;
+  }
+  entities.add(entity);
+
   return property;
 }
 
@@ -157,29 +162,56 @@ TrackDataSource.prototype.setTimeWindow = function(vertices) {
   currentStart = undefined;
   currentStop = undefined;
 
-  for (var i = 0; i < vertices.length; i++) {
-    var time = Cesium.JulianDate.fromIso8601(vertices[i].time);
-    if (currentStart == undefined) {
-      currentStart = time
-      continue;
-    }
-    if (currentStop == undefined) {
-      currentStop = time
-      continue;
-    }
-
-    if (Cesium.JulianDate.compare(currentStart, time) > 0) {
-      currentStart = time
-    }
-
-    if (Cesium.JulianDate.compare(currentStart, time) < 0) {
-      currentStop = time
-    }
+  if (vertices === undefined) {
+    return;
   }
 
+  for (var i = 0; i < vertices.length; i++) {
+    var time = Cesium.JulianDate.fromIso8601(vertices[i].time);
+    if (currentStart === undefined) {
+      currentStart = time;
+    }
+    if (currentStop === undefined) {
+      currentStop = time;
+    }
+    if (Cesium.JulianDate.compare(currentStart, time) > 0) {
+      currentStart = time;
+    }
+    if (Cesium.JulianDate.compare(currentStart, time) < 0) {
+      currentStop = time;
+    }
+  }
   this._clock.startTime = currentStart;
   this._clock.stopTime = currentStop;
   this._clock.clockRange = Cesium.ClockRange.LOOP_STOP;
+}
+
+/**
+ * Draw all vertices on the map
+ * @param data - the JSON data from which to retrieve vertices from
+ **/
+TrackDataSource.prototype.drawVertices = function(position, data) {
+  if (data.vertices === undefined) {
+    return;
+  }
+  for (var i = 0; i < data.vertices.length; i++) {
+    var trackData = data.vertices[i];
+    this._addSample(position, trackData);
+  }
+}
+
+/**
+ * Draw all edges on the map
+ * @param data - the JSON data from which to retrieve edges from
+ */
+TrackDataSource.prototype.drawEdges = function(position, data) {
+  if (data.edges === undefined) {
+    return;
+  }
+  for (var i = 0; i < data.edges.length; i++) {
+    var edgeData = data.edges[i];
+    this.connect(edgeData);
+  }
 }
 
 /**
@@ -196,19 +228,10 @@ TrackDataSource.prototype.load = function(data) {
   entities.suspendEvents();
   entities.removeAll();
 
+  //Draw all edges and vertices
   var position = new Cesium.SampledPositionProperty();
-
-  //Draw all vertices on the map
-  for (var i = 0; i < data.vertices.length; i++) {
-    var trackData = data.vertices[i];
-    this.addSample(position, trackData);
-  }
-
-  //Draw all edges on the map
-  for (var i = 0; i < data.edges.length; i++) {
-    var edgeData = data.edges[i];
-    this.connect(edgeData);
-  }
+  this.drawVertices(position, data);
+  this.drawEdges(position, data);
 
   //Set the time window of the data
   this.setTimeWindow(data.vertices);
@@ -234,7 +257,7 @@ TrackDataSource.prototype.createTrackNode = function(position) {
       pixelSize: 20,
       color: Cesium.Color.RED,
       outlineColor: Cesium.Color.CYAN,
-      outlineWidth: 2
+      outlineWidth: 2,
     }
   });
 
