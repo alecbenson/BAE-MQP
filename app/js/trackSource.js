@@ -67,6 +67,10 @@ Object.defineProperties(TrackDataSource.prototype, {
 });
 
 
+/**
+ * loads data into the data source from the given url
+ * @param url - the url to load the data from
+ */
 TrackDataSource.prototype.loadUrl = function(url) {
   if (!Cesium.defined(url)) {
     throw new Cesium.DeveloperError('url is required.');
@@ -94,14 +98,24 @@ TrackDataSource.prototype.loadUrl = function(url) {
   });
 };
 
-//Connects two vertices together
-TrackDataSource.prototype.connect = function(first, other) {
-  var edgeName = first.id + " " + other.id;
-  var orangeOutlined = viewer.entities.add({
-    name: 'Edge connecting ' + first.id + " with " + other.id,
+/**
+ * Draws an edge with connecting the two vertexes specified in the edge object
+ * @param edge - the edge object to read from
+ */
+TrackDataSource.prototype.connect = function(edge) {
+  var entities = this._entityCollection;
+  var first = edge.id_a;
+  var other = edge.id_b;
+
+
+  var v1 = entities.getById(first);
+  var v2 = entities.getById(other);
+
+  var newEdge = entities.add({
+    name: 'Edge connecting ' + first + " with " + other,
     polyline: {
-      positions: Cesium.Cartesian3.fromDegreesArrayHeights([first.lon, first.lat, first.ele, other.lon, other.lat, other.ele]),
-      width: 3,
+      positions: [v1.position.getValue(), v2.position.getValue()],
+      width: edge.weight,
       material: new Cesium.PolylineOutlineMaterialProperty({
         color: Cesium.Color.BLUE,
       })
@@ -109,6 +123,11 @@ TrackDataSource.prototype.connect = function(first, other) {
   });
 }
 
+/**
+ * Adds a time and position dependant sample to the data source
+ * @param property - the sampled position property to add the sample to
+ * @param data - the data to create the sample out of
+ */
 TrackDataSource.prototype.addSample = function(property, data) {
   var entities = this._entityCollection;
   var position = Cesium.Cartesian3.fromDegrees(data.lon, data.lat, data.ele);
@@ -117,17 +136,23 @@ TrackDataSource.prototype.addSample = function(property, data) {
 
   //Create a point for the sample data
   var entity = entities.add({
+    id: data.id,
+    name: "Point " + data.id,
     position: position,
     point: {
       pixelSize: 5,
       color: Cesium.Color.BLUE,
       outlineColor: Cesium.Color.CYAN,
-      outlineWidth: 2
+      outlineWidth: 2,
     }
   });
   return property;
 }
 
+/**
+ * Reads through the data and determines the start and end times of the data clock
+ * @param vertices - the set of vertices to scan through
+ */
 TrackDataSource.prototype.setTimeWindow = function(vertices) {
   currentStart = undefined;
   currentStop = undefined;
@@ -157,6 +182,10 @@ TrackDataSource.prototype.setTimeWindow = function(vertices) {
   this._clock.clockRange = Cesium.ClockRange.LOOP_STOP;
 }
 
+/**
+ * Loads data into the datasource.
+ * @param data - a JSON object with data to fill the TrackDataSource with
+ */
 TrackDataSource.prototype.load = function(data) {
   if (!Cesium.defined(data)) {
     throw new Cesium.DeveloperError('data is required.');
@@ -167,14 +196,38 @@ TrackDataSource.prototype.load = function(data) {
   entities.suspendEvents();
   entities.removeAll();
 
-  //Iterate through each vertice, and add a sample point
   var position = new Cesium.SampledPositionProperty();
 
+  //Draw all vertices on the map
   for (var i = 0; i < data.vertices.length; i++) {
     var trackData = data.vertices[i];
     this.addSample(position, trackData);
   }
 
+  //Draw all edges on the map
+  for (var i = 0; i < data.edges.length; i++) {
+    var edgeData = data.edges[i];
+    this.connect(edgeData);
+  }
+
+  //Set the time window of the data
+  this.setTimeWindow(data.vertices);
+  //Create a track node that follows the data track
+  this.createTrackNode(position);
+
+  //Handle appropriate cesium events
+  entities.resumeEvents();
+  this._changed.raiseEvent(this);
+  this._setLoading(false);
+};
+
+
+/**
+ * Creates an entity that follows the track within the data source
+ * @param position - the SampledPositionProperty to create the tracking node with
+ */
+TrackDataSource.prototype.createTrackNode = function(position) {
+  var entities = this._entityCollection;
   var entity = entities.add({
     position: position,
     point: {
@@ -184,8 +237,6 @@ TrackDataSource.prototype.load = function(data) {
       outlineWidth: 2
     }
   });
-
-  this.setTimeWindow(data.vertices);
 
   //Also set the availability of the entity to match our simulation time.
   entity.availability = new Cesium.TimeIntervalCollection();
@@ -199,13 +250,12 @@ TrackDataSource.prototype.load = function(data) {
     interpolationDegree: 5,
     interpolationAlgorithm: Cesium.LagrangePolynomialApproximation
   });
+}
 
-  //Handle appropriate cesium events
-  entities.resumeEvents();
-  this._changed.raiseEvent(this);
-  this._setLoading(false);
-};
-
+/**
+ * Sets the loading status of the data source
+ * @param isLoading {bool}
+ */
 TrackDataSource.prototype._setLoading = function(isLoading) {
   if (this._isLoading !== isLoading) {
     this._isLoading = isLoading;
