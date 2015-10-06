@@ -115,10 +115,19 @@ function renderDatasourceBoxes(files) {
     "files": files
   };
   $.when(insertTemplate(dataDiv, "dataCollection.template", context)).done(function() {
-    $(dataDiv +  " :checkbox").bootstrapToggle();
+    $(dataDiv + " :checkbox").bootstrapToggle();
     bindFileSelectionText(dataDiv);
     bindDataToggle(dataDiv);
+    loadMissingCollections(files);
   });
+}
+
+function loadMissingCollections(files) {
+  for (var index in files) {
+    if ((files[index] in collections) == false) {
+      loadJSONFile(files[index]);
+    }
+  }
 }
 
 function insertTemplate(target, templateName, context) {
@@ -144,11 +153,11 @@ function bindDataToggle(target) {
   $(target + " :checkbox").on('change', function() {
     var id = $(this).attr('id');
     var source = collections[id];
-    if(source == undefined){
+    if (source == undefined) {
       return;
     }
     var entityList = source.entities.values;
-    for(var i = 0; i < entityList.length; i++){
+    for (var i = 0; i < entityList.length; i++) {
       currentState = entityList[i].show;
       entityList[i].show = !currentState;
     }
