@@ -54,6 +54,9 @@ html, body {
 .btn {
   margin: 5px
 }
+.toggle-group .btn{
+  margin: 0px
+}
 .btn-file {
   position: relative;
   overflow: hidden;

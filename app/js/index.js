@@ -101,22 +101,25 @@ function bindSubmissionButton() {
 }
 
 function renderDatasourceBoxes(files) {
-  var dataDiv = $("#datasources");
+  var dataDiv = "#datasources";
   $(dataDiv).empty();
-
-  var html = $.get("../templates/dataCollection.template", function(data) {
-      var context = {"files": files};
-      insertTemplate(dataDiv, "dataCollection.template", context);
-    }, 'html')
-
+  var context = {
+    "files": files
+  };
+  $.when(insertTemplate(dataDiv, "dataCollection.template", context)).done(function() {
+    $(dataDiv +  " :checkbox").bootstrapToggle();
+  });
 }
 
 function insertTemplate(target, templateName, context) {
-  var directory = "/templates/";
-  var html = $.get(directory + templateName, function(data) {
-    var template = Handlebars.compile(data);
-    $(target).append(template(context));
-  }, 'html')
+  return $.Deferred(function() {
+    var self = this;
+    var directory = "/templates/";
+    var html = $.get(directory + templateName, function(data) {
+      var template = Handlebars.compile(data);
+      $(target).append(template(context));
+    }, 'html').done(this.resolve);
+  });
 }
 
 function bindFileSelectionText() {

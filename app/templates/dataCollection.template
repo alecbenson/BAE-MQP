@@ -1,11 +1,11 @@
 {{#each files}}
-  <div class='checkbox'>
-    <label>
-      <input type='checkbox'>
-      {{this}}
-    </label>
-    <span class='btn-delete' id="{{this}}">
-      <i class='fa fa-trash-o'></i>
-    </span>
+<div class="panel panel-default">
+  <div class="panel-heading">{{this}}</div>
+  <div class="panel-body>">
+    <input type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
+    <a class="btn btn-danger btn-delete" id="{{this}}">
+      <i class="fa fa-trash-o pull-left"></i>Delete
+    </a>
   </div>
+</div>
 {{/each}}
