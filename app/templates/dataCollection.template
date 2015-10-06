@@ -11,7 +11,7 @@
   <div class="panel-collapse collapse in {{this}}">
     <div class="panel-body">
       <div>
-        <input type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
+        <input class="btn-visibility" id="{{this}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
       </div>
 
       <span class="btn btn-default btn-file">

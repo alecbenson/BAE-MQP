@@ -3,6 +3,8 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
   timeline: true
 });
 
+var collections = [];
+
 $(function() {
   bindSubmission();
   getDataSources();
@@ -75,6 +77,7 @@ function loadJSONFile(filename) {
   var dataSource = new TrackDataSource();
   dataSource.loadUrl(path);
   viewer.dataSources.add(dataSource)
+  collections[filename] = dataSource;
 }
 
 function deleteDataSource(fileName) {
@@ -111,6 +114,7 @@ function renderDatasourceBoxes(files) {
   $.when(insertTemplate(dataDiv, "dataCollection.template", context)).done(function() {
     $(dataDiv +  " :checkbox").bootstrapToggle();
     bindFileSelectionText(dataDiv);
+    bindDataToggle(dataDiv);
   });
 }
 
@@ -130,5 +134,20 @@ function bindFileSelectionText(target) {
     var input = $(this);
     var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
     $("#file-selection").html(label)
+  });
+}
+
+function bindDataToggle(target) {
+  $(target + " :checkbox").on('change', function() {
+    var id = $(this).attr('id');
+    var source = collections[id];
+    if(source == undefined){
+      return;
+    }
+    var entityList = source.entities.values;
+    for(var i = 0; i < entityList.length; i++){
+      currentState = entityList[i].show;
+      entityList[i].show = !currentState;
+    }
   });
 }
