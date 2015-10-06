@@ -103,11 +103,20 @@ function bindSubmissionButton() {
 function renderDatasourceBoxes(files) {
   var dataDiv = $("#datasources");
   $(dataDiv).empty();
-  $.each(files, function(index, file) {
-    var del = "<span class='btn-delete' id='" + file + "'><i class='fa fa-trash-o'></i></span>";
-    var check = "<div class='checkbox'><label><input type='checkbox'>" + file + "</label> " + del + "</div>";
-    $(dataDiv).append(check);
-  });
+
+  var html = $.get("../templates/dataCollection.template", function(data) {
+      var context = {"files": files};
+      insertTemplate(dataDiv, "dataCollection.template", context);
+    }, 'html')
+
+}
+
+function insertTemplate(target, templateName, context) {
+  var directory = "/templates/";
+  var html = $.get(directory + templateName, function(data) {
+    var template = Handlebars.compile(data);
+    $(target).append(template(context));
+  }, 'html')
 }
 
 function bindFileSelectionText() {

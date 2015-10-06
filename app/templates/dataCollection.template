@@ -1,0 +1,11 @@
+{{#each files}}
+  <div class='checkbox'>
+    <label>
+      <input type='checkbox'>
+      {{this}}
+    </label>
+    <span class='btn-delete' id="{{this}}">
+      <i class='fa fa-trash-o'></i>
+    </span>
+  </div>
+{{/each}}
