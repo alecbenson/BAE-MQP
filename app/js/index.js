@@ -85,6 +85,9 @@ function deleteDataSource(fileName) {
     url: "/datasources/" + fileName,
     type: "DELETE",
     success: function(data, status) {
+      source = collections[fileName];
+      viewer.dataSources.remove(source, true);
+      delete collections[fileName];
       getDataSources();
     },
     error: function(xhr, desc, err) {
