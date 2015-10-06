@@ -6,8 +6,10 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
 $(function() {
   bindSubmission();
   getDataSources();
+
   bindSubmissionButton();
-  bindFileSelectionText();
+
+  bindFileSelectionText(document);
   bindDeleteDataSource();
 });
 
@@ -108,6 +110,7 @@ function renderDatasourceBoxes(files) {
   };
   $.when(insertTemplate(dataDiv, "dataCollection.template", context)).done(function() {
     $(dataDiv +  " :checkbox").bootstrapToggle();
+    bindFileSelectionText(dataDiv);
   });
 }
 
@@ -122,8 +125,8 @@ function insertTemplate(target, templateName, context) {
   });
 }
 
-function bindFileSelectionText() {
-  $(document).on('change', '.btn-file :file', function() {
+function bindFileSelectionText(target) {
+  $(target).on('change', '.btn-file :file', function() {
     var input = $(this);
     var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
     $("#file-selection").html(label)

@@ -29,7 +29,7 @@ html, body {
     height: 100%;
     width: 320px;
     border-right: 2px solid #111;
-    overflow: hidden;
+    overflow: auto;
   }
   #cesiumContainer {
     position: absolute;
@@ -57,10 +57,14 @@ html, body {
 .toggle-group .btn{
   margin: 0px
 }
+.input-group .btn{
+  margin: 0px
+}
 .btn-file {
   position: relative;
   overflow: hidden;
 }
+
 .btn-file input[type=file] {
   position: absolute;
   top: 0;
