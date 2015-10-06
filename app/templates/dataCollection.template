@@ -1,27 +1,29 @@
 {{#each files}}
 <div class="panel panel-default">
-  <div class="panel-heading clearfix">
+
+  <div class="panel-heading clearfix" data-toggle="collapse" data-target=".{{this}}">
     {{this}}
     <a class="pull-right btn btn-small btn-danger btn-delete" id="{{this}}">
       <i class="fa fa-trash-o pull-left"></i>
     </a>
   </div>
-  <div class="panel-body>">
-    <div>
-      <input type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
+
+  <div class="panel-collapse collapse in {{this}}">
+    <div class="panel-body">
+      <div>
+        <input type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
+      </div>
+
+      <span class="btn btn-default btn-file">
+        <i class="fa fa-folder-open pull-left"></i>Data
+        <input type="file" name="file" class="btn-default"></input>
+        <span id="file-selection"></span>
+      </span>
+      <a class="btn btn-large btn-success btn-submit">
+        <i class="fa fa-upload pull-left"></i>Upload
+      </a>
     </div>
-
-    <span class="btn btn-default btn-file">
-      <i class="fa fa-folder-open pull-left"></i>Data
-      <input type="file" name="file" class="btn-default"></input>
-      <span id="file-selection"></span>
-    </span>
-
-    <a class="btn btn-large btn-success btn-submit">
-      <i class="fa fa-upload pull-left"></i>Upload
-    </a>
-
   </div>
-  <br>
+
 </div>
 {{/each}}
