@@ -1,29 +1,79 @@
 {{#each files}}
 <div class="panel panel-default">
 
-  <div class="panel-heading clearfix" data-toggle="collapse" data-target=".{{this}}">
-    {{this}}
-    <a class="pull-right btn btn-small btn-danger btn-delete" id="{{this}}">
-      <i class="fa fa-trash-o pull-left"></i>
-    </a>
+  <!-- Panel heading !-->
+  <div class="panel-heading clearfix">
+    <span data-toggle="collapse" data-target=".{{this}}">
+      {{this}}
+    </span>
+
+    <div class="btn-group pull-right">
+      <button type="button" class="btn btn-info dropdown-toggle btn-xs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fa fa-cog fa-1x"></i>
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+          <a>
+            <i class="fa fa-edit pull-left"></i>Edit
+          </a>
+        </li>
+        <li role="separator" class="divider"></li>
+        <li>
+          <a class="btn-delete" id="{{this}}">
+            <i class="fa fa-trash-o pull-left"></i>Delete
+          </a>
+        </li>
+      </ul>
+    </div>
+
   </div>
 
+  <!-- Panel contents !-->
   <div class="panel-collapse collapse in {{this}}">
     <div class="panel-body">
       <div>
-        <input class="btn-visibility" id="{{this}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
+        <input class="btn-visibility" data-size="small" id="{{this}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
       </div>
 
-      <span class="btn btn-default btn-file">
-        <i class="fa fa-folder-open pull-left"></i>Data
-        <input type="file" name="file" class="btn-default"></input>
-        <span id="file-selection"></span>
-      </span>
-      <a class="btn btn-large btn-success btn-submit">
-        <i class="fa fa-upload pull-left"></i>Upload
-      </a>
+      <div id="sourcelist">
+        <h5>Data within this collection:</h5>
+        <ul>
+          <li>Example item #1</li>
+        </ul>
+
+        <!-- Edit collection form !-->
+        <form class="addSource {{this}}">
+          <div class="input-group">
+            <span class="input-group-addon">
+              <!-- Data type select box !-->
+              <select class="selectmenu" id="sourcetype">
+                <option value="file">File</option>
+                <option value="stream">Stream</option>
+              </select>
+            </span>
+            <!-- Browse file button !-->
+            <input type="text" class="form-control" readonly>
+            <span class="input-group-btn">
+              <span class="btn btn-default btn-file">
+                <i class="fa fa-folder"></i>
+                <input type="file" name="file">
+              </span>
+            </span>
+            <span class="input-group-btn">
+              <span class="btn btn-default btn-upload">
+                <i class="fa fa-upload"></i>
+              </span>
+            </span>
+          </div>
+        </form>
+
+        <button type="button" class="btn btn-success btn-xs pull-right">
+          <i class="fa fa-plus pull-left"></i>New source
+        </button>
+      </div>
+
     </div>
   </div>
-
 </div>
 {{/each}}

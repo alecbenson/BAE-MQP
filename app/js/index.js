@@ -6,12 +6,9 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
 var collections = [];
 
 $(function() {
-  bindSubmission();
   getDataSources();
-
-  bindSubmissionButton();
-
-  bindFileSelectionText(document);
+  bindUploadButton();
+  bindFileSelectionText();
   bindDeleteDataSource();
 });
 
@@ -36,42 +33,6 @@ function getDataSources() {
   });
 };
 
-function bindSubmission() {
-  $(document).on("submit", "#uploadform", function(event) {
-    event.preventDefault();
-    var url = $(this).attr("action");
-    $.ajax({
-      url: url,
-      type: $(this).attr("method"),
-      dataType: "JSON",
-      data: new FormData(this),
-      processData: false,
-      contentType: false,
-      success: function(data, status) {
-        loadJSONFile(data.filename);
-        getDataSources();
-      },
-      error: function(xhr, desc, err) {}
-    });
-  });
-}
-
-function loadKML(filename) {
-  //Remove previous KML entities
-  viewer.entities.removeAll();
-  //Load the KML object
-  var path = "/data/" + filename;
-  viewer.dataSources.add(Cesium.KmlDataSource.load(path))
-    .then(function(kmlData) { //success
-        viewer.flyTo(kmlData.entities);
-      },
-      function(error) { //failure
-        errorMsg.innerHTML = error + ': Bad or null KML.';
-      }
-    );
-  getDataSources();
-}
-
 function loadJSONFile(filename) {
   var path = "/data/" + filename;
   var dataSource = new TrackDataSource();
@@ -80,7 +41,34 @@ function loadJSONFile(filename) {
   collections[filename] = dataSource;
 }
 
-function deleteDataSource(fileName) {
+function bindDeleteDataSource() {
+  $(document).on("click", ".btn-delete", function() {
+    deleteFile($(this).attr('id'));
+  });
+}
+
+function bindUploadButton() {
+  $(document).on("click", ".btn-upload", function(event) {
+    uploadFile(event.target);
+    return false;
+  });
+}
+
+function uploadFile(target) {
+  var parentForm = $(target).closest('form');
+  $(parentForm).ajaxSubmit({
+    url: "/upload",
+    type: "POST",
+    dataType: "JSON",
+    success: function(data, status) {
+      loadJSONFile(data.filename);
+      getDataSources();
+    },
+    error: function(xhr, desc, err) {}
+  });
+}
+
+function deleteFile(fileName) {
   $.ajax({
     url: "/datasources/" + fileName,
     type: "DELETE",
@@ -96,15 +84,11 @@ function deleteDataSource(fileName) {
   });
 }
 
-function bindDeleteDataSource() {
-  $(document).on("click", ".btn-delete", function() {
-    deleteDataSource($(this).attr('id'));
-  });
-}
-
-function bindSubmissionButton() {
-  $(document).on("click", ".btn-submit", function() {
-    $("#uploadform").submit();
+function submitDataSourceForm(target) {
+  var parentForm = $(target).closest('form');
+  $(parentForm).ajaxSubmit(function() {
+    uploadFile(parentForm);
+    return false;
   });
 }
 
@@ -114,10 +98,13 @@ function renderDatasourceBoxes(files) {
   var context = {
     "files": files
   };
+
+  //Insert the template and bind the toolbar entries
   $.when(insertTemplate(dataDiv, "dataCollection.template", context)).done(function() {
     $(dataDiv + " :checkbox").bootstrapToggle();
-    bindFileSelectionText(dataDiv);
+    //Convert checkboxes to the cool looking ones!
     bindDataToggle(dataDiv);
+    //Load all data sources not in the viewer
     loadMissingCollections(files);
   });
 }
@@ -141,11 +128,11 @@ function insertTemplate(target, templateName, context) {
   });
 }
 
-function bindFileSelectionText(target) {
-  $(target).on('change', '.btn-file :file', function() {
-    var input = $(this);
-    var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-    $("#file-selection").html(label)
+function bindFileSelectionText() {
+  $(document).on('change', '.btn-file :file', function() {
+    var label = $(this).val().replace(/\\/g, '/').replace(/.*\//, '');
+    var input = $(this).parents('.input-group').find(':text')
+    input.val(label);
   });
 }
 
