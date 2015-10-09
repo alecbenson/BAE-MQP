@@ -21,6 +21,7 @@ router.delete('/:deleteSource', function(req, res) {
 //Get the contents of the directory
 function getContents() {
   var directory = "./data/";
+  dataDirectoryExists();
   files = fs.readdirSync(directory);
   return JSON.stringify(files);
 }
@@ -29,6 +30,19 @@ function getContents() {
 function deleteDataSource(file) {
   var path = "./data/" + file;
   deleted = fs.unlinkSync(path)
+}
+
+function dataDirectoryExists() {
+  try {
+    stats = fs.lstatSync("./data/");
+    if(!stats.isDirectory()) {
+      console.log("./data/ exists but is not a directory");
+    }
+  }
+  catch(e) {
+    console.log("./data/ does not exist. Creating now.");
+    fs.mkdirSync("./data/");
+  }
 }
 
 module.exports = router;
