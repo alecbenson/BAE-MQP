@@ -1,10 +1,9 @@
-{{#each files}}
 <div class="panel panel-default">
 
   <!-- Panel heading !-->
   <div class="panel-heading clearfix">
-    <span data-toggle="collapse" data-target=".{{this}}">
-      {{this}}
+    <span data-toggle="collapse" data-target=".{{file}}">
+      {{file}}
     </span>
 
     <div class="btn-group pull-right">
@@ -20,7 +19,7 @@
         </li>
         <li role="separator" class="divider"></li>
         <li>
-          <a class="btn-delete" id="{{this}}">
+          <a class="btn-delete" id="{{file}}">
             <i class="fa fa-trash-o pull-left"></i>Delete
           </a>
         </li>
@@ -30,10 +29,10 @@
   </div>
 
   <!-- Panel contents !-->
-  <div class="panel-collapse collapse in {{this}}">
+  <div class="panel-collapse collapse in {{file}}">
     <div class="panel-body">
       <div>
-        <input class="btn-visibility" data-size="small" id="{{this}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
+        <input class="btn-visibility" data-size="small" id="{{file}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
       </div>
 
       <div id="sourcelist">
@@ -43,7 +42,7 @@
         </ul>
 
         <!-- Edit collection form !-->
-        <form class="addSource {{this}}">
+        <form class="addSource {{file}}">
           <div class="input-group">
             <span class="input-group-addon">
               <!-- Data type select box !-->
@@ -76,4 +75,3 @@
     </div>
   </div>
 </div>
-{{/each}}

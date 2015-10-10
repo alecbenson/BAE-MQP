@@ -7,11 +7,14 @@ var collections = [];
 
 $(function() {
   getDataSources();
-  bindUploadButton();
   bindFileSelectionText();
-  bindDeleteDataSource();
+  bindUploadButton();
+  bindDeleteButton();
 });
 
+/**
+ * Makes a GET request to the server to retrieve all data sources
+ */
 function getDataSources() {
   $("#loading").show();
   $.ajax({
@@ -25,28 +28,39 @@ function getDataSources() {
       renderDatasourceBoxes(files);
     },
     error: function(xhr, desc, err) {
-      console.log("Failed: " + desc + err)
+      console.log("Failed: " + desc + err);
     },
     complete: function(xhr, status) {
       $("#loading").hide();
     }
   });
-};
-
-function loadJSONFile(filename) {
-  var path = "/data/" + filename;
-  var dataSource = new TrackDataSource();
-  dataSource.loadUrl(path);
-  viewer.dataSources.add(dataSource)
-  collections[filename] = dataSource;
 }
 
-function bindDeleteDataSource() {
+/**
+ * Given a data file, create a new data source and draw the result in cesium
+ * @param file - an data file to render in cesium
+ */
+function loadJSONFile(file) {
+  var path = "/data/" + file;
+  var dataSource = new TrackDataSource();
+  dataSource.loadUrl(path);
+  viewer.dataSources.add(dataSource);
+  collections[file] = dataSource;
+}
+
+/**
+ * binds a .btn-delete click to the deleteFile method
+ * @param target - an object close to the submission form (typically the button).
+ */
+function bindDeleteButton() {
   $(document).on("click", ".btn-delete", function() {
     deleteFile($(this).attr('id'));
   });
 }
 
+/**
+ * binds a .btn-upload click to the uploadFile method
+ */
 function bindUploadButton() {
   $(document).on("click", ".btn-upload", function(event) {
     uploadFile(event.target);
@@ -54,6 +68,10 @@ function bindUploadButton() {
   });
 }
 
+/**
+ * Uploads a file to the server
+ * @param target - an object close to the submission form (typically the button).
+ */
 function uploadFile(target) {
   var parentForm = $(target).closest('form');
   $(parentForm).ajaxSubmit({
@@ -68,79 +86,102 @@ function uploadFile(target) {
   });
 }
 
-function deleteFile(fileName) {
+/**
+ * Makes an ajax call to delete a given data source.
+ * Running deleteFile will re-render the collections in the toolbar.
+ * @param file - the name of the data source to delete
+ */
+function deleteFile(file) {
   $.ajax({
-    url: "/datasources/" + fileName,
+    url: "/datasources/" + file,
     type: "DELETE",
     success: function(data, status) {
-      source = collections[fileName];
+      source = collections[file];
       viewer.dataSources.remove(source, true);
-      delete collections[fileName];
+      delete collections[file];
       getDataSources();
     },
     error: function(xhr, desc, err) {
-      console.log("Failed: " + desc + err)
+      console.log("Failed: " + desc + err);
     }
   });
 }
 
-function submitDataSourceForm(target) {
-  var parentForm = $(target).closest('form');
-  $(parentForm).ajaxSubmit(function() {
-    uploadFile(parentForm);
-    return false;
-  });
-}
-
+/**
+ * given a list of all datasource boxes, render them in the side bar
+ * @param files - an array of data source files to render panels for
+ */
 function renderDatasourceBoxes(files) {
   var dataDiv = "#datasources";
   $(dataDiv).empty();
-  var context = {
-    "files": files
-  };
 
-  //Insert the template and bind the toolbar entries
-  $.when(insertTemplate(dataDiv, "dataCollection.template", context)).done(function() {
-    $(dataDiv + " :checkbox").bootstrapToggle();
-    //Convert checkboxes to the cool looking ones!
-    bindDataToggle(dataDiv);
-    //Load all data sources not in the viewer
-    loadMissingCollections(files);
+  //Loop through each file to render
+  $(files).each(function(index, file) {
+    //Append the template to the div
+    var context = {
+      "file": file
+    };
+    getTemplate('dataCollection', context).done(function(data) {
+      var target = $(data).appendTo(dataDiv);
+      //Bootstrap toggle the checckboxes
+      var checkbox = $(target).find('input:checkbox');
+      checkbox.bootstrapToggle();
+      bindDataVisibilityToggle(checkbox);
+      loadCollectionIfMissing(file);
+    });
   });
 }
 
-function loadMissingCollections(files) {
-  for (var index in files) {
-    if ((files[index] in collections) == false) {
-      loadJSONFile(files[index]);
-    }
+/**
+ * If the collection has not been rendered in cesium, render it. Otherwise do nothing
+ * @param file - the filename of the collection to load
+ */
+function loadCollectionIfMissing(file) {
+  if ((file in collections) === false) {
+    loadJSONFile(file);
   }
 }
 
-function insertTemplate(target, templateName, context) {
-  return $.Deferred(function() {
-    var self = this;
-    var directory = "/templates/";
-    var html = $.get(directory + templateName, function(data) {
-      var template = Handlebars.compile(data);
-      $(target).append(template(context));
-    }, 'html').done(this.resolve);
+/**
+ * Retrieves a template from the templates directory with the given filename.
+ * Should be used as a deferred object.
+ * Note that $.get caches the result, so it's okay to make subsequent calls
+ * to retrieve the same template.
+ * @param name - the filename of the template to retrieve. Do not include file extension.
+ * @param context - the parameters to pass to the template
+ * @return a string containing the template with parameters substituted in
+ */
+function getTemplate(name, context) {
+  var d = $.Deferred();
+  $.get('/templates/' + name + '.hbs', function(src) {
+    var result = Handlebars.compile(src)(context);
+    d.resolve(result);
   });
+  return d.promise();
 }
 
+/**
+ * Binds a file selection box so that choosing a file will update the text field
+ * next to it, displaying the name of the selected file
+ */
 function bindFileSelectionText() {
   $(document).on('change', '.btn-file :file', function() {
     var label = $(this).val().replace(/\\/g, '/').replace(/.*\//, '');
-    var input = $(this).parents('.input-group').find(':text')
+    var input = $(this).parents('.input-group').find(':text');
     input.val(label);
   });
 }
 
-function bindDataToggle(target) {
-  $(target + " :checkbox").on('change', function() {
+/**
+ * Binds a checkbox to a data source in cesium so that clicking the checkbox
+ * will toggle the visiblity of the source
+ * @param checkbox - a checkbox object selection
+ */
+function bindDataVisibilityToggle(checkbox) {
+  $(checkbox).on('change', function() {
     var id = $(this).attr('id');
     var source = collections[id];
-    if (source == undefined) {
+    if (source === undefined) {
       return;
     }
     var entityList = source.entities.values;
