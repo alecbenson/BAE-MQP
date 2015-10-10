@@ -6,10 +6,12 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
 var collections = [];
 
 $(function() {
+  registerAllPartials();
   getDataSources();
   bindFileSelectionText();
   bindUploadButton();
   bindDeleteButton();
+
 });
 
 /**
@@ -140,24 +142,6 @@ function loadCollectionIfMissing(file) {
   if ((file in collections) === false) {
     loadJSONFile(file);
   }
-}
-
-/**
- * Retrieves a template from the templates directory with the given filename.
- * Should be used as a deferred object.
- * Note that $.get caches the result, so it's okay to make subsequent calls
- * to retrieve the same template.
- * @param name - the filename of the template to retrieve. Do not include file extension.
- * @param context - the parameters to pass to the template
- * @return a string containing the template with parameters substituted in
- */
-function getTemplate(name, context) {
-  var d = $.Deferred();
-  $.get('/templates/' + name + '.hbs', function(src) {
-    var result = Handlebars.compile(src)(context);
-    d.resolve(result);
-  });
-  return d.promise();
 }
 
 /**
