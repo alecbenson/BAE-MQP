@@ -3,6 +3,7 @@
  **/
 function registerAllPartials() {
   registerExternalPartial("sourceUpload");
+  registerExternalPartial("panelSettings");
 }
 
 /**
@@ -22,14 +23,21 @@ function registerExternalPartial(name) {
  * Note that $.get caches the result, so it's okay to make subsequent calls
  * to retrieve the same template.
  * @param name - the filename of the template to retrieve. Do not include file extension.
- * @param context - the parameters to pass to the template
- * @return a string containing the template with parameters substituted in
+ * @return a string containing the template
  */
-function getTemplate(name, context) {
+function getTemplateHTML(name) {
   var d = $.Deferred();
   $.get('/templates/' + name + '.hbs', function(src) {
-    var result = Handlebars.compile(src)(context);
-    d.resolve(result);
+    d.resolve(src);
   });
   return d.promise();
+}
+
+/**
+ *Applies a context to a handlebar tempalte
+ * @param context - the parameters to pass to the template
+ * @return the templated file with substitutions
+ **/
+function applyTemplate(src, context) {
+  return Handlebars.compile(src)(context);
 }

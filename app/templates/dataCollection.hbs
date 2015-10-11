@@ -2,30 +2,10 @@
 
   <!-- Panel heading !-->
   <div class="panel-heading clearfix">
+    {{> panelSettings}}
     <span data-toggle="collapse" data-target=".{{file}}">
       {{file}}
     </span>
-
-    <div class="btn-group pull-right">
-      <button type="button" class="btn btn-info dropdown-toggle btn-xs" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <i class="fa fa-cog fa-1x"></i>
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        <li>
-          <a>
-            <i class="fa fa-edit pull-left"></i>Edit
-          </a>
-        </li>
-        <li role="separator" class="divider"></li>
-        <li>
-          <a class="btn-delete" id="{{file}}">
-            <i class="fa fa-trash-o pull-left"></i>Delete
-          </a>
-        </li>
-      </ul>
-    </div>
-
   </div>
 
   <!-- Panel contents !-->
