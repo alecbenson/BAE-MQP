@@ -1,11 +1,11 @@
 var TrackDataSource = function(name) {
 
   this._name = name;
-  this._entityCollection = new Cesium.EntityCollection;
+  this._entityCollection = new Cesium.EntityCollection();
   this._clock = new Cesium.DataSourceClock();
   this._clock.startTime = Cesium.JulianDate.fromIso8601("2000-01-01");
   this._clock.currentTime = Cesium.JulianDate.fromIso8601("2000-01-02");
-    this._clock.stopTime = Cesium.JulianDate.fromIso8601("2000-01-03");
+  this._clock.stopTime = Cesium.JulianDate.fromIso8601("2000-01-03");
   this._clock.clockRange = Cesium.ClockRange.LOOP_STOP;
   this._clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER;
   this._clock.multiplier = 1;
@@ -66,7 +66,6 @@ Object.defineProperties(TrackDataSource.prototype, {
   }
 });
 
-
 /**
  * loads data into the data source from the given url
  * @param url - the url to load the data from
@@ -121,7 +120,7 @@ TrackDataSource.prototype.connect = function(edge) {
       })
     }
   });
-}
+};
 
 /**
  * Adds a time and position dependant sample to the data source
@@ -152,7 +151,7 @@ TrackDataSource.prototype._addSample = function(property, data) {
   entities.add(entity);
 
   return property;
-}
+};
 
 /**
  * Reads through the data and determines the start and end times of the data clock
@@ -184,7 +183,7 @@ TrackDataSource.prototype.setTimeWindow = function(vertices) {
   this._clock.startTime = currentStart;
   this._clock.stopTime = currentStop;
   this._clock.clockRange = Cesium.ClockRange.LOOP_STOP;
-}
+};
 
 /**
  * Draw all vertices on the map
@@ -198,7 +197,7 @@ TrackDataSource.prototype.drawVertices = function(position, data) {
     var trackData = data.vertices[i];
     this._addSample(position, trackData);
   }
-}
+};
 
 /**
  * Draw all edges on the map
@@ -212,7 +211,7 @@ TrackDataSource.prototype.drawEdges = function(position, data) {
     var edgeData = data.edges[i];
     this.connect(edgeData);
   }
-}
+};
 
 /**
  * Loads data into the datasource.
@@ -244,7 +243,6 @@ TrackDataSource.prototype.load = function(data) {
   this._setLoading(false);
 };
 
-
 /**
  * Creates an entity that follows the track within the data source
  * @param position - the SampledPositionProperty to create the tracking node with
@@ -273,7 +271,7 @@ TrackDataSource.prototype.createTrackNode = function(position) {
     interpolationDegree: 5,
     interpolationAlgorithm: Cesium.LagrangePolynomialApproximation
   });
-}
+};
 
 /**
  * Sets the loading status of the data source

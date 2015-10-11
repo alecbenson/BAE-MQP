@@ -3,15 +3,20 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
   timeline: true
 });
 
-var collections = [];
-
 $(function() {
+  registerAllPartials();
   getDataSources();
-  bindUploadButton();
   bindFileSelectionText();
-  bindDeleteDataSource();
+  bindDeleteButton();
+  bindCancelButton();
+  bindNewCollectionButton();
+  bindSubmitCollectionButton();
+  bindUploadButton();
 });
 
+/**
+ * Makes a GET request to the server to retrieve all data sources
+ */
 function getDataSources() {
   $("#loading").show();
   $.ajax({
@@ -22,40 +27,33 @@ function getDataSources() {
     contentType: false,
     success: function(data, status) {
       var files = JSON.parse(data);
-      renderDatasourceBoxes(files);
+      renderAllCollections(files);
     },
     error: function(xhr, desc, err) {
-      console.log("Failed: " + desc + err)
-    },
-    complete: function(xhr, status) {
-      $("#loading").hide();
+      console.log("Failed: " + desc + err);
     }
   });
-};
+}
 
-function loadJSONFile(filename) {
-  var path = "/data/" + filename;
+/**
+ * Given a data file, create a new data source and draw the result in cesium
+ * @param file - an data file to render in cesium
+ */
+function loadJSONFile(file) {
+  var path = "/data/" + file;
   var dataSource = new TrackDataSource();
   dataSource.loadUrl(path);
-  viewer.dataSources.add(dataSource)
-  collections[filename] = dataSource;
+  viewer.dataSources.add(dataSource);
+  collections[file] = dataSource;
 }
 
-function bindDeleteDataSource() {
-  $(document).on("click", ".btn-delete", function() {
-    deleteFile($(this).attr('id'));
-  });
-}
-
-function bindUploadButton() {
-  $(document).on("click", ".btn-upload", function(event) {
-    uploadFile(event.target);
-    return false;
-  });
-}
-
-function uploadFile(target) {
+/**
+ * Uploads a file to the server
+ * @param target - an object close to the submission form (typically the button).
+ */
+function uploadData(target) {
   var parentForm = $(target).closest('form');
+  
   $(parentForm).ajaxSubmit({
     url: "/upload",
     type: "POST",
@@ -68,85 +66,39 @@ function uploadFile(target) {
   });
 }
 
-function deleteFile(fileName) {
+/**
+ * Creates a new collection on the server
+ * @param target - an object close to the submission form (typically the button).
+ */
+function createNewCollection(target) {
+  var parentForm = $(target).closest('form');
+  $(parentForm).ajaxSubmit({
+    url: "/datasources/",
+    type: "POST",
+    success: function(data, status) {
+      getDataSources();
+    },
+    error: function(xhr, desc, err) {}
+  });
+}
+
+/**
+ * Makes an ajax call to delete a given data source.
+ * Running deleteFile will re-render the collections in the toolbar.
+ * @param file - the name of the data source to delete
+ */
+function deleteData(file) {
   $.ajax({
-    url: "/datasources/" + fileName,
+    url: "/datasources/" + file,
     type: "DELETE",
     success: function(data, status) {
-      source = collections[fileName];
+      source = collections[file];
       viewer.dataSources.remove(source, true);
-      delete collections[fileName];
+      delete collections[file];
       getDataSources();
     },
     error: function(xhr, desc, err) {
-      console.log("Failed: " + desc + err)
-    }
-  });
-}
-
-function submitDataSourceForm(target) {
-  var parentForm = $(target).closest('form');
-  $(parentForm).ajaxSubmit(function() {
-    uploadFile(parentForm);
-    return false;
-  });
-}
-
-function renderDatasourceBoxes(files) {
-  var dataDiv = "#datasources";
-  $(dataDiv).empty();
-  var context = {
-    "files": files
-  };
-
-  //Insert the template and bind the toolbar entries
-  $.when(insertTemplate(dataDiv, "dataCollection.template", context)).done(function() {
-    $(dataDiv + " :checkbox").bootstrapToggle();
-    //Convert checkboxes to the cool looking ones!
-    bindDataToggle(dataDiv);
-    //Load all data sources not in the viewer
-    loadMissingCollections(files);
-  });
-}
-
-function loadMissingCollections(files) {
-  for (var index in files) {
-    if ((files[index] in collections) == false) {
-      loadJSONFile(files[index]);
-    }
-  }
-}
-
-function insertTemplate(target, templateName, context) {
-  return $.Deferred(function() {
-    var self = this;
-    var directory = "/templates/";
-    var html = $.get(directory + templateName, function(data) {
-      var template = Handlebars.compile(data);
-      $(target).append(template(context));
-    }, 'html').done(this.resolve);
-  });
-}
-
-function bindFileSelectionText() {
-  $(document).on('change', '.btn-file :file', function() {
-    var label = $(this).val().replace(/\\/g, '/').replace(/.*\//, '');
-    var input = $(this).parents('.input-group').find(':text')
-    input.val(label);
-  });
-}
-
-function bindDataToggle(target) {
-  $(target + " :checkbox").on('change', function() {
-    var id = $(this).attr('id');
-    var source = collections[id];
-    if (source == undefined) {
-      return;
-    }
-    var entityList = source.entities.values;
-    for (var i = 0; i < entityList.length; i++) {
-      currentState = entityList[i].show;
-      entityList[i].show = !currentState;
+      console.log("Failed: " + desc + err);
     }
   });
 }

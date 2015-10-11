@@ -27,7 +27,7 @@ html, body {
     top: 0px;
     left: 0px;
     height: 100%;
-    width: 320px;
+    width: 350px;
     border-right: 2px solid #111;
     overflow: auto;
   }
@@ -35,7 +35,7 @@ html, body {
     position: absolute;
     top: 0px;
     right: 0px;
-    width: calc(100% - 320px);
+    width: calc(100% - 350px);
     height: 100%;
   }
 }

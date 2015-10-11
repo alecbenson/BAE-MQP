@@ -16,6 +16,7 @@
     "yargs": "3.15.0"
   },
   "dependencies": {
+    "body-parser": "^1.14.1",
     "multer": "^1.0.3"
   }
 }

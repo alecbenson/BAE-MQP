@@ -1,0 +1,18 @@
+<div id="sourcelist">
+  <h4>Data within this collection:</h4>
+  <ul class="list-group">
+    {{#unless source}}
+      <li class="list-group-item">
+        No sources have been added to this collection yet.
+      </li>
+    {{/unless}}
+    {{#each source}}
+      <li class="list-group-item">
+        {{this}}
+        <button type="button" class="btn btn-deleteSource btn-danger pull-left">
+          <i class="fa fa-trash"></i>
+        </button>
+      </li>
+    {{/each}}
+  </ul>
+</div>

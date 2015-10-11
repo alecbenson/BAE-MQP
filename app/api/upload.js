@@ -1,16 +1,23 @@
-var fs = require('fs')
+var fs = require('fs');
 var multer = require('multer');
 var express = require('express');
-var router = express.Router();
+var router = express.Router()
+var bodyParser = require('body-parser');
+
+router.use(bodyParser.urlencoded({
+  extended: false
+}));
+router.use(bodyParser.json());
 
 //Define rules for storing data
 var storage = multer.diskStorage({
   destination: function(req, file, cb) {
-    cb(null, 'data/')
+    var collectionName = req.body.collectionName;
+    cb(null, 'data/' + collectionName);
   },
   filename: function(req, file, cb) {
-    var parsed = file.originalname.replace(/\.[^/.]+$/, "")
-    cb(null, parsed + '-' + Date.now())
+    var parsed = file.originalname.replace(/\.[^/.]+$/, "");
+    cb(null, parsed + '-' + Date.now());
   }
 });
 
@@ -31,7 +38,7 @@ router.post('/', function(req, res) {
       return;
     }
     //Upload was successful
-    if (req.file == undefined) {
+    if (req.file === undefined) {
       res.status(500).send("No file specified.");
       return;
     }
