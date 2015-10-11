@@ -4,6 +4,7 @@
 function registerAllPartials() {
   registerExternalPartial("sourceUpload");
   registerExternalPartial("panelSettings");
+  registerExternalPartial("sourceList");
 }
 
 /**

@@ -9,7 +9,6 @@
   var request = require('request');
 
   var upload = require('./api/upload');
-  var collection = require('./api/collection');
   var datasources = require('./api/datasources');
 
   var yargs = require('yargs').options({
@@ -51,7 +50,6 @@
 
   var app = express();
   app.use('/upload', upload);
-  app.use('/collection', collection);
   app.use('/datasources', datasources);
   app.use(compression());
   app.use(express.static(__dirname));

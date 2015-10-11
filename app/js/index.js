@@ -7,11 +7,11 @@ $(function() {
   registerAllPartials();
   getDataSources();
   bindFileSelectionText();
-  bindUploadButton();
   bindDeleteButton();
   bindCancelButton();
   bindNewCollectionButton();
   bindSubmitCollectionButton();
+  bindUploadButton();
 });
 
 /**
@@ -53,6 +53,7 @@ function loadJSONFile(file) {
  */
 function uploadData(target) {
   var parentForm = $(target).closest('form');
+  
   $(parentForm).ajaxSubmit({
     url: "/upload",
     type: "POST",
@@ -72,7 +73,7 @@ function uploadData(target) {
 function createNewCollection(target) {
   var parentForm = $(target).closest('form');
   $(parentForm).ajaxSubmit({
-    url: "/collection/",
+    url: "/datasources/",
     type: "POST",
     success: function(data, status) {
       getDataSources();

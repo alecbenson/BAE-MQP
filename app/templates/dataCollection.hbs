@@ -14,21 +14,8 @@
       <div>
         <input class="btn-visibility" data-size="small" id="{{file}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
       </div>
-
-      <div id="sourcelist">
-        <h5>Data within this collection:</h5>
-        <ul>
-          <li>Example item #1</li>
-        </ul>
-
-        <!-- Edit collection form !-->
-        {{> sourceUpload}}
-
-        <button type="button" class="btn btn-success btn-xs pull-right">
-          <i class="fa fa-plus pull-left"></i>New source
-        </button>
-      </div>
-
+      {{> sourceList}}
+      {{> sourceUpload}}
     </div>
   </div>
 </div>
