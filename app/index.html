@@ -19,6 +19,13 @@
   <script src="/node_modules/d3/d3.min.js"></script>
   <script src="/node_modules/d3-chart/d3-chart.js"></script>
 
+  <script type="text/javascript">
+    var sharedObject = {
+      dispatch: d3.dispatch("nationMouseover"),
+      yearData: [],
+      flyTo: null
+    };
+  </script>
 
   <link rel="stylesheet" href="/css/bootstrap.min.css">
   <link rel="stylesheet" href="/css/bootstrap-toggle.min.css">
@@ -26,7 +33,23 @@
   <link rel="stylesheet" href="css/index.css">
   <link rel="stylesheet" href="/css/font-awesome.min.css">
 
+  <style>
+    @import url(node_modules/jquery-ui/jquery-us.css);
+    @import url(css/d3chart.css);
+    @import url(node_modules/Cesium/Build/Cesium/Widgets/widgets.css);
+  </style>
+
+  </head>
   <body>
+    <!-- D3 container -->
+    <div id="chart"></div>
+    <div id="info" title="Test title"></div>
+    <script type="text/javascript" src="js/chart.js"></script>
+    <script type="text/javascript" src="js/globe.js"></script>
+
+    </script>>
+
+    </script>
     <div id="nav-pane">
       <div class="nav-section">
         <div class="page-header">
@@ -73,15 +96,9 @@
     </div>
 
     </div>
-
     <div id="cesiumContainer"></div>
     <script src="/js/trackSource.js"></script>
     <script src="/js/index.js"></script>
 
-    <!-- D3 container -->
-    <div id="chart"></div>
-    <div id="info" title="Test title"></div>
-    <script type="text/javascript" src="js/chart.js"></script>
   </body>
-
 </html>
