@@ -1,8 +1,11 @@
 var fs = require('fs');
 var multer = require('multer');
 var express = require('express');
-var router = express.Router()
+var router = express.Router();
 var bodyParser = require('body-parser');
+
+var dataDir = "./data/";
+var sourcesDir = "/sources/";
 
 router.use(bodyParser.urlencoded({
   extended: false
@@ -13,7 +16,7 @@ router.use(bodyParser.json());
 var storage = multer.diskStorage({
   destination: function(req, file, cb) {
     var collectionName = req.body.collectionName;
-    cb(null, 'data/' + collectionName);
+    cb(null, dataDir + collectionName + sourcesDir);
   },
   filename: function(req, file, cb) {
     var parsed = file.originalname.replace(/\.[^/.]+$/, "");
@@ -34,7 +37,7 @@ router.post('/', function(req, res) {
   handler(req, res, function(err) {
     //Something went wrong
     if (err) {
-      res.status(500).send("Failed to upload file.");
+      res.status(500).send("Failed to upload file: " + err);
       return;
     }
     //Upload was successful

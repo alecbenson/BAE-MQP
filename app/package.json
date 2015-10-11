@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "body-parser": "^1.14.1",
-    "multer": "^1.0.3"
+    "multer": "^1.0.3",
+    "node-fs": "^0.1.7",
+    "rimraf": "^2.4.3"
   }
 }

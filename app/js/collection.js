@@ -5,17 +5,16 @@ var dataDiv = "#datasources";
  * given a list of all datasource boxes, render them in the side bar
  * @param files - an array of data source files to render panels for
  */
-function renderAllCollections(files) {
+function renderAllCollections(collections) {
   $(dataDiv).empty();
 
   //Loop through each file to render
-  $(files).each(function(index, file) {
+  $(collections).each(function(index, collection) {
     //Append the template to the div
     var context = {
-      "file": file
+      "name": collection
     };
     renderCollection(context);
-    loadCollectionIfMissing(file);
   });
 }
 
@@ -28,6 +27,7 @@ function renderCollection(context) {
     var checkbox = $(target).find('input:checkbox');
     checkbox.bootstrapToggle();
     bindDataVisibilityToggle(checkbox);
+    getCollectionSources(context.name);
   });
 }
 
@@ -37,12 +37,23 @@ function renderNewCollectionForm() {
   });
 }
 
+function renderCollectionSources(sources, collectionName) {
+  var list = $("#sourceList" + "-" + collectionName);
+  getTemplateHTML('sourceList').done(function(data) {
+    var context = {
+      "sources": sources
+    };
+    result = applyTemplate(data, context);
+    $(list).html(result);
+  });
+}
+
 /**
  * If the collection has not been rendered in cesium, render it. Otherwise do nothing
  * @param file - the filename of the collection to load
  */
-function loadCollectionIfMissing(file) {
-  if ((file in collections) === false) {
-    loadJSONFile(file);
+function loadCollectionIfMissing(name) {
+  if ((name in collections) === false) {
+    loadJSONFile(name);
   }
 }

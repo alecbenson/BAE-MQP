@@ -3,7 +3,7 @@
  */
 function bindDeleteButton() {
   $(document).on("click", ".btn-delete", function() {
-    deleteData($(this).attr('id'));
+    deleteCollection($(this).attr('id'));
   });
 }
 
@@ -41,7 +41,6 @@ function bindUploadButton() {
  */
 function bindSubmitCollectionButton() {
   $(document).on("click", ".btn-submitCollection", function(event) {
-    console.log("Submitted");
     createNewCollection(event.target);
   });
 }

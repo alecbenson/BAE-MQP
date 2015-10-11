@@ -88,7 +88,6 @@ TrackDataSource.prototype.loadUrl = function(url) {
     return that.load(json, url);
 
   }).otherwise(function(error) {
-
     console.log(error);
     this._setLoading(false);
     that._error.raiseEvent(that, error);
