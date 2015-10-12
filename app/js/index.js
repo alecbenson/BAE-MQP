@@ -39,19 +39,21 @@ function getCollections() {
  * @param file - an data file to render in cesium
  */
 function loadCollection(context) {
-  var collection = new Cesium.DataSourceCollection();
-
-  $.each(context.sources, function(index, source) {
-    var dataPath = context.location + source;
-    addCollectionData(collection, dataPath);
+  $.each(context.sources, function(index, sourceName) {
+    var collectionName = context.name;
+    var destination = context.path;
+    addCollectionData(collectionName, sourceName, destination);
   });
-  collections[context.name] = collection;
 }
 
-function addCollectionData(collection, dataPath) {
+function addCollectionData(collectionName, sourceName, destination) {
   var dataSource = new TrackDataSource();
-  dataSource.loadUrl(dataPath);
-  collection.add(dataSource);
+  dataSource.loadUrl(destination + sourceName);
+
+  if(collections[collectionName] === undefined){
+      collections[collectionName] = {};
+  }
+  collections[collectionName][sourceName] = dataSource;
   viewer.dataSources.add(dataSource);
 }
 /**
@@ -60,17 +62,16 @@ function addCollectionData(collection, dataPath) {
  */
 function uploadCollectionSource(target) {
   var parentForm = $(target).closest('form');
-
   $(parentForm).ajaxSubmit({
     url: "/collections/upload/",
     type: "POST",
     dataType: "JSON",
     success: function(data, status) {
-      var dataPath = data.file.destination + data.file.filename;
-      renderCollectionSources(data.context);
       var collectionName = data.context.name;
-      var collection = collections[collectionName];
-      addCollectionData(collection, dataPath);
+      var sourceName = data.file.filename;
+      var destination = data.file.destination;
+      addCollectionData(collectionName, sourceName, destination);
+      renderCollectionSources(data.context);
     },
     error: function(xhr, desc, err) {}
   });
@@ -89,9 +90,9 @@ function deleteCollection(collectionName) {
       var collection = collections[collectionName];
 
       //Remove all datasources in this collection from the viewer
-      for(var i = 0; i < collection.length; i++){
-        var ds = collection.get(i);
-        if(viewer.dataSources.contains(ds)){
+      for (var index in collection) {
+        var ds = collection[index];
+        if (viewer.dataSources.contains(ds)) {
           viewer.dataSources.remove(ds, true);
         }
       }

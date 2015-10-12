@@ -41,6 +41,7 @@ function bindUploadButton() {
 function bindSubmitCollectionButton() {
   $(document).on("click", ".btn-submitCollection", function(event) {
     createNewCollection(event.target);
+    event.preventDefault();
   });
 }
 
@@ -51,12 +52,15 @@ function bindSubmitCollectionButton() {
  */
 function bindDataVisibilityToggle(checkbox) {
   $(checkbox).on('change', function() {
-    var id = $(this).attr('id');
-    var source = collections[id];
-    if (source === undefined) {
+    var sourceName = $(this).attr('data-source');
+    var collectionName = $(this).attr('data-collection');
+
+    var sources = collections[collectionName];
+    var dataSource = sources[sourceName];
+    if (dataSource === undefined) {
       return;
     }
-    var entityList = source.entities.values;
+    var entityList = dataSource.entities.values;
     for (var i = 0; i < entityList.length; i++) {
       currentState = entityList[i].show;
       entityList[i].show = !currentState;

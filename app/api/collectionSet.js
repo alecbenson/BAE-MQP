@@ -24,7 +24,6 @@ CollectionSet.prototype.add = function(collectionName) {
 };
 
 CollectionSet.prototype.remove = function(collectionName) {
-
   delete this.collections[collectionName];
   this.deleteCollectionDir(collectionName);
 };

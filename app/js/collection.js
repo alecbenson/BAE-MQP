@@ -1,4 +1,4 @@
-var collections = [];
+var collections = {};
 var dataDiv = "#datasources";
 
 /**
@@ -8,9 +8,8 @@ var dataDiv = "#datasources";
 function renderAllCollections(collections) {
   $(dataDiv).empty();
   //Loop through each file to render
-  for(var key in collections){
+  for (var key in collections) {
     var collection = collections[key];
-    console.log(collection);
     //Append the template to the div
     renderCollection(collection);
   }
@@ -28,7 +27,7 @@ function renderCollection(context) {
 
 function renderNewCollectionForm() {
   getTemplateHTML('newCollection').done(function(data) {
-    $(data).appendTo(dataDiv);
+    $(data).prependTo(dataDiv);
   });
 }
 
@@ -43,11 +42,9 @@ function createNewCollection(target) {
     type: "POST",
     success: function(data, status) {
       //Update the list of collections in the sidebar
-      var newCollection = new Cesium.DataSourceCollection();
-      collections[data.name] = newCollection;
-      console.log("Name is " + data);
-      console.log(data);
+      collections[data.name] = {};
       renderCollection(data);
+      $(parentForm).remove();
     },
     error: function(xhr, desc, err) {
       var error = $(parentForm).find('.errorMessage');
