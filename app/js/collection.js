@@ -19,7 +19,7 @@ function renderCollection(context) {
   //Append the template to the div
   getTemplateHTML('dataCollection').done(function(data) {
     var templated = applyTemplate(data, context);
-    var target = $(templated).appendTo(dataDiv);
+    var target = $(templated).prependTo(dataDiv);
     renderCollectionSources(context);
   });
   loadCollection(context);

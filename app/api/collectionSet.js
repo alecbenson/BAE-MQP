@@ -16,6 +16,9 @@ function CollectionSet(collections) {
 
 CollectionSet.prototype.add = function(collectionName) {
   var sanitizedName = collectionName.replace(/\W/g, '');
+  if(sanitizedName === ""){
+    return undefined;
+  }
   this.makeCollectionDir(sanitizedName);
   var path = this.dataDir + sanitizedName + this.sourcesDir;
   var newCollection = new Collection(path, sanitizedName, {});
@@ -113,6 +116,9 @@ router.post('/', function(req, res) {
     //The collection will be created otherwise
   } else {
     var newCollection = collectionSet.add(collectionName);
+    if(newCollection === undefined){
+      res.status(500).send("Failed to create a collection with this name.");
+    }
     res.json(newCollection);
   }
 });
