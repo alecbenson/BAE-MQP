@@ -25,8 +25,8 @@ function getCollections() {
     processData: false,
     contentType: false,
     success: function(data, status) {
-      var resp = JSON.parse(data);
-      renderAllCollections(resp);
+      var collections = JSON.parse(data);
+      renderAllCollections(collections);
     },
     error: function(xhr, desc, err) {
       console.log("Failed: " + desc + err);

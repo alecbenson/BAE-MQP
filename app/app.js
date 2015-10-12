@@ -8,7 +8,7 @@
   var url = require('url');
   var request = require('request');
 
-  var collections = require('./api/collections');
+  var collections = require('./api/collectionSet');
 
   var yargs = require('yargs').options({
     'port': {

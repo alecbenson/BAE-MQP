@@ -7,12 +7,13 @@ var dataDiv = "#datasources";
  */
 function renderAllCollections(collections) {
   $(dataDiv).empty();
-
   //Loop through each file to render
-  $(collections).each(function(index, context) {
+  for(var key in collections){
+    var collection = collections[key];
+    console.log(collection);
     //Append the template to the div
-    renderCollection(context);
-  });
+    renderCollection(collection);
+  }
 }
 
 function renderCollection(context) {
@@ -44,6 +45,8 @@ function createNewCollection(target) {
       //Update the list of collections in the sidebar
       var newCollection = new Cesium.DataSourceCollection();
       collections[data.name] = newCollection;
+      console.log("Name is " + data);
+      console.log(data);
       renderCollection(data);
     },
     error: function(xhr, desc, err) {
