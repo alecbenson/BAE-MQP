@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+
 var bodyParser = require('body-parser');
 var fs = require('node-fs');
 var path = require('path');
@@ -8,72 +9,59 @@ var rmdir = require('rimraf');
 var dataDir = "./data/";
 var sourcesDir = "/sources/";
 
-router.use(bodyParser.urlencoded({
-  extended: false
-}));
-router.use(bodyParser.json());
+function Collection(name, sources) {
+  this.name = name;
+  this.sources = sources;
+  this.location = dataDir + name + sourcesDir;
+}
 
-//Bind get to retrieve data contents
-router.get('/:collectionName', function(req, res) {
-
-  var collectionName = req.params.collectionName;
-  var sources = getCollectionSources(collectionName);
-  res.json(sources);
-});
-
-//Bind get to retrieve data contents
-router.get('/', function(req, res) {
-  var collections = getCollections();
-  res.json(collections);
-});
-
-//Post function for creating a new collection
-router.post('/', function(req, res) {
-  dataDirectoryExists();
-
-  var collectionName = req.body.collectionName;
-  newCollection(collectionName);
-  res.json(req.body);
-});
-
-//Delete function for removing a collection
-router.delete('/:collectionName', function(req, res) {
-  var collectionName = req.params.collectionName;
-  if (collectionName === undefined) {
-    res.status(404).send();
-    return;
+Collection.get = function(collectionName) {
+  if (!this.exists(collectionName)) {
+    return new Collection(collectionName,[]);
   }
+  var sourcePath = dataDir + collectionName + sourcesDir;
+  var sources = fs.readdirSync(sourcePath);
 
-  var path = dataDir + collectionName;
-  rmdir(path, function(err) {
+  return new Collection(collectionName, sources);
+};
+
+//Get all sources belonging to the collection
+Collection.getAll = function() {
+  dataDirectoryExists();
+  collections = [];
+
+  //Read all folders in the data directory
+  collectionNames = fs.readdirSync(dataDir);
+  for (var index in collectionNames) {
+    var name = collectionNames[index];
+    var collection = this.get(name);
+    collections.push(collection);
+  }
+  return collections;
+};
+
+Collection.exists = function(collectionName) {
+  var collectionPath = dataDir + collectionName;
+  try {
+    stats = fs.lstatSync(collectionPath);
+    if (!stats.isDirectory()) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+  return true;
+};
+
+Collection.makeCollectionDir = function(name) {
+  collectionPath = dataDir + name + sourcesDir;
+  fs.mkdir(collectionPath, 0777, true, function(err) {
     if (err) {
-      res.status(500).send("Failed to delete collection.");
-      return;
+      console.log(err);
     }
   });
-  res.status(200).send();
-});
-
-//Get all sources belonging to the collection
-function getCollectionSources(collectionName) {
-  dataDirectoryExists();
-
-  //If the collection does not exist, return a 404.
-  if (!collectionExists(collectionName)) {
-    res.status(404).send();
-  }
-
-  var sourcePath = dataDir + collectionName + sourcesDir;
-  sources = fs.readdirSync(sourcePath);
-  return JSON.stringify(sources);
-}
-
-//Get all sources belonging to the collection
-function getCollections() {
-  dataDirectoryExists();
-  collections = fs.readdirSync(dataDir);
-  return JSON.stringify(collections);
-}
+};
 
 function dataDirectoryExists() {
   try {
@@ -87,27 +75,53 @@ function dataDirectoryExists() {
   }
 }
 
-function collectionExists(collectionName) {
-  var collectionPath = dataDir + collectionName;
-  try {
-    stats = fs.lstatSync(collectionPath);
-    if (!stats.isDirectory()) {
-      return false;
-    }
-    return true;
-  } catch (e) {
-    return false;
-  }
-  return true;
-}
+router.use(bodyParser.urlencoded({
+  extended: false
+}));
+router.use(bodyParser.json());
 
-function newCollection(name) {
-  collectionPath = dataDir + name + sourcesDir;
-  fs.mkdir(collectionPath, 0777, true, function(err) {
+//GET a collection with the given name
+router.get('/:collectionName', function(req, res) {
+  var collectionName = req.params.collectionName;
+  var collection = Collection.get(collectionName);
+  res.json(collection);
+});
+
+//GET all collections
+router.get('/', function(req, res) {
+  var collections = Collection.getAll();
+  res.json(JSON.stringify(collections));
+});
+
+//POST a new collection
+router.post('/', function(req, res) {
+  dataDirectoryExists();
+  var collectionName = req.body.collectionName;
+
+  if (Collection.exists(collectionName)) {
+    res.status(409).send("A collection with this name already exists.");
+  } else {
+    Collection.makeCollectionDir(collectionName);
+    var newCollection = new Collection(collectionName, []);
+    res.json(newCollection);
+  }
+});
+
+//DELETE a collection by name
+router.delete('/:collectionName', function(req, res) {
+  var collectionName = req.params.collectionName;
+  if (collectionName === undefined) {
+    res.status(404).send();
+    return;
+  }
+  var path = dataDir + collectionName;
+  rmdir(path, function(err) {
     if (err) {
-      console.log(err);
+      res.status(500).send("Failed to delete collection.");
+      return;
     }
   });
-}
+  res.status(200).send();
+});
 
 module.exports = router;

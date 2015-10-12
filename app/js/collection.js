@@ -11,10 +11,7 @@ function renderAllCollections(collections) {
   //Loop through each file to render
   $(collections).each(function(index, collection) {
     //Append the template to the div
-    var context = {
-      "name": collection
-    };
-    renderCollection(context);
+    renderCollection(collection);
   });
 }
 
@@ -23,12 +20,9 @@ function renderCollection(context) {
   getTemplateHTML('dataCollection').done(function(data) {
     var templated = applyTemplate(data, context);
     var target = $(templated).appendTo(dataDiv);
-    //Bootstrap toggle the checckboxes
-    var checkbox = $(target).find('input:checkbox');
-    checkbox.bootstrapToggle();
-    bindDataVisibilityToggle(checkbox);
-    getCollectionSources(context.name);
+    renderCollectionSources(context);
   });
+  loadCollectionIfMissing(context);
 }
 
 function renderNewCollectionForm() {
@@ -37,14 +31,36 @@ function renderNewCollectionForm() {
   });
 }
 
-function renderCollectionSources(sources, collectionName) {
-  var list = $("#sourceList" + "-" + collectionName);
+/**
+ * Creates a new collection on the server
+ * @param target - an object close to the submission form (typically the button).
+ */
+function createNewCollection(target) {
+  var parentForm = $(target).closest('form');
+  $(parentForm).ajaxSubmit({
+    url: "/collections/",
+    type: "POST",
+    success: function(data, status) {
+      //Update the list of collections in the sidebar
+      var newCollection = new Cesium.DataSourceCollection();
+      collections[data.name] = newCollection;
+      renderCollection(data);
+    },
+    error: function(xhr, desc, err) {
+      var error = $(parentForm).find('.errorMessage');
+      $(error).show().text(xhr.responseText);
+    }
+  });
+}
+
+function renderCollectionSources(context) {
   getTemplateHTML('sourceList').done(function(data) {
-    var context = {
-      "sources": sources
-    };
     result = applyTemplate(data, context);
+    var list = "#sourceList" + "-" + context.name;
     $(list).html(result);
+    var checkbox = $(list + " ul li :checkbox");
+    checkbox.bootstrapToggle();
+    bindDataVisibilityToggle(checkbox);
   });
 }
 
@@ -52,8 +68,8 @@ function renderCollectionSources(sources, collectionName) {
  * If the collection has not been rendered in cesium, render it. Otherwise do nothing
  * @param file - the filename of the collection to load
  */
-function loadCollectionIfMissing(name) {
+function loadCollectionIfMissing(context) {
   if ((name in collections) === false) {
-    loadJSONFile(name);
+    loadCollection(context);
   }
 }

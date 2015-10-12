@@ -30,8 +30,7 @@ function bindNewCollectionButton() {
  */
 function bindUploadButton() {
   $(document).on("click", ".btn-upload", function(event) {
-    uploadData(event.target);
-    console.log("clicked");
+    uploadCollectionSource(event.target);
     return false;
   });
 }
