@@ -132,6 +132,23 @@ router.delete('/:collectionName', function(req, res) {
   res.status(200).send();
 });
 
+//DELETE a collection by name
+router.delete('/:collectionName/:sourceName', function(req, res) {
+  var collectionName = req.params.collectionName;
+  var sourceName = req.params.sourceName;
+  if (collectionName === undefined || sourceName === undefined) {
+    res.status(404).send();
+    return;
+  }
+  if (collectionSet.contains(collectionName) === false) {
+    res.status(404).send();
+    return;
+  }
+  var collection = collectionSet.get(collectionName);
+  collection = collection.deleteSource(sourceName);
+  res.json(collection);
+});
+
 //Define rules for storing data
 var storage = multer.diskStorage({
   destination: function(req, file, cb) {

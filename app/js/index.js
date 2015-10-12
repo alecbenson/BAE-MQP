@@ -8,6 +8,7 @@ $(function() {
   getCollections();
   bindFileSelectionText();
   bindDeleteButton();
+  bindDeleteSourceButton();
   bindCancelButton();
   bindNewCollectionButton();
   bindSubmitCollectionButton();
@@ -50,8 +51,8 @@ function addCollectionData(collectionName, sourceName, destination) {
   var dataSource = new TrackDataSource();
   dataSource.loadUrl(destination + sourceName);
 
-  if(collections[collectionName] === undefined){
-      collections[collectionName] = {};
+  if (collections[collectionName] === undefined) {
+    collections[collectionName] = {};
   }
   collections[collectionName][sourceName] = dataSource;
   viewer.dataSources.add(dataSource);
@@ -79,8 +80,7 @@ function uploadCollectionSource(target) {
 
 /**
  * Makes an ajax call to delete a given data collection.
- * Running deleteFile will re-render the collections in the toolbar.
- * @param file - the name of the data source to delete
+ * @param collectionName - the name of the collection to delete
  */
 function deleteCollection(collectionName) {
   $.ajax({
@@ -98,6 +98,28 @@ function deleteCollection(collectionName) {
       }
       delete collections[collectionName];
       $(".collection-" + collectionName).remove();
+    },
+    error: function(xhr, desc, err) {
+      console.log("Failed: " + desc + err);
+    }
+  });
+}
+
+/**
+ * Makes an ajax call to delete a given data source.
+ * @param sourceName - the name of the data source to delete
+ */
+function deleteSource(collectionName, sourceName) {
+  $.ajax({
+    url: "/collections/" + collectionName + "/" + sourceName,
+    type: "DELETE",
+    success: function(data, status) {
+      var ds = collections[collectionName][sourceName];
+      if (viewer.dataSources.contains(ds)) {
+        viewer.dataSources.remove(ds, true);
+      }
+      delete collections[collectionName][sourceName];
+      renderCollectionSources(data);
     },
     error: function(xhr, desc, err) {
       console.log("Failed: " + desc + err);

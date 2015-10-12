@@ -17,4 +17,9 @@ Collection.prototype.update = function() {
   return this;
 };
 
+Collection.prototype.deleteSource = function(sourceName) {
+  fs.unlinkSync(this.path + sourceName);
+  return this.update();
+};
+
 module.exports = Collection;

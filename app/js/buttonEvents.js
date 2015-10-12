@@ -26,6 +26,17 @@ function bindNewCollectionButton() {
 }
 
 /**
+ * binds a .btn-newCollection click to the renderNewCollection method
+ */
+function bindDeleteSourceButton() {
+  $(document).on("click", ".btn-deleteSource", function() {
+    var sourceName = $(this).attr('data-source');
+    var collectionName = $(this).attr('data-collection');
+    deleteSource(collectionName, sourceName);
+  });
+}
+
+/**
  * binds a .btn-upload click to the uploadFile method
  */
 function bindUploadButton() {
