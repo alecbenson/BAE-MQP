@@ -9,9 +9,9 @@ function renderAllCollections(collections) {
   $(dataDiv).empty();
 
   //Loop through each file to render
-  $(collections).each(function(index, collection) {
+  $(collections).each(function(index, context) {
     //Append the template to the div
-    renderCollection(collection);
+    renderCollection(context);
   });
 }
 
@@ -22,7 +22,7 @@ function renderCollection(context) {
     var target = $(templated).appendTo(dataDiv);
     renderCollectionSources(context);
   });
-  loadCollectionIfMissing(context);
+  loadCollection(context);
 }
 
 function renderNewCollectionForm() {
@@ -62,14 +62,4 @@ function renderCollectionSources(context) {
     checkbox.bootstrapToggle();
     bindDataVisibilityToggle(checkbox);
   });
-}
-
-/**
- * If the collection has not been rendered in cesium, render it. Otherwise do nothing
- * @param file - the filename of the collection to load
- */
-function loadCollectionIfMissing(context) {
-  if ((name in collections) === false) {
-    loadCollection(context);
-  }
 }

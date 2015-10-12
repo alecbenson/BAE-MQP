@@ -38,26 +38,22 @@ function getCollections() {
  * Given a data file, create a new data source and draw the result in cesium
  * @param file - an data file to render in cesium
  */
-function loadDataSource(dest, filename) {
-  var dataSource = new TrackDataSource();
-  var filePath = dest + filename;
-  dataSource.loadUrl(filePath);
-  viewer.dataSources.add(dataSource);
-  return dataSource;
-}
-
-/**
- * Given a data file, create a new data source and draw the result in cesium
- * @param file - an data file to render in cesium
- */
 function loadCollection(context) {
   var collection = new Cesium.DataSourceCollection();
-  $.each(context.sources, function(index, source){
-    loadDataSource(context.location, source);
+
+  $.each(context.sources, function(index, source) {
+    var dataPath = context.location + source;
+    addCollectionData(collection, dataPath);
   });
   collections[context.name] = collection;
 }
 
+function addCollectionData(collection, dataPath) {
+  var dataSource = new TrackDataSource();
+  dataSource.loadUrl(dataPath);
+  collection.add(dataSource);
+  viewer.dataSources.add(dataSource);
+}
 /**
  * Uploads a file to the server
  * @param target - an object close to the submission form (typically the button).
@@ -66,12 +62,15 @@ function uploadCollectionSource(target) {
   var parentForm = $(target).closest('form');
 
   $(parentForm).ajaxSubmit({
-    url: "/upload",
+    url: "/collections/upload/",
     type: "POST",
     dataType: "JSON",
     success: function(data, status) {
-      renderCollectionSources(data);
-      loadDataSource(data.destination, data.filename);
+      var dataPath = data.file.destination + data.file.filename;
+      renderCollectionSources(data.context);
+      var collectionName = data.context.name;
+      var collection = collections[collectionName];
+      addCollectionData(collection, dataPath);
     },
     error: function(xhr, desc, err) {}
   });
@@ -87,10 +86,17 @@ function deleteCollection(collectionName) {
     url: "/collections/" + collectionName,
     type: "DELETE",
     success: function(data, status) {
-      source = collections[collectionName];
-      viewer.dataSources.remove(source, true);
+      var collection = collections[collectionName];
+
+      //Remove all datasources in this collection from the viewer
+      for(var i = 0; i < collection.length; i++){
+        var ds = collection.get(i);
+        if(viewer.dataSources.contains(ds)){
+          viewer.dataSources.remove(ds, true);
+        }
+      }
       delete collections[collectionName];
-      getCollections();
+      $(".collection-" + collectionName).remove();
     },
     error: function(xhr, desc, err) {
       console.log("Failed: " + desc + err);

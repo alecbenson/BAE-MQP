@@ -8,7 +8,6 @@
   var url = require('url');
   var request = require('request');
 
-  var upload = require('./api/upload');
   var collections = require('./api/collections');
 
   var yargs = require('yargs').options({
@@ -49,7 +48,6 @@
   });
 
   var app = express();
-  app.use('/upload', upload);
   app.use('/collections', collections);
   app.use(compression());
   app.use(express.static(__dirname));
