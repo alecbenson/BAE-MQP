@@ -140,7 +140,8 @@ TrackDataSource.prototype._addSample = function(property, data) {
       color: Cesium.Color.BLUE,
       outlineColor: Cesium.Color.CYAN,
       outlineWidth: 2,
-    }
+    },
+    time: data.time
   };
   //Set the name and ID of the entity
   if (data.id !== undefined) {
@@ -282,3 +283,28 @@ TrackDataSource.prototype._setLoading = function(isLoading) {
     this._loading.raiseEvent(this, isLoading);
   }
 };
+
+/**
+ * Sets the loading status of the data source
+ * @param isLoading {bool}
+ */
+TrackDataSource.prototype.highlightOnCondition = function(callback) {
+  var entities = this._entityCollection.values;
+  for (var i = 0; i < entities.length; i++) {
+    var entity = entities[i];
+    if (entity.point !== undefined) {
+      if (callback(entity) === true) {
+        entity.point.outlineColor = Cesium.Color.YELLOW;
+        entity.point.outlineWidth = 5;
+      } else {
+        entity.point.color = Cesium.Color.BLUE;
+        entity.point.outlineColor = Cesium.Color.CYAN;
+        entity.point.outlineWidth = 2;
+      }
+    }
+  }
+};
+
+function compareTime(moment, julianDate){
+
+}

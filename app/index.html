@@ -13,16 +13,18 @@
   <script src="/cesium/Build/Cesium/Cesium.js"></script>
   <script src="/js/lib/jquery.min.js"></script>
   <script src="/js/lib/jquery.form.min.js"></script>
-  <script src="/js/lib/bootstrap.min.js"></script>
-  <script src="/js/lib/bootstrap-toggle.min.js"></script>
+  <script src="/js/lib/moment.min.js"></script>
+  <script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+  <script src="/js/lib/bootstrap/bootstrap-toggle.min.js"></script>
+  <script src="/js/lib/bootstrap/bootstrap-datetimepicker.min.js"></script>
   <script src="/js/lib/handlebars.min.js"></script>
 
-
-  <link rel="stylesheet" href="/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/css/bootstrap-toggle.min.css">
   <link rel="stylesheet" href="/cesium/Build/Cesium/Widgets/widgets.css">
-  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/bootstrap/bootstrap-toggle.min.css">
+  <link rel="stylesheet" href="/css/bootstrap/bootstrap-datetimepicker.min.css">
   <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/index.css">
 
   <body>
     <div id="nav-pane">
@@ -56,14 +58,20 @@
         </form>
       </div>
 
-      <!-- Data sources section -->
+      <!-- Data collections section -->
       <div class="nav-section">
         <h4>Data collections
           <a class="btn btn-xs btn-success btn-newCollection">
             <i class="fa fa-plus pull-left"></i>New Collection
           </a>
         </h4>
-        <div id="datasources"></div>
+        <div id="collections"></div>
+      </div>
+
+      <!-- Filter section -->
+      <div class="nav-section">
+        <h4>Filters</h4>
+        <div id="filters"></div>
       </div>
 
     </div>
@@ -73,6 +81,7 @@
     <script src="/js/templates.js"></script>
     <script src="/js/buttonEvents.js"></script>
     <script src="/js/collection.js"></script>
+    <script src="/js/filter.js"></script>
     <script src="/js/index.js"></script>
   </body>
 

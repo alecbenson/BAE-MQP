@@ -13,6 +13,7 @@ $(function() {
   bindNewCollectionButton();
   bindSubmitCollectionButton();
   bindUploadButton();
+  addAllFilters();
 });
 
 /**

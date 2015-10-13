@@ -1,5 +1,5 @@
 var collections = {};
-var dataDiv = "#datasources";
+var dataDiv = "#collections";
 
 /**
  * given a list of all datasource boxes, render them in the side bar
