@@ -141,7 +141,8 @@ TrackDataSource.prototype._addSample = function(property, data) {
       outlineColor: Cesium.Color.CYAN,
       outlineWidth: 2,
     },
-    time: data.time
+    time: data.time,
+    ele: data.ele
   };
   //Set the name and ID of the entity
   if (data.id !== undefined) {

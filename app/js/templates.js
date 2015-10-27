@@ -6,6 +6,7 @@ function registerAllPartials() {
   registerExternalPartial("panelSettings");
   registerExternalPartial("sourceList");
   registerExternalPartial("datepicker");
+  registerExternalPartial("numberpicker");
 }
 
 /**
