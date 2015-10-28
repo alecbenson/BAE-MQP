@@ -43,14 +43,21 @@ function getCollections() {
  */
 function loadCollection(context) {
   $.each(context.sources, function(index, sourceName) {
-    var collectionName = context.name;
-    addCollectionData(collectionName, sourceName, context.sourcespath);
+    addCollectionData(context, sourceName);
   });
 }
 
-function addCollectionData(collectionName, sourceName, sourcespath) {
+function addCollectionData(context, sourceName) {
+  var collectionName = context.name;
+  var model = context.model;
+  var sourcespath = context.sourcespath;
+
   var dataSource = new TrackDataSource();
-  dataSource.loadUrl(sourcespath + sourceName);
+  Cesium.when(dataSource.loadUrl(sourcespath + sourceName), function() {
+    if (model !== undefined) {
+      dataSource.setTrackModel(model);
+    }
+  });
 
   if (collections[collectionName] === undefined) {
     collections[collectionName] = {};
@@ -69,10 +76,8 @@ function uploadCollectionSource(target) {
     type: "POST",
     dataType: "JSON",
     success: function(data, status) {
-      var collectionName = data.context.name;
       var sourceName = data.file.filename;
-      var destination = data.file.destination;
-      addCollectionData(collectionName, sourceName, destination);
+      addCollectionData(data.context, sourceName);
       renderCollectionSources(data.context);
     },
     error: function(xhr, desc, err) {}
@@ -92,17 +97,19 @@ function uploadCollectionModel(target) {
     success: function(data, status) {
       var destination = data.file.destination;
       var name = data.file.filename;
-      var path = destination  + name;
-
-      collection = collections[data.collectionName];
-      for (var i in collection) {
-        var dataSource = collection[i];
-        dataSource.setTrackModel(path);
-      }
-
+      var modelPath = destination + name;
+      setCollectionModel(data.collectionName, modelPath);
     },
     error: function(xhr, desc, err) {}
   });
+}
+
+function setCollectionModel(collectionName, modelPath) {
+  collection = collections[collectionName];
+  for (var i in collection) {
+    var dataSource = collection[i];
+    dataSource.setTrackModel(modelPath);
+  }
 }
 
 /**

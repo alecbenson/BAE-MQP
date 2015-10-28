@@ -79,7 +79,6 @@ TrackDataSource.prototype.loadUrl = function(url) {
   var name = Cesium.getFilenameFromUri(url);
 
   if (this._name !== name) {
-
     this._name = name;
     this._changed.raiseEvent(this);
   }
@@ -93,7 +92,6 @@ TrackDataSource.prototype.loadUrl = function(url) {
     this._setLoading(false);
     that._error.raiseEvent(that, error);
     return Cesium.when.reject(error);
-
   });
 };
 

@@ -63,7 +63,7 @@ router.delete('/:collectionName', function(req, res) {
   res.status(200).send();
 });
 
-//DELETE a collection by name
+//DELETE a collection source by name
 router.delete('/:collectionName/:sourceName', function(req, res) {
   var collectionName = req.params.collectionName;
   var sourceName = req.params.sourceName;
