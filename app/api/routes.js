@@ -171,6 +171,9 @@ router.post('/upload/model', function(req, res) {
       return;
     }
     var collectionName = req.body.collectionName;
+    var collection = collectionSet.get(collectionName);
+    collection.model = req.file.destination + req.file.filename;
+
     var uploadInfo = {
       destination: req.file.destination,
       filename: req.file.filename,

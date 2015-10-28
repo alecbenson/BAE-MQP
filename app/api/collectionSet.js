@@ -22,7 +22,7 @@ CollectionSet.prototype.add = function(collectionName) {
   }
   this.makeCollectionDirs(sanitizedName);
   var sourcespath = this.dataDir + sanitizedName + this.sourcesDir;
-  var modelpath = this.dataDir + this.modelDir;
+  var modelpath = this.dataDir + collectionName + this.modelDir;
   var newCollection = new Collection(sourcespath, modelpath, sanitizedName, []);
   this.collections[sanitizedName] = newCollection;
   return newCollection;
@@ -67,7 +67,6 @@ CollectionSet.prototype.init = function() {
   for (var index in collectionNames) {
     var name = collectionNames[index];
     var collection = Collection.get(this.dataDir, this.modelDir, name, this.sourcesDir);
-    console.log(collection);
     this.collections[name] = collection;
   }
 };

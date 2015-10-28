@@ -5,18 +5,22 @@ function Collection(sourcespath, modelpath, name, sources) {
   this._modelpath = modelpath;
   this._name = name;
   this._sources = sources;
+  this._model = undefined;
 }
 
 Object.defineProperties(Collection.prototype, {
   'model': {
     get: function() {
       try {
-        fullPath = this.modelpath + "model.gltf";
+        var fullPath = this.modelpath + "model.gltf";
         stats = fs.lstatSync(fullPath);
         return fullPath;
       } catch (e) {
         return undefined;
       }
+    },
+    set: function(model) {
+      this._model = model;
     }
   },
   'sourcespath': {
