@@ -8,7 +8,7 @@
   var url = require('url');
   var request = require('request');
 
-  var collections = require('./api/collectionSet');
+  var routes = require('./api/routes');
 
   var yargs = require('yargs').options({
     'port': {
@@ -48,7 +48,7 @@
   });
 
   var app = express();
-  app.use('/collections', collections);
+  app.use('/collections', routes);
   app.use(compression());
   app.use(express.static(__dirname));
 

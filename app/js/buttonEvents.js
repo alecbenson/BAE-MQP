@@ -37,11 +37,21 @@ function bindDeleteSourceButton() {
 }
 
 /**
- * binds a .btn-upload click to the uploadFile method
+ * binds a .btn-upload-data click to the uploadFile method
  */
-function bindUploadButton() {
-  $(document).on("click", ".btn-upload", function(event) {
+function bindUploadDataButton() {
+  $(document).on("click", ".btn-upload-data", function(event) {
     uploadCollectionSource(event.target);
+    return false;
+  });
+}
+
+/**
+ * binds a .btn-upload-data click to the uploadFile method
+ */
+function bindUploadModelButton() {
+  $(document).on("click", ".btn-upload-model", function(event) {
+    uploadCollectionModel(event.target);
     return false;
   });
 }

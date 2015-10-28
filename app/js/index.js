@@ -13,8 +13,8 @@ $(function() {
   bindCancelButton();
   bindNewCollectionButton();
   bindSubmitCollectionButton();
-  bindUploadButton();
-
+  bindUploadDataButton();
+  bindUploadModelButton();
 });
 
 /**
@@ -65,7 +65,7 @@ function addCollectionData(collectionName, sourceName, sourcespath) {
 function uploadCollectionSource(target) {
   var parentForm = $(target).closest('form');
   $(parentForm).ajaxSubmit({
-    url: "/collections/upload/",
+    url: "/collections/upload/data",
     type: "POST",
     dataType: "JSON",
     success: function(data, status) {
@@ -74,6 +74,32 @@ function uploadCollectionSource(target) {
       var destination = data.file.destination;
       addCollectionData(collectionName, sourceName, destination);
       renderCollectionSources(data.context);
+    },
+    error: function(xhr, desc, err) {}
+  });
+}
+
+/**
+ * Uploads a file to the server
+ * @param target - an object close to the submission form (typically the button).
+ */
+function uploadCollectionModel(target) {
+  var parentForm = $(target).closest('form');
+  $(parentForm).ajaxSubmit({
+    url: "/collections/upload/model",
+    type: "POST",
+    dataType: "JSON",
+    success: function(data, status) {
+      var destination = data.file.destination;
+      var name = data.file.filename;
+      var path = destination  + name;
+
+      collection = collections[data.collectionName];
+      for (var i in collection) {
+        var dataSource = collection[i];
+        dataSource.setTrackModel(path);
+      }
+
     },
     error: function(xhr, desc, err) {}
   });
