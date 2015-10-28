@@ -44,14 +44,13 @@ function getCollections() {
 function loadCollection(context) {
   $.each(context.sources, function(index, sourceName) {
     var collectionName = context.name;
-    var destination = context.path;
-    addCollectionData(collectionName, sourceName, destination);
+    addCollectionData(collectionName, sourceName, context.sourcespath);
   });
 }
 
-function addCollectionData(collectionName, sourceName, destination) {
+function addCollectionData(collectionName, sourceName, sourcespath) {
   var dataSource = new TrackDataSource();
-  dataSource.loadUrl(destination + sourceName);
+  dataSource.loadUrl(sourcespath + sourceName);
 
   if (collections[collectionName] === undefined) {
     collections[collectionName] = {};

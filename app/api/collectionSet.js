@@ -12,6 +12,7 @@ function CollectionSet(collections) {
   this.collections = {};
   this.dataDir = "./data/";
   this.sourcesDir = "/sources/";
+  this.modelDir = "/model/";
 }
 
 /**
@@ -24,9 +25,10 @@ CollectionSet.prototype.add = function(collectionName) {
   if(sanitizedName === ""){
     return undefined;
   }
-  this.makeCollectionDir(sanitizedName);
-  var path = this.dataDir + sanitizedName + this.sourcesDir;
-  var newCollection = new Collection(path, sanitizedName, []);
+  this.makeCollectionDirs(sanitizedName);
+  var sourcespath = this.dataDir + sanitizedName + this.sourcesDir;
+  var modelpath = this.dataDir + this.modelpath;
+  var newCollection = new Collection(sourcespath, modelpath, sanitizedName, []);
   this.collections[sanitizedName] = newCollection;
   return newCollection;
 };
@@ -69,7 +71,7 @@ CollectionSet.prototype.init = function() {
   collectionNames = fs.readdirSync(this.dataDir);
   for (var index in collectionNames) {
     var name = collectionNames[index];
-    var collection = Collection.get(this.dataDir, name, this.sourcesDir);
+    var collection = Collection.get(this.dataDir, this.modelDir, name, this.sourcesDir);
     this.collections[name] = collection;
   }
 };
@@ -94,9 +96,34 @@ CollectionSet.prototype.checkDataDir = function() {
 *Creates all of the directories for a collection if they do not exist
 * @param collectionName - the name of the collection to create directories for
 */
-CollectionSet.prototype.makeCollectionDir = function(collectionName) {
-  collectionPath = this.dataDir + collectionName + this.sourcesDir;
-  fs.mkdir(collectionPath, 0777, true, function(err) {
+CollectionSet.prototype.makeCollectionDirs = function(collectionName) {
+  //Create the sources directory for the collection
+  this.makeSourcesDir(collectionName);
+  this.makeModelDir(collectionName);
+};
+
+/**
+*Creates the sources directory for a collection if it does not exist
+* @param collectionName - the name of the collection to create directories for
+*/
+CollectionSet.prototype.makeSourcesDir = function(collectionName) {
+  //Create the sources directory for the collection
+  sourcesDir = this.dataDir + collectionName + this.sourcesDir;
+  fs.mkdir(sourcesDir, 0777, true, function(err) {
+    if (err) {
+      console.log(err);
+    }
+  });
+};
+
+/**
+*Creates the model directory for a collection if it does not exist
+* @param collectionName - the name of the collection to create directories for
+*/
+CollectionSet.prototype.makeModelDir = function(collectionName) {
+  //Create the model directory for the collection
+  modelDir = this.dataDir + collectionName + this.modelDir;
+  fs.mkdir(modelDir, 0777, true, function(err) {
     if (err) {
       console.log(err);
     }
@@ -235,7 +262,6 @@ router.post('/upload', function(req, res) {
       res.status(500).send("No file specified.");
       return;
     }
-    console.log(res);
     var collectionName = req.body.collectionName;
     var collection = collectionSet.get(collectionName);
 
