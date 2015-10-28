@@ -17,6 +17,7 @@ function renderAllCollections(collections) {
 
 function renderCollection(context) {
   //Append the template to the div
+  console.log(context);
   getTemplateHTML('dataCollection').done(function(data) {
     var templated = applyTemplate(data, context);
     var target = $(templated).prependTo(dataDiv);
@@ -42,6 +43,7 @@ function createNewCollection(target) {
     type: "POST",
     success: function(data, status) {
       //Update the list of collections in the sidebar
+      console.log(data);
       collections[data.name] = {};
       renderCollection(data);
       $(parentForm).remove();

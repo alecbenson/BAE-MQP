@@ -2,18 +2,19 @@
 
   <!-- Panel heading !-->
   <div class="panel-heading clearfix">
-    {{> panelSettings}}
     <span data-toggle="collapse" data-target=".{{name}}">
-      {{name}}
+      <h4>{{name}}
+        <a class="btn btn-sm btn-danger btn-delete pull-right" id="{{name}}">
+          <i class="fa fa-trash-o"></i>
+        </a>
+      </h4>
     </span>
   </div>
 
   <!-- Panel contents !-->
   <div class="panel-collapse collapse in {{name}}">
     <div class="panel-body">
-      {{> sourceList}}
-      {{> sourceUpload}}
-      {{> modelUpload}}
+      {{> sourceList}} {{> sourceUpload}} {{> modelUpload}}
     </div>
   </div>
 </div>

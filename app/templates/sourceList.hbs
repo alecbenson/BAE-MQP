@@ -1,5 +1,5 @@
 <div id="sourceList-{{name}}">
-  <h4>Data within this collection:</h4>
+  <h5>Data within this collection:</h5>
   <ul class="list-group">
     {{#unless sources}}
       <li class="list-group-item">
@@ -12,7 +12,7 @@
         <span class="pull-right">
           <input class="btn-visibility" data-size="mini" data-source="{{this}}" data-collection="{{../name}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
           <button type="button" class="btn btn-deleteSource btn-danger btn-xs" data-source="{{this}}" data-collection="{{../name}}">
-            <i class="fa fa-trash"></i>
+            <i class="fa fa-trash-o"></i>
           </button>
         </span>
       </li>
