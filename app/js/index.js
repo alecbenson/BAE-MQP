@@ -5,6 +5,7 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
 
 $(function() {
   registerAllPartials();
+  addAllFilters();
   getCollections();
   bindFileSelectionText();
   bindDeleteButton();
@@ -13,7 +14,7 @@ $(function() {
   bindNewCollectionButton();
   bindSubmitCollectionButton();
   bindUploadButton();
-  addAllFilters();
+
 });
 
 /**

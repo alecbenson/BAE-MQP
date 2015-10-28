@@ -1,0 +1,21 @@
+<!-- Edit collection form !-->
+<form class="changeModel" id="{{name}}">
+  <h4>Upload a 3D track model:</h4>
+  <div class="input-group">
+    <span class="input-group-addon">Model</span>
+    <input type="hidden" name="collectionName" value="{{name}}">
+    <!-- Browse file button !-->
+    <input type="text" class="form-control" readonly>
+    <span class="input-group-btn">
+      <span class="btn btn-default btn-file">
+        <i class="fa fa-folder"></i>
+        <input type="file" name="file">
+      </span>
+    </span>
+    <span class="input-group-btn">
+      <span class="btn btn-default btn-upload">
+        <i class="fa fa-upload"></i>
+      </span>
+    </span>
+  </div>
+</form>

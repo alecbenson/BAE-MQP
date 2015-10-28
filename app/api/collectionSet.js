@@ -14,6 +14,11 @@ function CollectionSet(collections) {
   this.sourcesDir = "/sources/";
 }
 
+/**
+*Creates a new collection and adds it to the set of collections
+* @param collectionName - the name of the collection to create
+* @return the collection object that was created
+*/
 CollectionSet.prototype.add = function(collectionName) {
   var sanitizedName = collectionName.replace(/\W/g, '');
   if(sanitizedName === ""){
@@ -21,25 +26,44 @@ CollectionSet.prototype.add = function(collectionName) {
   }
   this.makeCollectionDir(sanitizedName);
   var path = this.dataDir + sanitizedName + this.sourcesDir;
-  var newCollection = new Collection(path, sanitizedName, {});
+  var newCollection = new Collection(path, sanitizedName, []);
   this.collections[sanitizedName] = newCollection;
   return newCollection;
 };
 
+/**
+*deletes a collection and removes it from the set of collections
+* @param collectionName - the name of the collection to create
+*/
 CollectionSet.prototype.remove = function(collectionName) {
   delete this.collections[collectionName];
   this.deleteCollectionDir(collectionName);
 };
 
+/**
+*Retrieves a collection with the given name
+* @param collectionName - the name of the collection to retrieve
+*/
 CollectionSet.prototype.get = function(collectionName) {
-  var collection = this.collections[collectionName];
-  return collection.update();
+  if(this.contains(collectionName)) {
+    var collection = this.collections[collectionName];
+    return collection.update();
+  }
+  return undefined;
 };
 
+/**
+*Creates a new collection and adds it to the set of collections
+* @param collectionName - the name of the collection to create
+* @return the collection object that was created
+*/
 CollectionSet.prototype.contains = function(collectionName) {
   return (collectionName in this.collections);
 };
 
+/**
+* Run at server startup - populates the list of collections
+*/
 CollectionSet.prototype.init = function() {
   this.checkDataDir();
   collectionNames = fs.readdirSync(this.dataDir);
@@ -50,7 +74,11 @@ CollectionSet.prototype.init = function() {
   }
 };
 
-CollectionSet.prototype.checkDataDir = function(name) {
+/**
+* Ensures that the data directory exists
+* If it does not, it is created
+*/
+CollectionSet.prototype.checkDataDir = function() {
   try {
     stats = fs.lstatSync(this.dataDir);
     if (!stats.isDirectory()) {
@@ -62,8 +90,12 @@ CollectionSet.prototype.checkDataDir = function(name) {
   }
 };
 
-CollectionSet.prototype.makeCollectionDir = function(name) {
-  collectionPath = this.dataDir + name + this.sourcesDir;
+/**
+*Creates all of the directories for a collection if they do not exist
+* @param collectionName - the name of the collection to create directories for
+*/
+CollectionSet.prototype.makeCollectionDir = function(collectionName) {
+  collectionPath = this.dataDir + collectionName + this.sourcesDir;
   fs.mkdir(collectionPath, 0777, true, function(err) {
     if (err) {
       console.log(err);
@@ -71,8 +103,13 @@ CollectionSet.prototype.makeCollectionDir = function(name) {
   });
 };
 
-CollectionSet.prototype.deleteCollectionDir = function(name) {
-  collectionPath = this.dataDir + name;
+/**
+* Deletes the collection directories that belong to the
+* collection with the given name
+* @param collectionName - the name of the collection to delete directories for
+*/
+CollectionSet.prototype.deleteCollectionDir = function(collectionName) {
+  collectionPath = this.dataDir + collectionName;
   rmdir(collectionPath, function(err) {
     if (err) {
       console.log(err);
@@ -80,6 +117,7 @@ CollectionSet.prototype.deleteCollectionDir = function(name) {
   });
 };
 
+//Create a new set of collections and populate the list
 var collectionSet = new CollectionSet();
 collectionSet.init();
 
@@ -163,7 +201,16 @@ var storage = multer.diskStorage({
   },
   filename: function(req, file, cb) {
     var parsed = file.originalname.replace(/\.[^/.]+$/, "");
-    cb(null, parsed + '-' + Date.now());
+
+    //Increment name if duplicates exist
+    var count = 0;
+    var collectionName = req.body.collectionName;
+    var dest = collectionSet.dataDir + collectionName + collectionSet.sourcesDir;
+    var finalName = parsed;
+    while( fs.existsSync(dest + finalName) ) {
+      finalName = path.join(parsed + "_" + (++count));
+    }
+    cb(null, finalName);
   }
 });
 
@@ -188,6 +235,7 @@ router.post('/upload', function(req, res) {
       res.status(500).send("No file specified.");
       return;
     }
+    console.log(res);
     var collectionName = req.body.collectionName;
     var collection = collectionSet.get(collectionName);
 
