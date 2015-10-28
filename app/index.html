@@ -34,9 +34,14 @@
   <link rel="stylesheet" href="/css/font-awesome.min.css">
 
   <style>
-    @import url(node_modules/jquery-ui/jquery-us.css);
-    @import url(css/d3chart.css);
-    @import url(node_modules/Cesium/Build/Cesium/Widgets/widgets.css);
+    @import url(node_modules/jquery-ui/themes/base/jquery-ui.css);
+    @import url(d3cesium/d3chart.css);
+    @import url(cesium/Build/Cesium/Widgets/widgets.css);
+    body {
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+    }
   </style>
 
   </head>
@@ -47,9 +52,6 @@
     <script type="text/javascript" src="js/chart.js"></script>
     <script type="text/javascript" src="js/globe.js"></script>
 
-    </script>>
-
-    </script>
     <div id="nav-pane">
       <div class="nav-section">
         <div class="page-header">
@@ -98,6 +100,5 @@
     <script src="/js/buttonEvents.js"></script>
     <script src="/js/collection.js"></script>
     <script src="/js/index.js"></script>
-
   </body>
 </html>
