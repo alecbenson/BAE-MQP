@@ -3,7 +3,7 @@
  */
 function bindDeleteButton() {
   $(document).on("click", ".btn-delete", function() {
-    deleteData($(this).attr('id'));
+    deleteCollection($(this).attr('id'));
   });
 }
 
@@ -26,12 +26,32 @@ function bindNewCollectionButton() {
 }
 
 /**
- * binds a .btn-upload click to the uploadFile method
+ * binds a .btn-newCollection click to the renderNewCollection method
  */
-function bindUploadButton() {
-  $(document).on("click", ".btn-upload", function(event) {
-    uploadData(event.target);
-    console.log("clicked");
+function bindDeleteSourceButton() {
+  $(document).on("click", ".btn-deleteSource", function() {
+    var sourceName = $(this).attr('data-source');
+    var collectionName = $(this).attr('data-collection');
+    deleteSource(collectionName, sourceName);
+  });
+}
+
+/**
+ * binds a .btn-upload-data click to the uploadFile method
+ */
+function bindUploadDataButton() {
+  $(document).on("click", ".btn-upload-data", function(event) {
+    uploadCollectionSource(event.target);
+    return false;
+  });
+}
+
+/**
+ * binds a .btn-upload-data click to the uploadFile method
+ */
+function bindUploadModelButton() {
+  $(document).on("click", ".btn-upload-model", function(event) {
+    uploadCollectionModel(event.target);
     return false;
   });
 }
@@ -41,8 +61,8 @@ function bindUploadButton() {
  */
 function bindSubmitCollectionButton() {
   $(document).on("click", ".btn-submitCollection", function(event) {
-    console.log("Submitted");
     createNewCollection(event.target);
+    event.preventDefault();
   });
 }
 
@@ -53,12 +73,15 @@ function bindSubmitCollectionButton() {
  */
 function bindDataVisibilityToggle(checkbox) {
   $(checkbox).on('change', function() {
-    var id = $(this).attr('id');
-    var source = collections[id];
-    if (source === undefined) {
+    var sourceName = $(this).attr('data-source');
+    var collectionName = $(this).attr('data-collection');
+
+    var sources = collections[collectionName];
+    var dataSource = sources[sourceName];
+    if (dataSource === undefined) {
       return;
     }
-    var entityList = source.entities.values;
+    var entityList = dataSource.entities.values;
     for (var i = 0; i < entityList.length; i++) {
       currentState = entityList[i].show;
       entityList[i].show = !currentState;

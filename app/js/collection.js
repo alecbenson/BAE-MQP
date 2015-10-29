@@ -1,48 +1,65 @@
-var collections = [];
-var dataDiv = "#datasources";
+var collections = {};
+var dataDiv = "#collections";
 
 /**
  * given a list of all datasource boxes, render them in the side bar
  * @param files - an array of data source files to render panels for
  */
-function renderAllCollections(files) {
+function renderAllCollections(collections) {
   $(dataDiv).empty();
-
   //Loop through each file to render
-  $(files).each(function(index, file) {
+  for (var key in collections) {
+    var collection = collections[key];
     //Append the template to the div
-    var context = {
-      "file": file
-    };
-    renderCollection(context);
-    loadCollectionIfMissing(file);
-  });
+    renderCollection(collection);
+  }
 }
 
 function renderCollection(context) {
   //Append the template to the div
   getTemplateHTML('dataCollection').done(function(data) {
     var templated = applyTemplate(data, context);
-    var target = $(templated).appendTo(dataDiv);
-    //Bootstrap toggle the checckboxes
-    var checkbox = $(target).find('input:checkbox');
-    checkbox.bootstrapToggle();
-    bindDataVisibilityToggle(checkbox);
+    var target = $(templated).prependTo(dataDiv);
+    renderCollectionSources(context);
   });
+  loadCollection(context);
 }
 
 function renderNewCollectionForm() {
   getTemplateHTML('newCollection').done(function(data) {
-    $(data).appendTo(dataDiv);
+    $(data).prependTo(dataDiv);
   });
 }
 
 /**
- * If the collection has not been rendered in cesium, render it. Otherwise do nothing
- * @param file - the filename of the collection to load
+ * Creates a new collection on the server
+ * @param target - an object close to the submission form (typically the button).
  */
-function loadCollectionIfMissing(file) {
-  if ((file in collections) === false) {
-    loadJSONFile(file);
-  }
+function createNewCollection(target) {
+  var parentForm = $(target).closest('form');
+  $(parentForm).ajaxSubmit({
+    url: "/collections/",
+    type: "POST",
+    success: function(data, status) {
+      //Update the list of collections in the sidebar
+      collections[data.name] = {};
+      renderCollection(data);
+      $(parentForm).remove();
+    },
+    error: function(xhr, desc, err) {
+      var error = $(parentForm).find('.errorMessage');
+      $(error).show().text(xhr.responseText);
+    }
+  });
+}
+
+function renderCollectionSources(context) {
+  getTemplateHTML('sourceList').done(function(data) {
+    result = applyTemplate(data, context);
+    var list = "#sourceList" + "-" + context.name;
+    $(list).html(result);
+    var checkbox = $(list + " ul li :checkbox");
+    checkbox.bootstrapToggle();
+    bindDataVisibilityToggle(checkbox);
+  });
 }

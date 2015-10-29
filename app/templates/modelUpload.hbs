@@ -1,17 +1,12 @@
 <!-- Edit collection form !-->
-<form class="addSource" id="{{name}}">
-  <h5>Upload new data to this collection:</h5>
+<form class="changeModel" id="{{name}}">
+  <h5>Upload a 3D track model:</h5>
+
   <div class="input-group">
-    <span class="input-group-addon">
-      <!-- Data type select box !-->
-      <select class="selectmenu" id="sourcetype">
-        <option value="file">File</option>
-        <option value="stream">Stream</option>
-      </select>
-    </span>
+    <span class="input-group-addon">Model</span>
     <input type="hidden" name="collectionName" value="{{name}}">
     <!-- Browse file button !-->
-    <input type="text" class="form-control" readonly>
+    <input type="text" class="form-control" value="{{model}}" readonly>
     <span class="input-group-btn">
       <span class="btn btn-default btn-file">
         <i class="fa fa-folder"></i>
@@ -19,7 +14,7 @@
       </span>
     </span>
     <span class="input-group-btn">
-      <span class="btn btn-default btn-upload-data">
+      <span class="btn btn-default btn-upload-model">
         <i class="fa fa-upload"></i>
       </span>
     </span>

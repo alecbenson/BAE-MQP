@@ -3,8 +3,10 @@
  **/
 function registerAllPartials() {
   registerExternalPartial("sourceUpload");
-  registerExternalPartial("panelSettings");
+  registerExternalPartial("modelUpload");
   registerExternalPartial("sourceList");
+  registerExternalPartial("datepicker");
+  registerExternalPartial("numberpicker");
 }
 
 /**

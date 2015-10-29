@@ -1,0 +1,16 @@
+<div class="panel panel-default">
+  <!-- Panel heading !-->
+  <div class="panel-heading clearfix">
+    <span data-toggle="collapse" data-target=".filter-time-body">Time Filter</span>
+    <span class="pull-right filter-time-enabled">
+      <input class="btn-visibility" data-size="mini" type="checkbox" checked data-toggle="toggle" data-on="On" data-off="Off">
+    </span>
+  </div>
+  <!-- Panel contents !-->
+  <div class="panel-collapse collapse in filter-time-body">
+    <div class="panel-body">
+        {{> datepicker label='Start Time' id='filter-time-start'}}
+        {{> datepicker label='Stop Time' id='filter-time-stop'}}
+    </div>
+  </div>
+</div>

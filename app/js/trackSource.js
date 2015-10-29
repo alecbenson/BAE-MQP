@@ -3,9 +3,9 @@ var TrackDataSource = function(name) {
   this._name = name;
   this._entityCollection = new Cesium.EntityCollection();
   this._clock = new Cesium.DataSourceClock();
-  this._clock.startTime = Cesium.JulianDate.fromIso8601("2000-01-01");
-  this._clock.currentTime = Cesium.JulianDate.fromIso8601("2000-01-02");
-  this._clock.stopTime = Cesium.JulianDate.fromIso8601("2000-01-03");
+  this._clock.startTime = viewer.clock.startTime;
+  this._clock.currentTime = viewer.clock.currentTime;
+  this._clock.stopTime = viewer.clock.stopTime;
   this._clock.clockRange = Cesium.ClockRange.LOOP_STOP;
   this._clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER;
   this._clock.multiplier = 1;
@@ -15,6 +15,7 @@ var TrackDataSource = function(name) {
   this._loading = new Cesium.Event();
   this._entityCollection = new Cesium.EntityCollection();
   this._heightScale = 100;
+  this._trackNode = undefined;
 };
 
 Object.defineProperties(TrackDataSource.prototype, {
@@ -78,7 +79,6 @@ TrackDataSource.prototype.loadUrl = function(url) {
   var name = Cesium.getFilenameFromUri(url);
 
   if (this._name !== name) {
-
     this._name = name;
     this._changed.raiseEvent(this);
   }
@@ -88,12 +88,10 @@ TrackDataSource.prototype.loadUrl = function(url) {
     return that.load(json, url);
 
   }).otherwise(function(error) {
-
     console.log(error);
     this._setLoading(false);
     that._error.raiseEvent(that, error);
     return Cesium.when.reject(error);
-
   });
 };
 
@@ -141,7 +139,9 @@ TrackDataSource.prototype._addSample = function(property, data) {
       color: Cesium.Color.BLUE,
       outlineColor: Cesium.Color.CYAN,
       outlineWidth: 2,
-    }
+    },
+    time: data.time,
+    ele: data.ele
   };
   //Set the name and ID of the entity
   if (data.id !== undefined) {
@@ -158,31 +158,27 @@ TrackDataSource.prototype._addSample = function(property, data) {
  * @param vertices - the set of vertices to scan through
  */
 TrackDataSource.prototype.setTimeWindow = function(vertices) {
-  currentStart = undefined;
-  currentStop = undefined;
-
   if (vertices === undefined) {
     return;
   }
 
   for (var i = 0; i < vertices.length; i++) {
     var time = Cesium.JulianDate.fromIso8601(vertices[i].time);
-    if (currentStart === undefined) {
-      currentStart = time;
+    if (viewer.clock.earliest === undefined) {
+      viewer.clock.earliest = time;
     }
-    if (currentStop === undefined) {
-      currentStop = time;
+    if (viewer.clock.latest === undefined) {
+      viewer.clock.latest = time;
     }
-    if (Cesium.JulianDate.compare(currentStart, time) > 0) {
-      currentStart = time;
+    if (Cesium.JulianDate.compare(viewer.clock.earliest, time) > 0) {
+      viewer.clock.earliest = time;
     }
-    if (Cesium.JulianDate.compare(currentStart, time) < 0) {
-      currentStop = time;
+    if (Cesium.JulianDate.compare(viewer.clock.latest, time) < 0) {
+      viewer.clock.latest = time;
     }
   }
-  this._clock.startTime = currentStart;
-  this._clock.stopTime = currentStop;
-  this._clock.clockRange = Cesium.ClockRange.LOOP_STOP;
+  this._clock.startTime = viewer.clock.earliest;
+  this._clock.stopTime = viewer.clock.latest;
 };
 
 /**
@@ -271,6 +267,7 @@ TrackDataSource.prototype.createTrackNode = function(position) {
     interpolationDegree: 5,
     interpolationAlgorithm: Cesium.LagrangePolynomialApproximation
   });
+  this._trackNode = entity;
 };
 
 /**
@@ -283,3 +280,71 @@ TrackDataSource.prototype._setLoading = function(isLoading) {
     this._loading.raiseEvent(this, isLoading);
   }
 };
+
+/**
+ * Sets the loading status of the data source
+ * @param isLoading {bool}
+ */
+TrackDataSource.prototype.setTrackModel = function(location) {
+  node = this._trackNode;
+  if (node !== undefined) {
+    node.point.show = false;
+    node.model = {
+      uri: location,
+      minimumPixelSize: 32
+    };
+    node.orientation = this.orientTrackNode();
+  }
+};
+
+TrackDataSource.prototype.orientTrackNode = function() {
+  var node = this._trackNode;
+  return new Cesium.CallbackProperty(function(time, result) {
+    var currentPos = node.position.getValue(time);
+    var nextSecond = Cesium.JulianDate.addSeconds(time, 1, new Cesium.JulianDate());
+    var nextPos = node.position.getValue(nextSecond);
+
+    if (!Cesium.defined(currentPos) || !Cesium.defined(nextPos)) {
+      return result;
+    }
+
+    var normal = Cesium.Ellipsoid.WGS84.geodeticSurfaceNormal(currentPos);
+    var direction = Cesium.Cartesian3.subtract(nextPos, currentPos, new Cesium.Cartesian3());
+    Cesium.Cartesian3.normalize(direction, direction);
+    var right = Cesium.Cartesian3.cross(direction, normal, new Cesium.Cartesian3());
+    var up = Cesium.Cartesian3.cross(right, direction, new Cesium.Cartesian3());
+    Cesium.Cartesian3.cross(direction, up, right);
+
+    var basis = new Cesium.Matrix3();
+    Cesium.Matrix3.setColumn(basis, 1, Cesium.Cartesian3.negate(right, right), basis);
+    Cesium.Matrix3.setColumn(basis, 0, direction, basis);
+    Cesium.Matrix3.setColumn(basis, 2, up, basis);
+
+    return Cesium.Quaternion.fromRotationMatrix(basis);
+  }, false);
+};
+
+/**
+ * Sets the loading status of the data source
+ * @param isLoading {bool}
+ */
+TrackDataSource.prototype.highlightOnCondition = function(callback) {
+  var entities = this._entityCollection.values;
+  for (var i = 0; i < entities.length; i++) {
+    var entity = entities[i];
+    if (entity.point !== undefined) {
+      if (callback(entity) === true) {
+        entity.point.outlineColor = Cesium.Color.YELLOW;
+        entity.point.outlineWidth = 5;
+      } else {
+        entity.point.color = Cesium.Color.BLUE;
+        entity.point.outlineColor = Cesium.Color.CYAN;
+        entity.point.outlineWidth = 2;
+      }
+    }
+  }
+};
+
+function compareTime(moment, julianDate) {
+
+}

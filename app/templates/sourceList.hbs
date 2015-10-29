@@ -1,17 +1,20 @@
-<div id="sourcelist">
-  <h4>Data within this collection:</h4>
+<div id="sourceList-{{name}}">
+  <h5>Data within this collection:</h5>
   <ul class="list-group">
-    {{#unless source}}
+    {{#unless sources}}
       <li class="list-group-item">
-        No sources have been added to this collection yet.
+        This collection does not contain any data.
       </li>
     {{/unless}}
-    {{#each source}}
-      <li class="list-group-item">
+    {{#each sources}}
+      <li class="list-group-item source-{{this}}">
         {{this}}
-        <button type="button" class="btn btn-deleteSource btn-danger pull-left">
-          <i class="fa fa-trash"></i>
-        </button>
+        <span class="pull-right">
+          <input class="btn-visibility" data-size="mini" data-source="{{this}}" data-collection="{{../name}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
+          <button type="button" class="btn btn-deleteSource btn-danger btn-xs" data-source="{{this}}" data-collection="{{../name}}">
+            <i class="fa fa-trash-o"></i>
+          </button>
+        </span>
       </li>
     {{/each}}
   </ul>

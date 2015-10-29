@@ -1,5 +1,6 @@
-<div class="panel panel-default newCollection">
-  <form>
+<form>
+  <div class="panel panel-default newCollection">
+
     <!-- Panel contents !-->
     <div class="panel-body">
       <input type="text" class="form-control" name="collectionName" placeholder="Enter a name for the new collection...">
@@ -7,9 +8,10 @@
         <i class="fa fa-remove pull-left"></i>Cancel
       </button>
 
-      <button type="button" class="btn btn-submitCollection btn-success pull-right">
+      <button type="submit" class="btn btn-submitCollection btn-success pull-right">
         <i class="fa fa-check pull-left"></i>Create
       </button>
     </div>
-  </form>
-</div>
+    <div class="errorMessage alert alert-danger collapse" role="alert">...</div>
+  </div>
+</form>

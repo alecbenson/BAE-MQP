@@ -8,8 +8,7 @@
   var url = require('url');
   var request = require('request');
 
-  var upload = require('./api/upload');
-  var datasources = require('./api/datasources');
+  var routes = require('./api/routes');
 
   var yargs = require('yargs').options({
     'port': {
@@ -49,8 +48,7 @@
   });
 
   var app = express();
-  app.use('/upload', upload);
-  app.use('/datasources', datasources);
+  app.use('/collections', routes);
   app.use(compression());
   app.use(express.static(__dirname));
 
