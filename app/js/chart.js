@@ -160,7 +160,9 @@
                      });
           });
     }
+    console.log(collections);
     for(collection in collections) {
+        console.log(collection);
         for(source in collection) {
             console.log(source);
         }
