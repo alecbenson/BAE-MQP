@@ -39,6 +39,9 @@ h5 {
   #ele-slider {
     margin: 30px;
   }
+  .noUi-connect {
+    background: #337ab7;
+  }
   .noUi-tooltip {
     width: 200%;
   }

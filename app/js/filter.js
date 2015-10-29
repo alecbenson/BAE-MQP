@@ -27,7 +27,7 @@ function renderEleFilter() {
     var slider = document.getElementById('ele-slider');
     noUiSlider.create(slider, {
       start: [2000, 8000],
-      connect: false,
+      connect: true,
       tooltips: true,
       range: {
         'min': 0,
