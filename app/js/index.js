@@ -2,6 +2,11 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
   animation: true,
   timeline: true
 });
+var terrainProvider = new Cesium.CesiumTerrainProvider({
+  url: '//assets.agi.com/stk-terrain/world',
+  requestWaterMask: true
+});
+viewer.terrainProvider = terrainProvider;
 
 $(function() {
   registerAllPartials();

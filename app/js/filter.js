@@ -23,8 +23,26 @@ function renderEleFilter() {
   getTemplateHTML('filter-ele').done(function(data) {
     var templated = applyTemplate(data, undefined);
     var target = $(templated).prependTo(filterDiv);
-    $("[name='quantity']").on('change', function() {
-      applyElevationFilter();
+
+    var slider = document.getElementById('ele-slider');
+    noUiSlider.create(slider, {
+      start: [2000, 8000],
+      connect: true,
+      tooltips: true,
+      range: {
+        'min': 0,
+        'max': 10000
+      },
+      format: wNumb({
+        decimals: 0,
+        postfix: 'm'
+      })
+    });
+    slider.noUiSlider.on('set', function() {
+      var vals = slider.noUiSlider.get();
+      var start = parseInt(vals[0]);
+      var stop = parseInt(vals[1]);
+      applyElevationFilter(start, stop);
     });
     $('.filter-ele-enabled :checkbox').bootstrapToggle();
   });
@@ -40,10 +58,7 @@ function applyTimeFilter() {
   }
 }
 
-function applyElevationFilter() {
-  var start = $("#filter-ele-start").val();
-  var stop = $('#filter-ele-stop').val();
-
+function applyElevationFilter(start, stop) {
   for (var i in collections) {
     var collection = collections[i];
     forEachDataSource(collection, inElevationWindow(start, stop));
@@ -61,7 +76,7 @@ function inTimeWindow(start, stop) {
 function inElevationWindow(start, stop) {
   return function(entity) {
     var ele = entity.ele;
-    return ele >= start && ele <= stop;
+    return ((ele >= start) && (ele <= stop));
   };
 }
 
