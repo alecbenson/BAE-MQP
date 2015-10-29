@@ -127,9 +127,10 @@ TrackDataSource.prototype._addSample = function(property, data) {
       color: Cesium.Color.BLUE,
       outlineColor: Cesium.Color.CYAN,
       outlineWidth: 2,
+      translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0)
     },
     time: data.time,
-    ele: data.ele
+    ele: parseInt(data.ele)
   };
   //Set the name and ID of the entity
   if (data.id !== undefined) {

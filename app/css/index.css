@@ -36,6 +36,12 @@ h5 {
     border-right: 2px solid #111;
     overflow: auto;
   }
+  #ele-slider {
+    margin: 30px;
+  }
+  .noUi-tooltip {
+    width: 200%;
+  }
   #cesiumContainer {
     position: absolute;
     top: 0px;

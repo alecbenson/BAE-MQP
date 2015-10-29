@@ -153,7 +153,7 @@ var modelstorage = multer.diskStorage({
 var modelhandler = multer({
   storage: modelstorage,
   limits: {
-    fileSize: 1024 * 1024 * 5
+    fileSize: 1024 * 1024 * 10
   },
 }).single('file');
 
