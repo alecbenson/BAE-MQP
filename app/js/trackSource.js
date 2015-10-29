@@ -3,9 +3,9 @@ var TrackDataSource = function(name) {
   this._name = name;
   this._entityCollection = new Cesium.EntityCollection();
   this._clock = new Cesium.DataSourceClock();
-  this._clock.startTime = Cesium.JulianDate.fromIso8601("2000-01-01");
-  this._clock.currentTime = Cesium.JulianDate.fromIso8601("2000-01-02");
-  this._clock.stopTime = Cesium.JulianDate.fromIso8601("2000-01-03");
+  this._clock.startTime = viewer.clock.startTime;
+  this._clock.currentTime = viewer.clock.currentTime;
+  this._clock.stopTime = viewer.clock.stopTime;
   this._clock.clockRange = Cesium.ClockRange.LOOP_STOP;
   this._clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER;
   this._clock.multiplier = 1;
@@ -158,31 +158,27 @@ TrackDataSource.prototype._addSample = function(property, data) {
  * @param vertices - the set of vertices to scan through
  */
 TrackDataSource.prototype.setTimeWindow = function(vertices) {
-  currentStart = undefined;
-  currentStop = undefined;
-
   if (vertices === undefined) {
     return;
   }
 
   for (var i = 0; i < vertices.length; i++) {
     var time = Cesium.JulianDate.fromIso8601(vertices[i].time);
-    if (currentStart === undefined) {
-      currentStart = time;
+    if (viewer.clock.earliest === undefined) {
+      viewer.clock.earliest = time;
     }
-    if (currentStop === undefined) {
-      currentStop = time;
+    if (viewer.clock.latest === undefined) {
+      viewer.clock.latest = time;
     }
-    if (Cesium.JulianDate.compare(currentStart, time) > 0) {
-      currentStart = time;
+    if (Cesium.JulianDate.compare(viewer.clock.earliest, time) > 0) {
+      viewer.clock.earliest = time;
     }
-    if (Cesium.JulianDate.compare(currentStart, time) < 0) {
-      currentStop = time;
+    if (Cesium.JulianDate.compare(viewer.clock.latest, time) < 0) {
+      viewer.clock.latest = time;
     }
   }
-  this._clock.startTime = currentStart;
-  this._clock.stopTime = currentStop;
-  this._clock.clockRange = Cesium.ClockRange.LOOP_STOP;
+  this._clock.startTime = viewer.clock.earliest;
+  this._clock.stopTime = viewer.clock.latest;
 };
 
 /**
