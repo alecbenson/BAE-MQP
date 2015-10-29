@@ -160,11 +160,15 @@
                      });
           });
     }
+ 
+
+    setTimeout(function() {
     console.log(collections);
-    for(collection in collections) {
+    for(var collection in collections) {
         console.log(collection);
-        for(source in collection) {
+        for(var source in collection) {
             console.log(source);
         }
     }
+    }, 10000);
 }());
