@@ -1,4 +1,5 @@
-/*global d3, sharedObject */
+/* global d3, sharedObject */
+
 (function () {
     "use strict";
 
@@ -17,7 +18,7 @@
     // Various scales. These domains make assumptions of data, naturally.
     var xScale = d3.scale.linear().domain([-180, 180]).range([0, width]),
         yScale = d3.scale.linear().domain([-90, 90]).range([height, 0]),
-        radiusScale = d3.scale.sqrt().domain([0, 50000]).range([0, 40]);
+        radiusScale = d3.scale.pow().domain([0, 50000]).range([0, 40]);
         // colorScale = d3.scale.category20c();
 
     // The x & y axes.
@@ -68,96 +69,100 @@
         .text("test title");
 
     // Load the data.
-    d3.json("sample.json", function(vertices) {
+    function load(source) {
 
-      // A bisector since many nation's data is sparsely-defined.
-      var bisect = d3.bisector(function(d) { return d[0]; });
+          // A bisector since many nation's data is sparsely-defined.
+          var bisect = d3.bisector(function(d) { return d[0]; });
 
-      // Positions the dots based on data.
-      function position(dot) {
-        console.log(dot);
-        dot .attr("cx", function(d) { return xScale(x(d)); })
-            .attr("cy", function(d) { return yScale(y(d)); })
-            .attr("r", function(d) { return radiusScale(radius(d)); });
-      }
+          // Positions the dots based on data.
+          function position(dot) {
+            dot .attr("cx", function(d) { return xScale(x(d)); })
+                .attr("cy", function(d) { return yScale(y(d)); })
+                .attr("r", function(d) { return radiusScale(radius(d)); });
+          }
 
-      // Defines a sort order so that the smallest dots are drawn on top.
-      function order(a, b) {
-        return radius(b) - radius(a);
-      }
-      // Interpolates the dataset for the given (fractional) year.
-      function interpolateData() {
-        sharedObject.yearData = vertices.vertices.map(function(d) {
-          return {
-            id: d.id,
-            lat: d.lat,
-            lon: d.lon,
-            ele: d.ele,
-            time: d.time
-          };
-        });
+          // Defines a sort order so that the smallest dots are drawn on top.
+          function order(a, b) {
+            return radius(b) - radius(a);
+          }
+          // Interpolates the dataset for the given (fractional) year.
+          function interpolateData() {
+            sharedObject.yearData = vertices.vertices.map(function(d) {
+                return {
+                    id: d.id,
+                    lat: d.lat,
+                    lon: d.lon,
+                    ele: d.ele,
+                    time: d.time
+                };
+            });
 
-        return sharedObject.yearData;
-      }
+            return sharedObject.yearData;
+          }
 
-      // Add a dot per nation. Initialize the data at 1800, and set the colors.
-      var dot = svg.append("g")
-          .attr("class", "dots")
-        .selectAll(".dot")
-          .data(interpolateData())
-        .enter().append("circle")
-          .attr("class", "dot")
-        //  .style("fill", function(d) { return colorScale(color(d)); })
-          .call(position)
-          .sort(order)
-		  .on("mouseover", function(d) {
-				sharedObject.dispatch.nationMouseover(d);
-		  })
-          .on("click", function(d){
-              sharedObject.flyTo(d);
+          // Add a dot per nation. Initialize the data at 1800, and set the colors.
+          var dot = svg.append("g")
+              .attr("class", "dots")
+            .selectAll(".dot")
+              .data(interpolateData())
+            .enter().append("circle")
+              .attr("class", "dot")
+            //  .style("fill", function(d) { return colorScale(color(d)); })
+              .call(position)
+              .sort(order)
+    		  .on("mouseover", function(d) {
+		    		sharedObject.dispatch.nationMouseover(d);
+	    	  })
+              .on("click", function(d){
+                  sharedObject.flyTo(d);
+              });
+
+          // Add a title.
+          dot.append("title")
+              .text(function(d) { return d.name; });
+
+
+          // Tweens the entire chart by first tweening the year, and then the data.
+          // For the interpolated data, the dots and label are redrawn.
+          function tweenYear() {
+            var year = d3.interpolateNumber(1800, 2009);
+            return function(t) { displayYear(year(t)); };
+          }
+
+          // Updates the display to show the specified year.
+          function displayYear(year) {
+            dot.data(interpolateData(year), key).call(position).sort(order);
+            label.text(Math.round(year));
+          }
+
+          // make displayYear global
+          window.displayYear = displayYear;
+
+          // Finds (and possibly interpolates) the value for the specified year.
+          function interpolateValues(values, year) {
+            var i = bisect.left(values, year, 0, values.length - 1),
+                a = values[i];
+            if (i > 0) {
+              var b = values[i - 1],
+                  t = (year - a[0]) / (b[0] - a[0]);
+              return a[1] * (1 - t) + b[1] * t;
+            }
+            return a[1];
+          }
+
+          sharedObject.dispatch.on("nationMouseover.d3", function(nationObject) {
+              dot.style("fill", function(d) {
+                     if (typeof nationObject !== 'undefined' && d.name === nationObject.name) {
+                         return "#00FF00";
+                     }
+
+                     return colorScale(color(d));
+                     });
           });
-
-      // Add a title.
-      dot.append("title")
-          .text(function(d) { return d.name; });
-
-
-      // Tweens the entire chart by first tweening the year, and then the data.
-      // For the interpolated data, the dots and label are redrawn.
-      function tweenYear() {
-        var year = d3.interpolateNumber(1800, 2009);
-        return function(t) { displayYear(year(t)); };
-      }
-
-      // Updates the display to show the specified year.
-      function displayYear(year) {
-        dot.data(interpolateData(year), key).call(position).sort(order);
-        label.text(Math.round(year));
-      }
-
-      // make displayYear global
-      window.displayYear = displayYear;
-
-      // Finds (and possibly interpolates) the value for the specified year.
-      function interpolateValues(values, year) {
-        var i = bisect.left(values, year, 0, values.length - 1),
-            a = values[i];
-        if (i > 0) {
-          var b = values[i - 1],
-              t = (year - a[0]) / (b[0] - a[0]);
-          return a[1] * (1 - t) + b[1] * t;
+    }
+    for(collection in collections) {
+        for(source in collection) {
+            console.log(source);
         }
-        return a[1];
-      }
-
-      sharedObject.dispatch.on("nationMouseover.d3", function(nationObject) {
-          dot.style("fill", function(d) {
-                 if (typeof nationObject !== 'undefined' && d.name === nationObject.name) {
-                     return "#00FF00";
-                 }
-
-                 return colorScale(color(d));
-                 });
-      });
-    });
+    }
 }());
