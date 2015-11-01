@@ -29,7 +29,7 @@
     var svg = d3.select("#chart").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-      .append("g")
+        .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // Add the x-axis.
@@ -71,22 +71,22 @@
     // Load the data.
     function load(source) {
 
-          // A bisector since many nation's data is sparsely-defined.
-          var bisect = d3.bisector(function(d) { return d[0]; });
+        // A bisector since many nation's data is sparsely-defined.
+        var bisect = d3.bisector(function(d) { return d[0]; });
 
-          // Positions the dots based on data.
-          function position(dot) {
+        // Positions the dots based on data.
+        function position(dot) {
             dot .attr("cx", function(d) { return xScale(x(d)); })
                 .attr("cy", function(d) { return yScale(y(d)); })
                 .attr("r", function(d) { return radiusScale(radius(d)); });
-          }
+        }
 
-          // Defines a sort order so that the smallest dots are drawn on top.
-          function order(a, b) {
+        // Defines a sort order so that the smallest dots are drawn on top.
+        function order(a, b) {
             return radius(b) - radius(a);
-          }
-          // Interpolates the dataset for the given (fractional) year.
-          function interpolateData() {
+        }
+        // Interpolates the dataset for the given (fractional) year.
+        function interpolateData() {
             sharedObject.yearData = vertices.vertices.map(function(d) {
                 return {
                     id: d.id,
@@ -98,77 +98,77 @@
             });
 
             return sharedObject.yearData;
-          }
+        }
 
-          // Add a dot per nation. Initialize the data at 1800, and set the colors.
-          var dot = svg.append("g")
-              .attr("class", "dots")
+        // Add a dot per nation. Initialize the data at 1800, and set the colors.
+        var dot = svg.append("g")
+            .attr("class", "dots")
             .selectAll(".dot")
-              .data(interpolateData())
+            .data(interpolateData())
             .enter().append("circle")
-              .attr("class", "dot")
+            .attr("class", "dot")
             //  .style("fill", function(d) { return colorScale(color(d)); })
-              .call(position)
-              .sort(order)
-    		  .on("mouseover", function(d) {
-		    		sharedObject.dispatch.nationMouseover(d);
-	    	  })
-              .on("click", function(d){
-                  sharedObject.flyTo(d);
-              });
+            .call(position)
+            .sort(order)
+                .on("mouseover", function(d) {
+                        sharedObject.dispatch.nationMouseover(d);
+                })
+            .on("click", function(d){
+                sharedObject.flyTo(d);
+            });
 
-          // Add a title.
-          dot.append("title")
-              .text(function(d) { return d.name; });
+            // Add a title.
+            dot.append("title")
+                .text(function(d) { return d.name; });
 
 
-          // Tweens the entire chart by first tweening the year, and then the data.
-          // For the interpolated data, the dots and label are redrawn.
-          function tweenYear() {
-            var year = d3.interpolateNumber(1800, 2009);
-            return function(t) { displayYear(year(t)); };
-          }
-
-          // Updates the display to show the specified year.
-          function displayYear(year) {
-            dot.data(interpolateData(year), key).call(position).sort(order);
-            label.text(Math.round(year));
-          }
-
-          // make displayYear global
-          window.displayYear = displayYear;
-
-          // Finds (and possibly interpolates) the value for the specified year.
-          function interpolateValues(values, year) {
-            var i = bisect.left(values, year, 0, values.length - 1),
-                a = values[i];
-            if (i > 0) {
-              var b = values[i - 1],
-                  t = (year - a[0]) / (b[0] - a[0]);
-              return a[1] * (1 - t) + b[1] * t;
+            // Tweens the entire chart by first tweening the year, and then the data.
+            // For the interpolated data, the dots and label are redrawn.
+            function tweenYear() {
+                var year = d3.interpolateNumber(1800, 2009);
+                return function(t) { displayYear(year(t)); };
             }
-            return a[1];
+
+            // Updates the display to show the specified year.
+            function displayYear(year) {
+                dot.data(interpolateData(year), key).call(position).sort(order);
+                label.text(Math.round(year));
+            }
+
+            // make displayYear global
+            window.displayYear = displayYear;
+
+            // Finds (and possibly interpolates) the value for the specified year.
+            function interpolateValues(values, year) {
+                var i = bisect.left(values, year, 0, values.length - 1),
+                    a = values[i];
+                if (i > 0) {
+                    var b = values[i - 1],
+                        t = (year - a[0]) / (b[0] - a[0]);
+                    return a[1] * (1 - t) + b[1] * t;
+                }
+                return a[1];
           }
 
           sharedObject.dispatch.on("nationMouseover.d3", function(nationObject) {
               dot.style("fill", function(d) {
-                     if (typeof nationObject !== 'undefined' && d.name === nationObject.name) {
-                         return "#00FF00";
-                     }
+                  if (typeof nationObject !== 'undefined' && d.name === nationObject.name) {
+                      return "#00FF00";
+                  }
 
-                     return colorScale(color(d));
-                     });
+                  return colorScale(color(d));
+              });
           });
     }
- 
+
 
     setTimeout(function() {
-    console.log(collections);
-    for(var collection in collections) {
-        console.log(collection);
-        for(var source in collection) {
-            console.log(source);
+        console.log(collections);
+        for(var collection in collections) {
+            console.log(collection);
+            for(var source in collection) {
+                console.log(source);
+            }
         }
-    }
     }, 10000);
 }());
