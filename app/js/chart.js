@@ -9,7 +9,7 @@
     var force = d3.layout.force()
         .size([width, height]) // Sets the size of the chart
         .charge(-400) // The strength of the force
-        .linkDistance(40) // The distance between 2 nodes
+        .linkDistance(100) // The distance between 2 nodes
         .on("tick", tick); // When to update
 
     // Make vertices dragable
@@ -50,8 +50,8 @@
     function tick() {
         link.attr("x1", function(d) { return d.source.x; })
             .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.source.x; })
-            .attr("y2", function(d) { return d.source.y; });
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
 
         node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; });
