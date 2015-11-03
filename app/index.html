@@ -20,6 +20,8 @@
   <script src="/js/lib/bootstrap/bootstrap-toggle.min.js"></script>
   <script src="/js/lib/bootstrap/bootstrap-datetimepicker.min.js"></script>
   <script src="/js/lib/handlebars.min.js"></script>
+  <script src="/js/lib/d3.min.js"></script>
+  <script src="/js/lib/d3.chart.min.js"></script>
 
   <link rel="stylesheet" href="/cesium/Build/Cesium/Widgets/widgets.css">
   <link rel="stylesheet" href="/css/nouislider.min.css">
@@ -28,64 +30,71 @@
   <link rel="stylesheet" href="/css/bootstrap/bootstrap-datetimepicker.min.css">
   <link rel="stylesheet" href="/css/font-awesome.min.css">
   <link rel="stylesheet" href="/css/index.css">
+  <link rel="stylesheet" href="/css/chart.css">
 
-  <body>
-    <div id="nav-pane">
-      <div class="nav-section">
-        <div class="page-header">
-          <h3>Graph Visualizer
-            <small>tag line</small>
-          </h3>
-        </div>
+</head>
+
+<body>
+  <!-- D3 container -->
+  <div id="chart"></div>
+  <div id="info" title="Test title"></div>
+
+  <div id="nav-pane">
+    <div class="nav-section">
+      <div class="page-header">
+        <h3>Graph Visualizer
+          <small>tag line</small>
+        </h3>
       </div>
-
-      <!-- Uploading controls -->
-      <div class="nav-section">
-        <!-- Edit collection form !-->
-        <form class="addSource">
-          <span class="input-group hidden">
-            <!-- Browse file button !-->
-            <input type="text" class="form-control" readonly>
-            <span class="input-group-btn">
-              <span class="btn btn-default btn-file">
-                <i class="fa fa-folder"></i>
-                <input type="file" name="file">
-              </span>
-            </span>
-            <span class="input-group-btn">
-              <span class="btn btn-default btn-upload-data">
-                <i class="fa fa-upload"></i>
-              </span>
-            </span>
-          </span>
-        </form>
-      </div>
-
-      <!-- Data collections section -->
-      <div class="nav-section">
-        <h4>Data collections
-          <a class="btn btn-xs btn-success btn-newCollection">
-            <i class="fa fa-plus pull-left"></i>New Collection
-          </a>
-        </h4>
-        <div id="collections"></div>
-      </div>
-
-      <!-- Filter section -->
-      <div class="nav-section">
-        <h4>Filters</h4>
-        <div id="filters"></div>
-      </div>
-
     </div>
 
-    <div id="cesiumContainer"></div>
-    <script src="/js/trackSource.js"></script>
-    <script src="/js/templates.js"></script>
-    <script src="/js/buttonEvents.js"></script>
-    <script src="/js/collection.js"></script>
-    <script src="/js/filter.js"></script>
-    <script src="/js/index.js"></script>
-  </body>
+    <!-- Uploading controls -->
+    <div class="nav-section">
+      <!-- Edit collection form !-->
+      <form class="addSource">
+        <span class="input-group hidden">
+          <!-- Browse file button !-->
+          <input type="text" class="form-control" readonly>
+          <span class="input-group-btn">
+            <span class="btn btn-default btn-file">
+              <i class="fa fa-folder"></i>
+              <input type="file" name="file">
+            </span>
+          </span>
+          <span class="input-group-btn">
+            <span class="btn btn-default btn-upload-data">
+              <i class="fa fa-upload"></i>
+            </span>
+          </span>
+        </span>
+      </form>
+    </div>
+
+    <!-- Data collections section -->
+    <div class="nav-section">
+      <h4>Data collections
+        <a class="btn btn-xs btn-success btn-newCollection">
+          <i class="fa fa-plus pull-left"></i>New Collection
+        </a>
+      </h4>
+      <div id="collections"></div>
+    </div>
+
+    <!-- Filter section -->
+    <div class="nav-section">
+      <h4>Filters</h4>
+      <div id="filters"></div>
+    </div>
+
+  </div>
+  <div id="cesiumContainer"></div>
+  <script src="/js/trackSource.js"></script>
+  <script src="/js/templates.js"></script>
+  <script src="/js/buttonEvents.js"></script>
+  <script src="/js/collection.js"></script>
+  <script src="/js/filter.js"></script>
+  <script src="/js/index.js"></script>
+  <script src="/js/chart.js"></script>
+</body>
 
 </html>

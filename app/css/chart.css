@@ -1,0 +1,36 @@
+#chart {
+  display: block;
+  position: absolute;
+  top: 5px;
+  left: 355px;
+  background: rgba(42, 42, 42, 0.8);
+  border-radius: 7px;
+  -webkit-transform: scale(0.6);
+  -webkit-transform-origin: 0 0;
+  -webkit-transition-property: -webkit-transform;
+  -webkit-transition-duration: 1s;
+  -moz-transform: scale(0.6);
+  -moz-transform-origin: 0 0;
+  -moz-transition-property: -moz-transform;
+  -moz-transition-duration: 1s;
+  transform: scale(0.6);
+  transform-origin: 0 0;
+  transition-property: transform;
+  transition-duration: 1s;
+  z-index: 999999999
+}
+#chart:hover {
+  -webkit-transform: scale(1.5);
+  -moz-transform: scale(1.5);
+  transform: scale(1.5);
+}
+.link {
+  stroke: #ffffff;
+  stroke-width: 5px;
+}
+.node {
+  cursor: move;
+  fill: #ccc;
+  stroke: #000;
+  stroke-width: 1.5px;
+}
