@@ -5,13 +5,17 @@
   // Chart dimensions.
   var width = 500;
   var height = 500;
+  var nodes = [];
+  var links = [];
 
   // Set the force between vertices
   var force = d3.layout.force()
-    .size([width, height]) // Sets the size of the chart
-    .charge(-400) // The strength of the force
-    .linkDistance(40) // The distance between 2 nodes
-    .on("tick", tick); // When to update
+    .nodes(nodes)
+    .links(links)
+    .charge(-400)
+    .linkDistance(100)
+    .size([width, height])
+    .on("tick", tick);
 
   var zoom = d3.behavior.zoom()
     .scaleExtent([0.1, 10])
@@ -41,26 +45,40 @@
   var link = container.selectAll(".link"),
     node = container.selectAll(".node");
 
-  d3.json("graph.json", function(error, graph) {
-    if (error) {
-      throw error;
-    }
-    force
-      .nodes(graph.nodes)
-      .links(graph.links)
-      .start();
-
-    link = link.data(graph.links)
-      .enter().append("line")
+  function start() {
+    link = link.data(force.links());
+    link.enter().insert("line")
       .attr("class", "link");
+    link.exit().remove();
 
-    node = node.data(graph.nodes)
-      .enter().append("circle")
+    node = node.data(force.nodes());
+    node.enter().append("circle")
       .attr("class", "node")
       .attr("r", 12)
       .on("dblclick", dblclick)
       .call(drag);
-  });
+    node.exit().remove();
+
+    force.start();
+  }
+
+  function loadGraphFile(filePath) {
+    d3.json(filePath, function(error, graph) {
+      if (error) {
+        throw error;
+      }
+      nodes = $.merge(nodes, graph.nodes);
+      links = $.merge(links, graph.links);
+      start();
+    });
+  }
+
+  function addNode(node) {
+    nodes.push(node);
+    start();
+  }
+
+  loadGraphFile("graph.json");
 
   function tick() {
     link.attr("x1", function(d) {
