@@ -1,6 +1,7 @@
 /* global d3 */
 
 (function() {
+
   // Chart dimensions.
   var width = 500;
   var height = 500;
@@ -27,11 +28,9 @@
     .attr("width", width)
     .attr("height", height)
     .append("g")
-    .call(zoom)
-    .on("dblclick.zoom", null);
+    .call(zoom);
 
   var container = svg.append("g");
-
   var rect = container.append("rect")
     .attr("width", width)
     .attr("height", height)
