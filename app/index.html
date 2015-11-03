@@ -23,14 +23,6 @@
   <script src="/js/lib/d3.min.js"></script>
   <script src="/js/lib/d3.chart.min.js"></script>
 
-  <script type="text/javascript">
-    var sharedObject = {
-      dispatch: d3.dispatch("nationMouseover"),
-      yearData: [],
-      flyTo: null
-    };
-  </script>
-
   <link rel="stylesheet" href="/cesium/Build/Cesium/Widgets/widgets.css">
   <link rel="stylesheet" href="/css/nouislider.min.css">
   <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css">
@@ -38,79 +30,71 @@
   <link rel="stylesheet" href="/css/bootstrap/bootstrap-datetimepicker.min.css">
   <link rel="stylesheet" href="/css/font-awesome.min.css">
   <link rel="stylesheet" href="/css/index.css">
+  <link rel="stylesheet" href="/css/chart.css">
 
-  <style>
-    @import url(node_modules/jquery-ui/themes/base/jquery-ui.css);
-    @import url(css/chart.css);
-    @import url(cesium/Build/Cesium/Widgets/widgets.css);
-    body {
-        padding: 0;
-        margin: 0;
-        overflow: hidden;
-    }
-  </style>
+</head>
 
-  </head>
-  <body>
-    <!-- D3 container -->
-    <div id="chart"></div>
-    <div id="info" title="Test title"></div>
+<body>
+  <!-- D3 container -->
+  <div id="chart"></div>
+  <div id="info" title="Test title"></div>
 
-    <div id="nav-pane">
-      <div class="nav-section">
-        <div class="page-header">
-          <h3>Graph Visualizer
-            <small>tag line</small>
-          </h3>
-        </div>
+  <div id="nav-pane">
+    <div class="nav-section">
+      <div class="page-header">
+        <h3>Graph Visualizer
+          <small>tag line</small>
+        </h3>
       </div>
+    </div>
 
-      <!-- Uploading controls -->
-      <div class="nav-section">
-        <!-- Edit collection form !-->
-        <form class="addSource">
-          <span class="input-group hidden">
-            <!-- Browse file button !-->
-            <input type="text" class="form-control" readonly>
-            <span class="input-group-btn">
-              <span class="btn btn-default btn-file">
-                <i class="fa fa-folder"></i>
-                <input type="file" name="file">
-              </span>
-            </span>
-            <span class="input-group-btn">
-              <span class="btn btn-default btn-upload-data">
-                <i class="fa fa-upload"></i>
-              </span>
+    <!-- Uploading controls -->
+    <div class="nav-section">
+      <!-- Edit collection form !-->
+      <form class="addSource">
+        <span class="input-group hidden">
+          <!-- Browse file button !-->
+          <input type="text" class="form-control" readonly>
+          <span class="input-group-btn">
+            <span class="btn btn-default btn-file">
+              <i class="fa fa-folder"></i>
+              <input type="file" name="file">
             </span>
           </span>
-        </form>
-      </div>
-
-      <!-- Data collections section -->
-      <div class="nav-section">
-        <h4>Data collections
-          <a class="btn btn-xs btn-success btn-newCollection">
-            <i class="fa fa-plus pull-left"></i>New Collection
-          </a>
-        </h4>
-        <div id="collections"></div>
-      </div>
-
-      <!-- Filter section -->
-      <div class="nav-section">
-        <h4>Filters</h4>
-        <div id="filters"></div>
-      </div>
-
+          <span class="input-group-btn">
+            <span class="btn btn-default btn-upload-data">
+              <i class="fa fa-upload"></i>
+            </span>
+          </span>
+        </span>
+      </form>
     </div>
-    <div id="cesiumContainer"></div>
-    <script src="/js/trackSource.js"></script>
-    <script src="/js/templates.js"></script>
-    <script src="/js/buttonEvents.js"></script>
-    <script src="/js/collection.js"></script>
-    <script src="/js/filter.js"></script>
-    <script src="/js/index.js"></script>
-    <script type="text/javascript" src="js/chart.js"></script>
-  </body>
+
+    <!-- Data collections section -->
+    <div class="nav-section">
+      <h4>Data collections
+        <a class="btn btn-xs btn-success btn-newCollection">
+          <i class="fa fa-plus pull-left"></i>New Collection
+        </a>
+      </h4>
+      <div id="collections"></div>
+    </div>
+
+    <!-- Filter section -->
+    <div class="nav-section">
+      <h4>Filters</h4>
+      <div id="filters"></div>
+    </div>
+
+  </div>
+  <div id="cesiumContainer"></div>
+  <script src="/js/trackSource.js"></script>
+  <script src="/js/templates.js"></script>
+  <script src="/js/buttonEvents.js"></script>
+  <script src="/js/collection.js"></script>
+  <script src="/js/filter.js"></script>
+  <script src="/js/index.js"></script>
+  <script src="/js/chart.js"></script>
+</body>
+
 </html>

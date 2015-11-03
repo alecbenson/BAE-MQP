@@ -19,27 +19,10 @@
   transition-duration: 1s;
   z-index: 999999999
 }
-@media only screen and (min-width: 1920px) {
-  #chart {
-    -webkit-transform: scale(0.75);
-    -moz-transform: scale(0.75);
-    transform: scale(0.75);
-  }
-}
 #chart:hover {
-  -webkit-transform: scale(0.75);
-  -moz-transform: scale(0.75);
-  transform: scale(0.75);
-}
-.label, .tick {
-  fill: #eee;
-}
-.year {
-  font-size: 40px;
-}
-.domain {
-  fill: none;
-  stroke: #eee;
+  -webkit-transform: scale(1.5);
+  -moz-transform: scale(1.5);
+  transform: scale(1.5);
 }
 .link {
   stroke: #ffffff;
@@ -50,7 +33,4 @@
   fill: #ccc;
   stroke: #000;
   stroke-width: 1.5px;
-}
-.node.fixed {
-  fill: #f00
 }
