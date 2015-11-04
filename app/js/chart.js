@@ -36,8 +36,9 @@
 
   var container = svg.append("g");
   var rect = container.append("rect")
-    .attr("width", width)
-    .attr("height", height)
+    .attr("width", width * 10)
+    .attr("height", height * 10)
+    .attr("transform", "translate(" + width * -5 + "," + height * -5 + ")")
     .style("fill", "none")
     .style("pointer-events", "all");
 
