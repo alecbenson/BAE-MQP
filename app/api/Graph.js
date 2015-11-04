@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path = require('path');
 
 function Graph(edges, vertices) {
   this._edges = edges;
@@ -25,6 +26,23 @@ Object.defineProperties(Graph.prototype, {
   }
 });
 
+Graph.prototype.writeJSON = function(filePath) {
+  var result = JSON.stringify(this);
+  var fullPath = path.join(filePath, 'graph.json');
+  fs.writeFile(fullPath, result, function(err) {
+    if (err) {
+      return console.log(err);
+    }
+  });
+};
+
+Graph.prototype.toJSON = function() {
+  return {
+    vertices: this._vertices,
+    edges: this._edges,
+  };
+};
+
 // For your own sanity, please do not try to make sense of the following
 // ~50 lines of code. Just accept that it works and move on
 // The code below is used to parse data from a sage file.
@@ -38,7 +56,7 @@ Graph.fromSage = function(filePath) {
   //Remove trailing comma if it exists
   verticesString = verticesString.replace(/,$/, '');
   //Split the resulting text by commas
-  var verticesList = verticesString.split(',').map(Number);
+  var verticesList = verticesString.split(',').map(formatVertice);
   //Grab text between 'add_edges'
   var edgesString = /add_edges\(\[([^]*)\]\)/.exec(strippedData)[1];
   var edgesList = formatEdges(edgesString);
@@ -46,7 +64,7 @@ Graph.fromSage = function(filePath) {
 };
 
 function formatEdges(edgesString) {
-  // (╯°□°）╯︵ ┻━┻
+  // (╯°□°)╯ ┻━┻
   edgesString = edgesString.replace(/\s/g, '');
   var items = edgesString.replace(/^\(|\)$|\),$/g, "").split("),(");
   items.forEach(function(val, index, array) {
@@ -61,7 +79,8 @@ function formatEdges(edgesString) {
   return items;
 }
 
-var result = Graph.fromSage('s.sage');
-console.log(result);
+function formatVertice(vertice) {
+  return {"id": Number(vertice)};
+}
 
 module.exports = Graph;

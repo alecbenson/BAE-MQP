@@ -88,7 +88,11 @@ TrackDataSource.prototype._getXMLPos = function(data) {
   var lat = Number(pos.getAttribute('lat'));
   var lon = Number(pos.getAttribute('lon'));
   var hae = Number(pos.getAttribute('hae'));
-  return {"lat": lat, "lon": lon, "hae": hae};
+  return {
+    "lat": lat,
+    "lon": lon,
+    "hae": hae
+  };
 };
 
 /**
@@ -136,10 +140,10 @@ TrackDataSource.prototype._addSensorSample = function(property, sensor) {
 
   var entity = {
     position: position,
-    point: {
-      pixelSize: 15,
-      color: Cesium.Color.GREEN,
-      translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0)
+    billboard: {
+      image: '../images/sensor.png',
+      scale: 0.04,
+      color: Cesium.Color.RED,
     },
     ele: p.hae
   };

@@ -108,7 +108,7 @@ var datahandler = multer({
     fileSize: 1024 * 1024 * 5
   },
   fileFilter: function(req, file, cb) {
-    var accepted = ['text/xml', 'application/json', 'application/octet-stream'];
+    var accepted = ['text/xml', 'application/octet-stream'];
     if (accepted.indexOf(file.mimetype) !== -1) {
       cb(null, true);
     } else {
@@ -139,7 +139,7 @@ router.post('/upload/data', function(req, res) {
       mimetype: req.file.mimetype
     };
 
-    collectionSet.parseData(req.file);
+    collectionSet.parseData(collectionName, req.file);
 
     res.json({
       context: collection,

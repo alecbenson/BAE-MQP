@@ -68,8 +68,8 @@
       if (error) {
         throw error;
       }
-      nodes = $.merge(nodes, graph.nodes);
-      links = $.merge(links, graph.links);
+      nodes = $.merge(nodes, graph.vertices);
+      links = $.merge(links, graph.edges);
       start();
     });
   }
@@ -79,7 +79,7 @@
     start();
   }
 
-  loadGraphFile("graph.json");
+  loadGraphFile("../api/graph.json");
 
   function tick() {
     link.attr("x1", function(d) {
