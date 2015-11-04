@@ -37,6 +37,10 @@ CollectionSet.prototype.remove = function(collectionName) {
   this.deleteCollectionDir(collectionName);
 };
 
+CollectionSet.prototype.parseData = function(file) {
+  //This method should contain logic for parsing the sage file if it is uploaded
+};
+
 /**
 *Retrieves a collection with the given name
 * @param collectionName - the name of the collection to retrieve

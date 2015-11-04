@@ -41,7 +41,7 @@ router.post('/', function(req, res) {
     //The collection will be created otherwise
   } else {
     var newCollection = collectionSet.add(collectionName);
-    if(newCollection === undefined){
+    if (newCollection === undefined) {
       res.status(500).send("Failed to create a collection with this name.");
     }
     res.json(newCollection);
@@ -94,7 +94,7 @@ var datastorage = multer.diskStorage({
     var collectionName = req.body.collectionName;
     var dest = collectionSet.dataDir + collectionName + collectionSet.sourcesDir;
     var finalName = parsed;
-    while( fs.existsSync(dest + finalName) ) {
+    while (fs.existsSync(dest + finalName)) {
       finalName = path.join(parsed + "_" + (++count));
     }
     cb(null, finalName);
@@ -107,6 +107,14 @@ var datahandler = multer({
   limits: {
     fileSize: 1024 * 1024 * 5
   },
+  fileFilter: function(req, file, cb) {
+    var accepted = ['text/xml', 'application/json', 'application/octet-stream'];
+    if (accepted.indexOf(file.mimetype) !== -1) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+    }
+  }
 }).single('file');
 
 //Bind post to the handler, and catch errors
@@ -130,6 +138,8 @@ router.post('/upload/data', function(req, res) {
       filename: req.file.filename,
       mimetype: req.file.mimetype
     };
+
+    collectionSet.parseData(req.file);
 
     res.json({
       context: collection,

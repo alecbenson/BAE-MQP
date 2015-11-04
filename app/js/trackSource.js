@@ -72,8 +72,8 @@ TrackDataSource.prototype.loadUrl = function(url) {
   }
 
   var that = this;
-  return Cesium.when(Cesium.loadJson(url), function(json) {
-    return that.load(json, url);
+  return Cesium.when(Cesium.loadXML(url), function(xml) {
+    return that.load(xml, url);
 
   }).otherwise(function(error) {
     console.log(error);
@@ -83,29 +83,12 @@ TrackDataSource.prototype.loadUrl = function(url) {
   });
 };
 
-/**
- * Draws an edge with connecting the two vertexes specified in the edge object
- * @param edge - the edge object to read from
- */
-TrackDataSource.prototype.connect = function(edge) {
-  var entities = this._entityCollection;
-  var first = edge.id_a;
-  var other = edge.id_b;
-
-
-  var v1 = entities.getById(first);
-  var v2 = entities.getById(other);
-
-  var newEdge = entities.add({
-    name: 'Edge connecting ' + first + " with " + other,
-    polyline: {
-      positions: [v1.position.getValue(), v2.position.getValue()],
-      width: edge.weight,
-      material: new Cesium.PolylineOutlineMaterialProperty({
-        color: Cesium.Color.BLUE,
-      })
-    }
-  });
+TrackDataSource.prototype._getXMLPos = function(data) {
+  var pos = data.getElementsByTagName('position')[0];
+  var lat = Number(pos.getAttribute('lat'));
+  var lon = Number(pos.getAttribute('lon'));
+  var hae = Number(pos.getAttribute('hae'));
+  return {"lat": lat, "lon": lon, "hae": hae};
 };
 
 /**
@@ -113,10 +96,16 @@ TrackDataSource.prototype.connect = function(edge) {
  * @param property - the sampled position property to add the sample to
  * @param data - the data to create the sample out of
  */
-TrackDataSource.prototype._addSample = function(property, data) {
+TrackDataSource.prototype._addTrackSample = function(property, data) {
+  var kse = data.getElementsByTagName('kse')[0];
+  var p = this._getXMLPos(kse);
+  var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
+  var t = parseInt(data.getAttribute('time'));
+
   var entities = this._entityCollection;
-  var position = Cesium.Cartesian3.fromDegrees(data.lon, data.lat, data.ele);
-  var time = Cesium.JulianDate.fromIso8601(data.time);
+  //Epoch time
+  var epoch = Cesium.JulianDate.fromIso8601('1970-01-01T00:00:00');
+  var time = Cesium.JulianDate.addSeconds(epoch, t, new Cesium.JulianDate());
   property.addSample(time, position);
 
   //Create a point for the sample data
@@ -129,16 +118,32 @@ TrackDataSource.prototype._addSample = function(property, data) {
       outlineWidth: 2,
       translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0)
     },
-    time: data.time,
-    ele: parseInt(data.ele)
+    time: time,
+    ele: p.hae
   };
-  //Set the name and ID of the entity
-  if (data.id !== undefined) {
-    entity.id = data.id;
-    entity.name = "Point " + data.id;
-  }
   entities.add(entity);
+  return property;
+};
 
+/**
+ * Draw all sensors on the map
+ * @param data - the XML data from which to retrieve vertices from
+ **/
+TrackDataSource.prototype._addSensorSample = function(property, sensor) {
+  var p = this._getXMLPos(sensor);
+  var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
+  var entities = this._entityCollection;
+
+  var entity = {
+    position: position,
+    point: {
+      pixelSize: 15,
+      color: Cesium.Color.GREEN,
+      translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0)
+    },
+    ele: p.hae
+  };
+  entities.add(entity);
   return property;
 };
 
@@ -146,13 +151,14 @@ TrackDataSource.prototype._addSample = function(property, data) {
  * Reads through the data and determines the start and end times of the data clock
  * @param vertices - the set of vertices to scan through
  */
-TrackDataSource.prototype.setTimeWindow = function(vertices) {
-  if (vertices === undefined) {
-    return;
-  }
+TrackDataSource.prototype.setTimeWindow = function() {
+  var vertices = this._entityCollection.values;
 
   for (var i = 0; i < vertices.length; i++) {
-    var time = Cesium.JulianDate.fromIso8601(vertices[i].time);
+    var time = vertices[i].time;
+    if (time === undefined) {
+      continue;
+    }
     if (viewer.clock.earliest === undefined) {
       viewer.clock.earliest = time;
     }
@@ -172,29 +178,20 @@ TrackDataSource.prototype.setTimeWindow = function(vertices) {
 
 /**
  * Draw all vertices on the map
- * @param data - the JSON data from which to retrieve vertices from
+ * @param data - the XML data from which to retrieve vertices from
  **/
-TrackDataSource.prototype.drawVertices = function(position, data) {
-  if (data.vertices === undefined) {
-    return;
-  }
-  for (var i = 0; i < data.vertices.length; i++) {
-    var trackData = data.vertices[i];
-    this._addSample(position, trackData);
-  }
-};
+TrackDataSource.prototype.drawEntities = function(position, data) {
+  var fusionFrames = data.getElementsByTagName('FusionFrame');
+  var sensors = data.getElementsByTagName('sensor');
 
-/**
- * Draw all edges on the map
- * @param data - the JSON data from which to retrieve edges from
- */
-TrackDataSource.prototype.drawEdges = function(position, data) {
-  if (data.edges === undefined) {
-    return;
+  for (var i = 0; i < sensors.length; i++) {
+    var sensor = sensors[i];
+    this._addSensorSample(position, sensor);
   }
-  for (var i = 0; i < data.edges.length; i++) {
-    var edgeData = data.edges[i];
-    this.connect(edgeData);
+
+  for (var j = 0; j < fusionFrames.length; j++) {
+    var frame = fusionFrames[j];
+    this._addTrackSample(position, frame);
   }
 };
 
@@ -211,13 +208,12 @@ TrackDataSource.prototype.load = function(data) {
   entities.suspendEvents();
   entities.removeAll();
 
-  //Draw all edges and vertices
+  //Draw all and vertices
   var position = new Cesium.SampledPositionProperty();
-  this.drawVertices(position, data);
-  this.drawEdges(position, data);
+  this.drawEntities(position, data);
 
   //Set the time window of the data
-  this.setTimeWindow(data.vertices);
+  this.setTimeWindow();
   //Create a track node that follows the data track
   this.createTrackNode(position);
 
@@ -279,7 +275,7 @@ TrackDataSource.prototype.setTrackModel = function(location) {
     node.point.show = false;
     node.model = {
       uri: location,
-      minimumPixelSize: 32
+      minimumPixelSize: 64
     };
     node.orientation = this.orientTrackNode();
   }
@@ -332,7 +328,3 @@ TrackDataSource.prototype.highlightOnCondition = function(callback) {
     }
   }
 };
-
-function compareTime(moment, julianDate) {
-
-}
