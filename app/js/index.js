@@ -76,6 +76,7 @@ function addCollectionData(context, sourceName) {
  */
 function uploadCollectionSource(target) {
   var parentForm = $(target).closest('form');
+  console.log(parentForm);
   $(parentForm).ajaxSubmit({
     url: "/collections/upload/data",
     type: "POST",

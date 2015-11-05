@@ -46,10 +46,9 @@ Graph.prototype.toJSON = function() {
 // For your own sanity, please do not try to make sense of the following
 // ~50 lines of code. Just accept that it works and move on
 // The code below is used to parse data from a sage file.
-Graph.fromSage = function(filePath) {
-  data = fs.readFileSync(filePath, "utf8");
+Graph.fromSage = function(buffer) {
   //Remove backslashes, newlines, and single quotes
-  var strippedData = data.replace(/['\\\n]/g, '');
+  var strippedData = buffer.replace(/['\\\n]/g, '');
   //I hate this so much
   //Grab the text between 'add_vertices'
   var verticesString = /add_vertices\(\[([^)]+)\]/.exec(strippedData)[1];

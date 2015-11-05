@@ -3,6 +3,7 @@ var router = express.Router();
 
 var multer = require('multer');
 var path = require('path');
+var StorageEngine = require('./StorageEngine');
 var fs = require('node-fs');
 var bodyParser = require('body-parser');
 var collectionSet = require('./collectionSet').collections();
@@ -81,10 +82,17 @@ router.delete('/:collectionName/:sourceName', function(req, res) {
 });
 
 //Define rules for storing data sources
-var datastorage = multer.diskStorage({
+var diskStorage = StorageEngine({
   destination: function(req, file, cb) {
+    var fullPath;
+    var uploadType = req.body.uploadType;
     var collectionName = req.body.collectionName;
-    cb(null, collectionSet.dataDir + collectionName + collectionSet.sourcesDir);
+    if(uploadType == "sage"){
+      fullPath = path.join(collectionSet.dataDir, collectionName, collectionSet.graphDir);
+    } else {
+      fullPath = path.join(collectionSet.dataDir, collectionName, collectionSet.sourcesDir);
+    }
+    cb(null, fullPath);
   },
   filename: function(req, file, cb) {
     var parsed = file.originalname.replace(/\.[^/.]+$/, "");
@@ -103,7 +111,7 @@ var datastorage = multer.diskStorage({
 
 //Define a handler for uploading data source files
 var datahandler = multer({
-  storage: datastorage,
+  storage: diskStorage,
   limits: {
     fileSize: 1024 * 1024 * 5
   },
@@ -138,8 +146,6 @@ router.post('/upload/data', function(req, res) {
       filename: req.file.filename,
       mimetype: req.file.mimetype
     };
-
-    collectionSet.parseData(collectionName, req.file);
 
     res.json({
       context: collection,

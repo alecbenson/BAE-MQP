@@ -79,7 +79,7 @@
     start();
   }
 
-  loadGraphFile("../api/graph.json");
+  //loadGraphFile("../graph.json");
 
   function tick() {
     link.attr("x1", function(d) {

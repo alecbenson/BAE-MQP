@@ -40,15 +40,6 @@ CollectionSet.prototype.remove = function(collectionName) {
   this.deleteCollectionDir(collectionName);
 };
 
-CollectionSet.prototype.parseData = function(collectionName, file) {
-  //This method should contain logic for parsing the sage file if it is uploaded
-  if(file.mimetype == 'application/octet-stream'){
-    var fullPath = path.join(file.destination, file.filename);
-    var graph = Graph.fromSage(fullPath);
-    var graphPath = path.join(this.dataDir, collectionName, this.graphDir);
-    graph.writeJSON(graphPath);
-  }
-};
 
 /**
  *Retrieves a collection with the given name
