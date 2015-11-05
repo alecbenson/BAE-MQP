@@ -100,17 +100,16 @@ TrackDataSource.prototype._getXMLPos = function(data) {
  * @param property - the sampled position property to add the sample to
  * @param data - the data to create the sample out of
  */
-TrackDataSource.prototype._addTrackSample = function(property, data) {
+TrackDataSource.prototype._addTrackSample = function(property, data, time) {
   var kse = data.getElementsByTagName('kse')[0];
   var p = this._getXMLPos(kse);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
-  var t = parseInt(data.getAttribute('time'));
-
   var entities = this._entityCollection;
   //Epoch time
   var epoch = Cesium.JulianDate.fromIso8601('1970-01-01T00:00:00');
-  var time = Cesium.JulianDate.addSeconds(epoch, t, new Cesium.JulianDate());
-  property.addSample(time, position);
+  var set_time = Cesium.JulianDate.addSeconds(epoch, time, new Cesium.JulianDate());
+  console.log(set_time);
+  property.addSample(set_time, position);
 
   //Create a point for the sample data
   var entity = {
@@ -122,7 +121,7 @@ TrackDataSource.prototype._addTrackSample = function(property, data) {
       outlineWidth: 2,
       translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0)
     },
-    time: time,
+    time: set_time,
     ele: p.hae
   };
   entities.add(entity);
@@ -195,7 +194,13 @@ TrackDataSource.prototype.drawEntities = function(position, data) {
 
   for (var j = 0; j < fusionFrames.length; j++) {
     var frame = fusionFrames[j];
-    this._addTrackSample(position, frame);
+    var t = parseInt(frame.getAttribute('time'));
+    var stateEstimates = frame.getElementsByTagName('stateEstimate');
+
+    for(var k=0; k < stateEstimates.length; k++) {
+      var estimate = stateEstimates[k];
+      this._addTrackSample(position, estimate, t);
+    }
   }
 };
 
