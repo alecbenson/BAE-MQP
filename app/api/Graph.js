@@ -26,9 +26,9 @@ Object.defineProperties(Graph.prototype, {
   }
 });
 
-Graph.prototype.writeJSON = function(filePath) {
-  var result = JSON.stringify(this);
-  var fullPath = path.join(filePath, 'graph.json');
+Graph.prototype.writeJSON = function(filePath, fileName) {
+  var result = JSON.stringify(this, null, 2);
+  var fullPath = path.join(filePath, fileName);
   fs.writeFile(fullPath, result, function(err) {
     if (err) {
       return console.log(err);
@@ -67,11 +67,12 @@ function formatEdges(edgesString) {
   edgesString = edgesString.replace(/\s/g, '');
   var items = edgesString.replace(/^\(|\)$|\),$/g, "").split("),(");
   items.forEach(function(val, index, array) {
-    var nums = val.split(",").map(Number);
+    var nums = val.split(",");
+
     var edge = {
-      "source": nums[0],
-      "target": nums[1],
-      "weight": nums[2]
+      "source": parseInt(nums[0]),
+      "target": parseInt(nums[1]),
+      "weight": parseFloat(nums[2]),
     };
     array[index] = edge;
   });
@@ -79,7 +80,7 @@ function formatEdges(edgesString) {
 }
 
 function formatVertice(vertice) {
-  return {"id": Number(vertice)};
+  return {"id": parseInt(vertice)};
 }
 
 module.exports = Graph;

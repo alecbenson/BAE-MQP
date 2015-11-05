@@ -84,30 +84,26 @@ router.delete('/:collectionName/:sourceName', function(req, res) {
 //Define rules for storing data sources
 var diskStorage = StorageEngine({
   destination: function(req, file, cb) {
-    var fullPath;
-    var uploadType = req.body.uploadType;
-    var collectionName = req.body.collectionName;
-    if(uploadType == "sage"){
-      fullPath = path.join(collectionSet.dataDir, collectionName, collectionSet.graphDir);
-    } else {
-      fullPath = path.join(collectionSet.dataDir, collectionName, collectionSet.sourcesDir);
-    }
-    cb(null, fullPath);
+    cb(null, getDestination(req,file));
   },
   filename: function(req, file, cb) {
     var parsed = file.originalname.replace(/\.[^/.]+$/, "");
-
-    //Increment name if duplicates exist
     var count = 0;
-    var collectionName = req.body.collectionName;
-    var dest = collectionSet.dataDir + collectionName + collectionSet.sourcesDir;
+    var dest = getDestination(req, file);
     var finalName = parsed;
-    while (fs.existsSync(dest + finalName)) {
+    while (fs.existsSync(path.join(dest, finalName))) {
       finalName = path.join(parsed + "_" + (++count));
     }
     cb(null, finalName);
   }
 });
+
+var getDestination = function(req, file) {
+  var fullPath;
+  var collectionName = req.body.collectionName;
+  fullPath = path.join(collectionSet.dataDir, collectionName, collectionSet.sourcesDir);
+  return fullPath;
+};
 
 //Define a handler for uploading data source files
 var datahandler = multer({
@@ -140,11 +136,13 @@ router.post('/upload/data', function(req, res) {
     }
     var collectionName = req.body.collectionName;
     var collection = collectionSet.get(collectionName);
+    var uploadType = req.body.uploadType;
 
     var uploadInfo = {
       destination: req.file.destination,
       filename: req.file.filename,
-      mimetype: req.file.mimetype
+      mimetype: req.file.mimetype,
+      uploadType: uploadType
     };
 
     res.json({
@@ -158,7 +156,7 @@ router.post('/upload/data', function(req, res) {
 var modelstorage = multer.diskStorage({
   destination: function(req, file, cb) {
     var collectionName = req.body.collectionName;
-    cb(null, collectionSet.dataDir + collectionName + collectionSet.modelDir);
+    cb(null, path.join(collectionSet.dataDir,collectionName,collectionSet.modelDir));
   },
   filename: function(req, file, cb) {
     cb(null, 'model.gltf');

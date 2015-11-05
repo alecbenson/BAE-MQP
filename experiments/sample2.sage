@@ -1,0 +1,12 @@
+G=DiGraph(weighted=true,sparse=True)
+G.add_vertices([\
+'0',\
+'1',\
+'2',\
+'3',\
+'4',\
+])
+G.add_edges([\
+('0','1','3'),\
+('0','2','1'),\
+])

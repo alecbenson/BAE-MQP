@@ -47,6 +47,7 @@ function getCollections() {
  * @param file - an data file to render in cesium
  */
 function loadCollection(context) {
+  console.log(context);
   $.each(context.sources, function(index, sourceName) {
     addCollectionData(context, sourceName);
   });
@@ -76,14 +77,18 @@ function addCollectionData(context, sourceName) {
  */
 function uploadCollectionSource(target) {
   var parentForm = $(target).closest('form');
-  console.log(parentForm);
   $(parentForm).ajaxSubmit({
     url: "/collections/upload/data",
     type: "POST",
     dataType: "JSON",
     success: function(data, status) {
+      var uploadType = data.file.uploadType;
       var sourceName = data.file.filename;
-      addCollectionData(data.context, sourceName);
+      if(uploadType == "xml") {
+        addCollectionData(data.context, sourceName);
+      } else{
+        loadGraphFile(data.file.destination + sourceName);
+      }
       renderCollectionSources(data.context);
     },
     error: function(xhr, desc, err) {}

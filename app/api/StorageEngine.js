@@ -17,8 +17,6 @@ function getDestination(req, file, cb) {
 
 function DataStorage(opts) {
   this.getFilename = (opts.filename || getFilename);
-  console.log(opts);
-
   if (typeof opts.destination === 'string') {
     fs.mkdirSync(opts.destination);
     this.getDestination = function($0, $1, cb) {
@@ -40,18 +38,25 @@ DataStorage.prototype._handleFile = function _handleFile(req, file, cb) {
 };
 
 DataStorage.prototype._writeSageFile = function(req, file, cb) {
-  this.getDestination(req, file, function(err, destination) {
+  var that = this;
+
+  that.getDestination(req, file, function(err, destination) {
     if (err) return cb(err);
 
-    file.stream.pipe(concat(function(data) {
-      var graph = Graph.fromSage(data.toString());
-      graph.writeJSON(destination);
-      cb(null, {
-        destination: destination,
-        filename: "graph.json",
-        path: path.join(destination, "graph.json"),
-      });
-    }));
+    that.getFilename(req, file, function(err, filename) {
+      if (err) return cb(err);
+
+      file.stream.pipe(concat(function(data) {
+        var stringData = data.toString();
+        var graph = Graph.fromSage(stringData);
+        graph.writeJSON(destination, filename);
+        cb(null, {
+          destination: destination,
+          filename: filename,
+          path: path.join(destination,  filename),
+        });
+      }));
+    });
   });
 };
 
@@ -72,7 +77,7 @@ DataStorage.prototype._writeXMLFile = function(req, file, cb) {
           destination: destination,
           filename: filename,
           path: finalPath,
-          size: outStream.bytesWritten
+          size: outStream.bytesWritten,
         });
       });
     });
@@ -81,7 +86,6 @@ DataStorage.prototype._writeXMLFile = function(req, file, cb) {
 
 DataStorage.prototype._removeFile = function _removeFile(req, file, cb) {
   var uploadType = req.body.uploadType;
-
   if (uploadType === 'sage') {
     delete file.buffer;
     cb(null);
