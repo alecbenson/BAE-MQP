@@ -64,8 +64,8 @@ router.delete('/:collectionName', function(req, res) {
   res.status(200).send();
 });
 
-//DELETE a collection source by name
-router.delete('/:collectionName/:sourceName', function(req, res) {
+//DELETE a collection track by name
+router.delete('/:collectionName/track/:sourceName', function(req, res) {
   var collectionName = req.params.collectionName;
   var sourceName = req.params.sourceName;
   if (collectionName === undefined || sourceName === undefined) {
@@ -77,14 +77,31 @@ router.delete('/:collectionName/:sourceName', function(req, res) {
     return;
   }
   var collection = collectionSet.get(collectionName);
-  collection = collection.deleteSource(sourceName);
+  collection = collection.deleteTrack(sourceName);
+  res.json(collection);
+});
+
+//DELETE a collection graph by name
+router.delete('/:collectionName/graph/:sourceName', function(req, res) {
+  var collectionName = req.params.collectionName;
+  var sourceName = req.params.sourceName;
+  if (collectionName === undefined || sourceName === undefined) {
+    res.status(404).send();
+    return;
+  }
+  if (collectionSet.contains(collectionName) === false) {
+    res.status(404).send();
+    return;
+  }
+  var collection = collectionSet.get(collectionName);
+  collection = collection.deleteGraph(sourceName);
   res.json(collection);
 });
 
 //Define rules for storing data sources
 var diskStorage = StorageEngine({
   destination: function(req, file, cb) {
-    cb(null, getDestination(req,file));
+    cb(null, getDestination(req, file));
   },
   filename: function(req, file, cb) {
     var parsed = file.originalname.replace(/\.[^/.]+$/, "");
@@ -101,7 +118,12 @@ var diskStorage = StorageEngine({
 var getDestination = function(req, file) {
   var fullPath;
   var collectionName = req.body.collectionName;
-  fullPath = path.join(collectionSet.dataDir, collectionName, collectionSet.sourcesDir);
+  var uploadType = req.body.uploadType;
+  if (uploadType == 'sage') {
+    fullPath = path.join(collectionSet.dataDir, collectionName, collectionSet.graphDir);
+  } else {
+    fullPath = path.join(collectionSet.dataDir, collectionName, collectionSet.sourcesDir);
+  }
   return fullPath;
 };
 
@@ -156,7 +178,7 @@ router.post('/upload/data', function(req, res) {
 var modelstorage = multer.diskStorage({
   destination: function(req, file, cb) {
     var collectionName = req.body.collectionName;
-    cb(null, path.join(collectionSet.dataDir,collectionName,collectionSet.modelDir));
+    cb(null, path.join(collectionSet.dataDir, collectionName, collectionSet.modelDir));
   },
   filename: function(req, file, cb) {
     cb(null, 'model.gltf');

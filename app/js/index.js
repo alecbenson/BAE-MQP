@@ -14,7 +14,8 @@ $(function() {
   getCollections();
   bindFileSelectionText();
   bindDeleteButton();
-  bindDeleteSourceButton();
+  bindDeleteTrackButton();
+  bindDeleteGraphButton();
   bindCancelButton();
   bindNewCollectionButton();
   bindSubmitCollectionButton();
@@ -47,13 +48,15 @@ function getCollections() {
  * @param file - an data file to render in cesium
  */
 function loadCollection(context) {
-  console.log(context);
   $.each(context.sources, function(index, sourceName) {
-    addCollectionData(context, sourceName);
+    addTrackData(context, sourceName);
+  });
+  $.each(context.graphs, function(index, graphName) {
+    addGraphData(context, graphName);
   });
 }
 
-function addCollectionData(context, sourceName) {
+function addTrackData(context, sourceName) {
   var collectionName = context.name;
   var model = context.model;
   var sourcespath = context.sourcespath;
@@ -71,6 +74,11 @@ function addCollectionData(context, sourceName) {
   collections[collectionName][sourceName] = dataSource;
   viewer.dataSources.add(dataSource);
 }
+
+function addGraphData(context, graphName) {
+  var graphFilePath = context.graphpath + graphName;
+  loadGraphFile(graphFilePath);
+}
 /**
  * Uploads a file to the server
  * @param target - an object close to the submission form (typically the button).
@@ -84,10 +92,11 @@ function uploadCollectionSource(target) {
     success: function(data, status) {
       var uploadType = data.file.uploadType;
       var sourceName = data.file.filename;
-      if(uploadType == "xml") {
-        addCollectionData(data.context, sourceName);
-      } else{
-        loadGraphFile(data.file.destination + sourceName);
+      console.log(data);
+      if (uploadType == "xml") {
+        addTrackData(data.context, sourceName);
+      } else {
+        addGraphData(data.context, sourceName);
       }
       renderCollectionSources(data.context);
     },
@@ -154,9 +163,9 @@ function deleteCollection(collectionName) {
  * Makes an ajax call to delete a given data source.
  * @param sourceName - the name of the data source to delete
  */
-function deleteSource(collectionName, sourceName) {
+function deleteTrackData(collectionName, sourceName) {
   $.ajax({
-    url: "/collections/" + collectionName + "/" + sourceName,
+    url: "/collections/" + collectionName + "/track/" + sourceName,
     type: "DELETE",
     success: function(data, status) {
       var ds = collections[collectionName][sourceName];
@@ -164,6 +173,24 @@ function deleteSource(collectionName, sourceName) {
         viewer.dataSources.remove(ds, true);
       }
       delete collections[collectionName][sourceName];
+      renderCollectionSources(data);
+    },
+    error: function(xhr, desc, err) {
+      console.log("Failed: " + desc + err);
+    }
+  });
+}
+
+/**
+ * Makes an ajax call to delete a given data source.
+ * @param sourceName - the name of the data source to delete
+ */
+function deleteGraphData(collectionName, sourceName) {
+  $.ajax({
+    url: "/collections/" + collectionName + "/graph/" + sourceName,
+    type: "DELETE",
+    success: function(data, status) {
+      //Logic to delete graph entities here
       renderCollectionSources(data);
     },
     error: function(xhr, desc, err) {

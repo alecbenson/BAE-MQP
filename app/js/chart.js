@@ -87,9 +87,7 @@ function dragend(d) {
 
 function loadGraphFile(filePath) {
   $.get(filePath, function(data) {
-    console.log(data);
     var json = $.parseJSON(data);
-    console.log(json);
     nodes = $.extend(nodes, json.vertices);
     links = $.extend(links, json.edges);
     start();

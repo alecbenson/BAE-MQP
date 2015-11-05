@@ -28,11 +28,22 @@ function bindNewCollectionButton() {
 /**
  * binds a .btn-newCollection click to the renderNewCollection method
  */
-function bindDeleteSourceButton() {
-  $(document).on("click", ".btn-deleteSource", function() {
+function bindDeleteTrackButton() {
+  $(document).on("click", ".btn-deleteTrack", function() {
     var sourceName = $(this).attr('data-source');
     var collectionName = $(this).attr('data-collection');
-    deleteSource(collectionName, sourceName);
+    deleteTrackData(collectionName, sourceName);
+  });
+}
+
+/**
+ * binds a .btn-newCollection click to the renderNewCollection method
+ */
+function bindDeleteGraphButton() {
+  $(document).on("click", ".btn-deleteGraph", function() {
+    var sourceName = $(this).attr('data-graph');
+    var collectionName = $(this).attr('data-collection');
+    deleteGraphData(collectionName, sourceName);
   });
 }
 

@@ -10,6 +10,7 @@ function CollectionSet(collections) {
   this.dataDir = "./data/";
   this.sourcesDir = "/sources/";
   this.modelDir = "/model/";
+  this.graphDir = "/graph/";
 }
 
 /**
@@ -25,7 +26,8 @@ CollectionSet.prototype.add = function(collectionName) {
   this.makeCollectionDirs(sanitizedName);
   var sourcespath = path.join(this.dataDir,sanitizedName,this.sourcesDir);
   var modelpath = path.join(this.dataDir,collectionName,this.modelDir);
-  var newCollection = new Collection(sourcespath, modelpath, sanitizedName, []);
+  var graphpath = path.join(this.dataDir, collectionName, this.graphDir);
+  var newCollection = new Collection(sourcespath, modelpath, graphpath, sanitizedName, [], []);
   this.collections[sanitizedName] = newCollection;
   return newCollection;
 };
@@ -69,7 +71,7 @@ CollectionSet.prototype.init = function() {
   collectionNames = fs.readdirSync(this.dataDir);
   for (var index in collectionNames) {
     var name = collectionNames[index];
-    var collection = Collection.get(this.dataDir, this.modelDir, name, this.sourcesDir);
+    var collection = Collection.get(this.dataDir, this.modelDir, name, this.sourcesDir, this.graphDir);
     this.collections[name] = collection;
   }
 };
@@ -98,6 +100,7 @@ CollectionSet.prototype.makeCollectionDirs = function(collectionName) {
   //Create the sources directory for the collection
   this.makeSourcesDir(collectionName);
   this.makeModelDir(collectionName);
+  this.makeGraphDir(collectionName);
 };
 
 /**
@@ -106,8 +109,22 @@ CollectionSet.prototype.makeCollectionDirs = function(collectionName) {
  */
 CollectionSet.prototype.makeSourcesDir = function(collectionName) {
   //Create the sources directory for the collection
-  sourcesDir = path.join(this.dataDir,collectionName,this.sourcesDir);
+  var sourcesDir = path.join(this.dataDir,collectionName,this.sourcesDir);
   fs.mkdir(sourcesDir, 0777, true, function(err) {
+    if (err) {
+      console.log(err);
+    }
+  });
+};
+
+/**
+ *Creates the graph directory for a collection if it does not exist
+ * @param collectionName - the name of the collection to create directories for
+ */
+CollectionSet.prototype.makeGraphDir = function(collectionName) {
+  //Create the graph directory for the collection
+  var graphDir = path.join(this.dataDir,collectionName,this.graphDir);
+  fs.mkdir(graphDir, 0777, true, function(err) {
     if (err) {
       console.log(err);
     }
@@ -120,7 +137,7 @@ CollectionSet.prototype.makeSourcesDir = function(collectionName) {
  */
 CollectionSet.prototype.makeModelDir = function(collectionName) {
   //Create the model directory for the collection
-  modelDir = path.join(this.dataDir,collectionName,this.modelDir);
+  var modelDir = path.join(this.dataDir,collectionName,this.modelDir);
   fs.mkdir(modelDir, 0777, true, function(err) {
     if (err) {
       console.log(err);
