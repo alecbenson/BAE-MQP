@@ -26,7 +26,6 @@
 }
 .link {
   stroke: #ffffff;
-  stroke-width: 5px;
 }
 .node {
   cursor: move;

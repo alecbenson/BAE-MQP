@@ -56,6 +56,9 @@ function tick() {
     })
     .attr("y2", function(d) {
       return d.target.y;
+    })
+    .attr("stroke-width", function(d) {
+      return d.weight
     });
 
   node.attr("cx", function(d) {
