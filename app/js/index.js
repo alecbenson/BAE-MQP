@@ -92,7 +92,6 @@ function uploadCollectionSource(target) {
     success: function(data, status) {
       var uploadType = data.file.uploadType;
       var sourceName = data.file.filename;
-      console.log(data);
       if (uploadType == "xml") {
         addTrackData(data.context, sourceName);
       } else {
@@ -160,7 +159,7 @@ function deleteCollection(collectionName) {
 }
 
 /**
- * Makes an ajax call to delete a given data source.
+ * Makes an ajax call to delete a given track source.
  * @param sourceName - the name of the data source to delete
  */
 function deleteTrackData(collectionName, sourceName) {
@@ -182,16 +181,17 @@ function deleteTrackData(collectionName, sourceName) {
 }
 
 /**
- * Makes an ajax call to delete a given data source.
+ * Makes an ajax call to delete a given graph source.
  * @param sourceName - the name of the data source to delete
  */
-function deleteGraphData(collectionName, sourceName) {
+function deleteGraphData(collectionName, graphName) {
   $.ajax({
-    url: "/collections/" + collectionName + "/graph/" + sourceName,
+    url: "/collections/" + collectionName + "/graph/" + graphName,
     type: "DELETE",
     success: function(data, status) {
-      //Logic to delete graph entities here
-      renderCollectionSources(data);
+      unloadGraphEntities(data.graph);
+      console.log(nodes);
+      renderCollectionSources(data.context);
     },
     error: function(xhr, desc, err) {
       console.log("Failed: " + desc + err);

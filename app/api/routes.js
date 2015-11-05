@@ -94,8 +94,12 @@ router.delete('/:collectionName/graph/:sourceName', function(req, res) {
     return;
   }
   var collection = collectionSet.get(collectionName);
-  collection = collection.deleteGraph(sourceName);
-  res.json(collection);
+  var graph = collection.deleteGraph(sourceName);
+  var response = {
+    "context": collection,
+    "graph": graph
+  };
+  res.json(response);
 });
 
 //Define rules for storing data sources

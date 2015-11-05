@@ -94,9 +94,40 @@ function loadGraphFile(filePath) {
   });
 }
 
+Array.prototype.indexOfObject = function(other) {
+  for (var i = 0; i < this.length; i++) {
+    var obj = this[i];
+    var keys = Object.keys(obj).length;
+    var count = 0;
+    for (var prop in obj) {
+      if (!other.hasOwnProperty(prop)) {
+        break;
+      } else if (other[prop] === this[i][prop]) {
+        count++;
+      } else {
+        break;
+      }
+      if (count == keys) {
+        return i;
+      }
+    }
+  }
+  return -1;
+};
+
+function unloadGraphEntities(data) {
+  nodes = nodes.filter(function(el) {
+    return data.vertices.indexOfObject(el) < 0;
+  });
+  links = links.filter(function(el) {
+    return data.edges.indexOfObject(el) < 0;
+  });
+  start();
+}
+
 function start() {
   link = link.data(force.links());
-  link.enter().insert("line")
+  link.enter().insert("line", ".node")
     .attr("class", "link");
   link.exit().remove();
 

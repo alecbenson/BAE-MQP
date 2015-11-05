@@ -47,19 +47,23 @@ Graph.prototype.toJSON = function() {
 // ~50 lines of code. Just accept that it works and move on
 // The code below is used to parse data from a sage file.
 Graph.fromSage = function(buffer) {
-  //Remove backslashes, newlines, and single quotes
-  var strippedData = buffer.replace(/['\\\n]/g, '');
-  //I hate this so much
-  //Grab the text between 'add_vertices'
-  var verticesString = /add_vertices\(\[([^)]+)\]/.exec(strippedData)[1];
-  //Remove trailing comma if it exists
-  verticesString = verticesString.replace(/,$/, '');
-  //Split the resulting text by commas
-  var verticesList = verticesString.split(',').map(formatVertice);
-  //Grab text between 'add_edges'
-  var edgesString = /add_edges\(\[([^]*)\]\)/.exec(strippedData)[1];
-  var edgesList = formatEdges(edgesString);
-  return new this(edgesList, verticesList);
+  try {
+    //Remove backslashes, newlines, and single quotes
+    var strippedData = buffer.replace(/['\\\n]/g, '');
+    //I hate this so much
+    //Grab the text between 'add_vertices'
+    var verticesString = /add_vertices\(\[([^)]+)\]/.exec(strippedData)[1];
+    //Remove trailing comma if it exists
+    verticesString = verticesString.replace(/,$/, '');
+    //Split the resulting text by commas
+    var verticesList = verticesString.split(',').map(formatVertice);
+    //Grab text between 'add_edges'
+    var edgesString = /add_edges\(\[([^]*)\]\)/.exec(strippedData)[1];
+    var edgesList = formatEdges(edgesString);
+    return new this(edgesList, verticesList);
+  } catch (e) {
+    return new this([], []);
+  }
 };
 
 function formatEdges(edgesString) {
@@ -80,7 +84,9 @@ function formatEdges(edgesString) {
 }
 
 function formatVertice(vertice) {
-  return {"id": parseInt(vertice)};
+  return {
+    "id": parseInt(vertice)
+  };
 }
 
 module.exports = Graph;

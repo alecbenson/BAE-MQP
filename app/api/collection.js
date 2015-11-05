@@ -100,8 +100,10 @@ Collection.prototype.deleteTrack = function(trackName) {
 
 Collection.prototype.deleteGraph = function(graphName) {
   var trackPath = path.join(this.graphpath, graphName);
+  var contents = fs.readFileSync(trackPath, 'utf8');
   fs.unlinkSync(trackPath);
-  return this.update();
+  this.update();
+  return JSON.parse(contents);
 };
 
 module.exports = Collection;
