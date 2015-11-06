@@ -35,6 +35,7 @@ h5 {
     width: 400px;
     border-right: 2px solid #111;
     overflow: auto;
+    z-index: 1;
   }
   #ele-slider {
     margin: 30px;

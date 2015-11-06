@@ -111,3 +111,17 @@ function bindFileSelectionText() {
     input.val(label);
   });
 }
+
+/**
+ *
+ */
+function collapseNavBar() {
+  if($("#nav-pane").is(":visible")) {
+    $("#nav-pane").css({transform: "scale(0%)"});
+    $("#cesiumContainer").css({transform: "scale(100%)"});
+  }
+  else {
+    $("#nav-pane").transform.scale("400px");
+    $("#cesiumContainer").scale("100%-400px");
+  }
+}
