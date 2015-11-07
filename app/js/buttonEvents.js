@@ -115,13 +115,13 @@ function bindFileSelectionText() {
 /**
  *
  */
-function collapseNavBar() {
+function toggleNavBar() {
   if($("#nav-pane").is(":visible")) {
     $("#nav-pane").animate({width:'toggle'}, 500);
     $("#cesiumContainer").animate({width: '100%'}, 500);
   }
   else {
     $("#nav-pane").animate({width: 'toggle'}, 500);
-    
+
   }
 }
