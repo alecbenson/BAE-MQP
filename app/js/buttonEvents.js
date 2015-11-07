@@ -117,11 +117,11 @@ function bindFileSelectionText() {
  */
 function collapseNavBar() {
   if($("#nav-pane").is(":visible")) {
-    $("#nav-pane").css({transform: "scale(0%)"});
-    $("#cesiumContainer").css({transform: "scale(100%)"});
+    $("#nav-pane").animate({width:'toggle'}, 500);
+    $("#cesiumContainer").animate({width: '100%'}, 500);
   }
   else {
-    $("#nav-pane").transform.scale("400px");
-    $("#cesiumContainer").scale("100%-400px");
+    $("#nav-pane").animate({width: 'toggle'}, 500);
+    
   }
 }
