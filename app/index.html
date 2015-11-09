@@ -40,7 +40,13 @@
       <div class="page-header">
         <h3>Graph Visualizer
           <small>tag line</small>
-          <button type="button" class="btn" onclick="toggleNavPane()"></button>
+          <button
+            type="button"
+            id="collapseButton"
+            class="fa fa-arrows-h btn-primary"
+            style="right:0px"
+            onclick="toggleNavPane()">
+          </button>
         </h3>
       </div>
     </div>
@@ -85,8 +91,14 @@
 
   </div>
   <div id="cesiumContainer">
-    <button type="button" class="btn" onClick="toggleNavPane()"></button>
-    <div id="chart"></div>
+    <button
+      type="button"
+      class="fa fa-arrows-h btn-primary"
+      onClick="toggleNavPane()">
+    </button>
+    <div id="d3Container">
+      <div id="chart"></div>
+    </div>
   </div>
 
   <script src="/js/trackSource.js"></script>
