@@ -113,15 +113,18 @@ function bindFileSelectionText() {
 }
 
 /**
- *
+ * Toggles the visibility of the nav-pane
  */
-function toggleNavBar() {
-  if($("#nav-pane").is(":visible")) {
-    $("#nav-pane").animate({width:'toggle'}, 500);
-    $("#cesiumContainer").animate({width: '100%'}, 500);
-  }
-  else {
-    $("#nav-pane").animate({width: 'toggle'}, 500);
-
-  }
+function toggleNavPane() {
+    $("#nav-pane").animate({width:'toggle'},0).promise().done(function(){
+      $("#cesiumContainer").width(function(){
+        var navWidth;
+        if( $("#nav-pane").is(':visible') ){
+          navWidth = '400px';
+        } else{
+          navWidth = '0px';
+        }
+        return ('calc(100% - ' + navWidth + ')' );
+      });
+    });
 }
