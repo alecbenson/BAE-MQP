@@ -100,9 +100,9 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
   this._setLoadStatus(true);
 
   var kse = se.getElementsByTagName('kse')[0];
-  var covariance = '<h2>Covariance</h1>' + kse.getAttribute('covariance');
-
   var p = parsePos(kse);
+  var covariance = kse.getAttribute('covariance');
+  var formattedCovariance = formatCovariance(covariance);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
 
   var epoch = Cesium.JulianDate.fromIso8601('1970-01-01T00:00:00');
@@ -115,11 +115,11 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
     point: {
       pixelSize: 10,
       color: this.color,
-      translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0)
+      translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0),
     },
     time: set_time,
     ele: p.hae,
-    description: covariance
+    description: formattedCovariance
   };
   this.addSEpolyline(entity);
   this.entities.add(entity);
@@ -152,7 +152,7 @@ TrackDataSource.prototype.addSEpolyline = function(entity) {
  **/
 TrackDataSource.prototype._addSensorSample = function(sensor) {
   this.setLoadStatus(true);
-  var p = this._getXMLPos(sensor);
+  var p = parsePos(sensor);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
 
   var entity = {
@@ -311,3 +311,22 @@ TrackDataSource.prototype.highlightOnCondition = function(callback) {
     }
   }
 };
+
+function formatCovariance(covariance) {
+  var valueArray = covariance.split(' ')
+  var arrayWidth = Math.sqrt(valueArray.length);
+  var formattedCovariance = '<table cellpadding="6px">';
+  var value;
+  for (var i = 0; i < arrayWidth; i++) {
+    formattedCovariance += '<tr>';
+    for (var j = 0; j < arrayWidth; j++) {
+      formattedCovariance += '<td align="right"> ';
+      value = valueArray[arrayWidth * i + j];
+      formattedCovariance += parseFloat(value).toFixed(5);
+      formattedCovariance += ' </td>';
+    }
+    formattedCovariance += '</tr>';
+  }
+  formattedCovariance += '</table>';
+  return formattedCovariance;
+}
