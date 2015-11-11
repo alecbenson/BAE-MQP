@@ -61,18 +61,12 @@ function addTrackData(context, sourceName) {
   var model = context.model;
   var sourcespath = context.sourcespath;
 
-  var dataSource = new TrackDataSource();
-  Cesium.when(dataSource.loadUrl(sourcespath + sourceName), function() {
-    if (model !== undefined) {
-      dataSource.setTrackModel(model);
-    }
-  });
+  loadTrackFile(sourcespath + sourceName);
 
-  if (collections[collectionName] === undefined) {
-    collections[collectionName] = {};
-  }
-  collections[collectionName][sourceName] = dataSource;
-  viewer.dataSources.add(dataSource);
+  //if (collections[collectionName] === undefined) {
+  //  collections[collectionName] = {};
+  //}
+  //collections[collectionName][sourceName] = dataSource;
 }
 
 function addGraphData(context, graphName) {

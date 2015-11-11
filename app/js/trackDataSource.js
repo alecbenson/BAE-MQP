@@ -15,6 +15,8 @@ var TrackDataSource = function(name) {
   this._loading = new Cesium.Event();
   this._entityCollection = new Cesium.EntityCollection();
   this._trackNode = undefined;
+  this._position = new Cesium.SampledPositionProperty();
+  this._color = this._setTrackColor(name);
 };
 
 Object.defineProperties(TrackDataSource.prototype, {
@@ -26,6 +28,14 @@ Object.defineProperties(TrackDataSource.prototype, {
   clock: {
     get: function() {
       return this._clock;
+    }
+  },
+  color: {
+    get: function() {
+      return this._color;
+    },
+    set: function(color) {
+      this._color = color;
     }
   },
   entities: {
@@ -55,34 +65,6 @@ Object.defineProperties(TrackDataSource.prototype, {
   }
 });
 
-/**
- * loads data into the data source from the given url
- * @param url - the url to load the data from
- */
-TrackDataSource.prototype.loadUrl = function(url) {
-  if (!Cesium.defined(url)) {
-    throw new Cesium.DeveloperError('url is required.');
-  }
-
-  var name = Cesium.getFilenameFromUri(url);
-
-  if (this._name !== name) {
-    this._name = name;
-    this._changed.raiseEvent(this);
-  }
-
-  var that = this;
-  return Cesium.when(Cesium.loadXML(url), function(xml) {
-    return that.load(xml, url);
-
-  }).otherwise(function(error) {
-    console.log(error);
-    this._setLoading(false);
-    that._error.raiseEvent(that, error);
-    return Cesium.when.reject(error);
-  });
-};
-
 TrackDataSource.prototype._getXMLPos = function(data) {
   var pos = data.getElementsByTagName('position')[0];
   var lat = Number(pos.getAttribute('lat'));
@@ -95,43 +77,56 @@ TrackDataSource.prototype._getXMLPos = function(data) {
   };
 };
 
+TrackDataSource.prototype._setTrackColor = function(name) {
+  try {
+    var id = parseInt(name);
+    var color = trackColor(id);
+    return Cesium.Color.fromCssColorString(color);
+  } catch (err) {
+    console.log(err);
+    return Cesium.Color.RED;
+  }
+};
+
 /**
  * Adds a time and position dependant sample to the data source
  * @param property - the sampled position property to add the sample to
  * @param data - the data to create the sample out of
  */
-TrackDataSource.prototype._addTrackSample = function(property, data, time) {
-  var kse = data.getElementsByTagName('kse')[0];
-  var id = data.getAttribute('trackId');
+TrackDataSource.prototype.addStateEstimate = function(se, time) {
+  this._setLoadStatus(true);
+
+  var kse = se.getElementsByTagName('kse')[0];
   var p = this._getXMLPos(kse);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
   var entities = this._entityCollection;
-  var color = trackColor(parseInt(id));
-  //Epoch time
+
   var epoch = Cesium.JulianDate.fromIso8601('1970-01-01T00:00:00');
   var set_time = Cesium.JulianDate.addSeconds(epoch, time, new Cesium.JulianDate());
-  property.addSample(set_time, position);
+  this._position.addSample(set_time, position);
 
   //Create a point for the sample data
   var entity = {
     position: position,
     point: {
       pixelSize: 10,
-      color: Cesium.Color.fromCssColorString(color),
+      color: this.color,
       translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0)
     },
     time: set_time,
     ele: p.hae
   };
   entities.add(entity);
-  return property;
+  this._slideTimeWindow(set_time);
+  this._setLoadStatus(false);
 };
 
 /**
  * Draw all sensors on the map
  * @param data - the XML data from which to retrieve vertices from
  **/
-TrackDataSource.prototype._addSensorSample = function(property, sensor) {
+TrackDataSource.prototype._addSensorSample = function(sensor) {
+  this.setLoadStatus(true);
   var p = this._getXMLPos(sensor);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
   var entities = this._entityCollection;
@@ -141,110 +136,67 @@ TrackDataSource.prototype._addSensorSample = function(property, sensor) {
     billboard: {
       image: '../images/sensor.png',
       scale: 0.04,
-      color: Cesium.Color.RED,
+      color: this.color,
     },
     ele: p.hae
   };
   entities.add(entity);
-  return property;
+  this.setLoadStatus(false);
 };
 
 /**
  * Reads through the data and determines the start and end times of the data clock
  * @param vertices - the set of vertices to scan through
  */
-TrackDataSource.prototype.setTimeWindow = function() {
-  var vertices = this._entityCollection.values;
+TrackDataSource.prototype._slideTimeWindow = function(new_time) {
 
-  for (var i = 0; i < vertices.length; i++) {
-    var time = vertices[i].time;
-    if (time === undefined) {
-      continue;
-    }
-    if (viewer.clock.earliest === undefined) {
-      viewer.clock.earliest = time;
-    }
-    if (viewer.clock.latest === undefined) {
-      viewer.clock.latest = time;
-    }
-    if (Cesium.JulianDate.compare(viewer.clock.earliest, time) > 0) {
-      viewer.clock.earliest = time;
-    }
-    if (Cesium.JulianDate.compare(viewer.clock.latest, time) < 0) {
-      viewer.clock.latest = time;
-    }
+  if (viewer.clock.earliest === undefined) {
+    viewer.clock.earliest = new_time;
   }
+  if (viewer.clock.latest === undefined) {
+    viewer.clock.latest = new_time;
+  }
+  if (Cesium.JulianDate.compare(viewer.clock.earliest, new_time) > 0) {
+    viewer.clock.earliest = new_time;
+  }
+  if (Cesium.JulianDate.compare(viewer.clock.latest, new_time) < 0) {
+    viewer.clock.latest = new_time;
+  }
+
   this._clock.startTime = viewer.clock.earliest;
   this._clock.stopTime = viewer.clock.latest;
-};
-
-/**
- * Draw all vertices on the map
- * @param data - the XML data from which to retrieve vertices from
- **/
-TrackDataSource.prototype.drawEntities = function(position, data) {
-  var fusionFrames = data.getElementsByTagName('FusionFrame');
-  var sensors = data.getElementsByTagName('sensor');
-
-  for (var i = 0; i < sensors.length; i++) {
-    var sensor = sensors[i];
-    this._addSensorSample(position, sensor);
-  }
-
-  for (var j = 0; j < fusionFrames.length; j++) {
-    var frame = fusionFrames[j];
-    var t = parseInt(frame.getAttribute('time'));
-    var stateEstimates = frame.getElementsByTagName('stateEstimate');
-
-    for(var k=0; k < stateEstimates.length; k++) {
-      var estimate = stateEstimates[k];
-      this._addTrackSample(position, estimate, t);
-    }
-  }
 };
 
 /**
  * Loads data into the datasource.
  * @param data - a JSON object with data to fill the TrackDataSource with
  */
-TrackDataSource.prototype.load = function(data) {
-  if (!Cesium.defined(data)) {
-    throw new Cesium.DeveloperError('data is required.');
-  }
-  this._setLoading(true);
+TrackDataSource.prototype._setLoadStatus = function(status) {
   var entities = this._entityCollection;
-  entities.suspendEvents();
-  entities.removeAll();
 
-  //Draw all and vertices
-  var position = new Cesium.SampledPositionProperty();
-  this.drawEntities(position, data);
-
-  //Set the time window of the data
-  this.setTimeWindow();
-  //Create a track node that follows the data track
-  this.createTrackNode(position);
-
-  //Handle appropriate cesium events
-  entities.resumeEvents();
-  this._changed.raiseEvent(this);
-  this._setLoading(false);
+  if (status === true) {
+    this._setLoading(true);
+    entities.suspendEvents();
+  } else {
+    entities.resumeEvents();
+    this._changed.raiseEvent(this);
+    this._setLoading(false);
+  }
 };
+
 
 /**
  * Creates an entity that follows the track within the data source
  * @param position - the SampledPositionProperty to create the tracking node with
  */
-TrackDataSource.prototype.createTrackNode = function(position) {
-  console.log(position);
+TrackDataSource.prototype.createTrackNode = function() {
+  this._setLoadStatus(true);
   var entities = this._entityCollection;
   var entity = entities.add({
-    position: position,
+    position: this._position,
     point: {
       pixelSize: 20,
-      color: Cesium.Color.RED,
-      outlineColor: Cesium.Color.CYAN,
-      outlineWidth: 2,
+      color: this.color,
     }
   });
 
@@ -261,6 +213,7 @@ TrackDataSource.prototype.createTrackNode = function(position) {
     interpolationAlgorithm: Cesium.LagrangePolynomialApproximation
   });
   this._trackNode = entity;
+  this._setLoadStatus(false);
 };
 
 /**
