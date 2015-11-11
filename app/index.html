@@ -40,13 +40,6 @@
       <div class="page-header">
         <h3>Graph Visualizer
           <small>tag line</small>
-          <button
-            type="button"
-            id="collapseButton"
-            class="fa fa-arrows-h btn-primary"
-            style="right:0px"
-            onclick="toggleNavPane()">
-          </button>
         </h3>
       </div>
     </div>
@@ -91,11 +84,9 @@
 
   </div>
   <div id="cesiumContainer">
-    <button
-      type="button"
-      class="fa fa-arrows-h btn-primary"
-      onClick="toggleNavPane()">
-    </button>
+    <a class="btn btn-primary btn-hideControls">
+      <i class="fa fa-chevron-left"></i>
+    </a>
     <div id="d3Container">
       <div id="chart"></div>
     </div>

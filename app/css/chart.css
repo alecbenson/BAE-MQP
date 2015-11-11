@@ -1,8 +1,8 @@
 #chart {
   display: block;
   position: absolute;
-  top: 5px
-  left: 405px;
+  top: 50px;
+  left: 5px;
   background: rgba(42, 42, 42, 0.8);
   border-radius: 7px;
   -webkit-transform: scale(0.6);
@@ -17,12 +17,17 @@
   transform-origin: 0 0;
   transition-property: transform;
   transition-duration: 1s;
-  z-index: 999999999
+  z-index: 100
 }
 #chart:hover {
   -webkit-transform: scale(1.5);
   -moz-transform: scale(1.5);
   transform: scale(1.5);
+}
+.btn-hideControls {
+  position: absolute;
+  top: 5px;
+  z-index: 101;
 }
 .link {
   stroke: #ffffff;
