@@ -17,6 +17,7 @@ var TrackDataSource = function(name) {
   this._trackNode = undefined;
   this._position = new Cesium.SampledPositionProperty();
   this._color = this._setTrackColor(name);
+  this._polylines = new Cesium.PolylineCollection();
 };
 
 Object.defineProperties(TrackDataSource.prototype, {
@@ -67,6 +68,11 @@ Object.defineProperties(TrackDataSource.prototype, {
     get: function() {
       return this._trackNode;
     }
+  },
+  polylines: {
+    get: function() {
+      return this._polylines;
+    }
   }
 });
 
@@ -102,6 +108,8 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
   this._setLoadStatus(true);
 
   var kse = se.getElementsByTagName('kse')[0];
+  var covariance = '<h2>Covariance</h1>' + kse.getAttribute('covariance');
+
   var p = this._getXMLPos(kse);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
   var entities = this._entityCollection;
@@ -119,11 +127,29 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
       translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0)
     },
     time: set_time,
-    ele: p.hae
+    ele: p.hae,
+    description: covariance
   };
   entities.add(entity);
   this._slideTimeWindow(set_time);
   this._setLoadStatus(false);
+};
+
+TrackDataSource.prototype.addPolyline = function(position) {
+  var entities = this.entities.values;
+  if (entities.length < 1) {
+    return;
+  }
+  var lastEl = entities[entities.length - 1];
+  var lastPos = lastEl.position.getValue();
+
+  var polyln = new Cesium.Polyline({
+    positions: [lastPos, position],
+    width: 3,
+  });
+  //this.polylines.add(polyline);
+  //console.log(this.polylines);
+  //entities.add(polylines);
 };
 
 /**

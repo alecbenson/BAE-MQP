@@ -87,6 +87,7 @@ function click(d) {
   if (trackNode.isAvailable(currentTime)) {
     var currentPos = trackNode.position.getValue(currentTime);
     var boundingSphere = new Cesium.BoundingSphere(currentPos, 5000);
+    viewer.selectedEntity = trackNode;
     viewer.camera.flyToBoundingSphere(boundingSphere);
   } else {
     viewer.flyTo(entities);
