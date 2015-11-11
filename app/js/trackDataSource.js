@@ -103,6 +103,8 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
 
   var kse = se.getElementsByTagName('kse')[0];
   var p = this._getXMLPos(kse);
+  var covariance = kse.getAttribute('covariance');
+  var formattedCovariance = formatCovariance(covariance);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
   var entities = this._entityCollection;
 
@@ -116,10 +118,11 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
     point: {
       pixelSize: 10,
       color: this.color,
-      translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0)
+      translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0),
     },
     time: set_time,
-    ele: p.hae
+    ele: p.hae,
+    description: formattedCovariance
   };
   entities.add(entity);
   this._slideTimeWindow(set_time);
@@ -295,3 +298,22 @@ TrackDataSource.prototype.highlightOnCondition = function(callback) {
     }
   }
 };
+
+function formatCovariance(covariance) {
+  var valueArray = covariance.split(' ')
+  var arrayWidth = Math.sqrt(valueArray.length);
+  var formattedCovariance = '<table cellpadding="6px">';
+  var value;
+  for(var i = 0; i < arrayWidth; i++) {
+    formattedCovariance += '<tr>';
+    for(var j = 0; j < arrayWidth; j++) {
+      formattedCovariance += '<td align="right"> ';
+      value = valueArray[arrayWidth * i + j];
+      formattedCovariance += parseFloat(value).toFixed(5);
+      formattedCovariance += ' </td>';
+    }
+    formattedCovariance += '</tr>';
+  }
+  formattedCovariance += '</table>';
+  return formattedCovariance;
+}
