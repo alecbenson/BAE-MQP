@@ -62,6 +62,11 @@ Object.defineProperties(TrackDataSource.prototype, {
     get: function() {
       return this._loading;
     }
+  },
+  trackNode: {
+    get: function() {
+      return this._trackNode;
+    }
   }
 });
 

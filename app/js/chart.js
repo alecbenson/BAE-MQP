@@ -74,6 +74,25 @@ function tick() {
 
 function dblclick(d) {}
 
+function click(d) {
+  var track = tracks[d.id.toString()];
+  if (track === undefined) {
+    return;
+  }
+
+  var trackNode = track.trackNode;
+  var entities = track.entities.values;
+  var currentTime = viewer.clock.currentTime;
+
+  if (trackNode.isAvailable(currentTime)) {
+    var currentPos = trackNode.position.getValue(currentTime);
+    var boundingSphere = new Cesium.BoundingSphere(currentPos, 5000);
+    viewer.camera.flyToBoundingSphere(boundingSphere);
+  } else {
+    viewer.flyTo(entities);
+  }
+}
+
 function zoomed() {
   container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 }
@@ -142,6 +161,7 @@ function start() {
     .attr("class", "node")
     .attr("r", 12)
     .on("dblclick", dblclick)
+    .on("click", click)
     .call(drag);
   node.exit().remove();
 
