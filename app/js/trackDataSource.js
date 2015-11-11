@@ -316,6 +316,7 @@ function formatCovariance(covariance) {
   var valueArray = covariance.split(' ')
   var arrayWidth = Math.sqrt(valueArray.length);
   var formattedCovariance = '<table cellpadding="6px">';
+  formattedCovariance += '<tr><h2>Covariance</h2></tr>'
   var value;
   for (var i = 0; i < arrayWidth; i++) {
     formattedCovariance += '<tr>';
