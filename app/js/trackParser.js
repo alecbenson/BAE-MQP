@@ -12,20 +12,28 @@ function loadTrackFile(xmlPath) {
 }
 
 function parseAllFrames(frames) {
-  var sensors = trackData.getElementsByTagName("sensor");
-  parseAllSensors(sensors);
-
   $(frames).each(function(i, frame) {
     parseFrame(frame);
-  }).promise().done(function(){
+  }).promise().done(function() {
     addUpdateTrackNodes();
   });
 }
 
-function parseAllSensors(sensors) {
-  $(sensors).each(function(i, sensor){
-    console.log("Decide what to do with this sensor");
-  });
+function addSensorSample(sensor) {
+  var p = parsePos(sensor);
+  var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
+
+  var entity = {
+    position: position,
+    billboard: {
+      image: '../images/sensor.png',
+      scale: 0.04,
+      color: Cesium.Color.ORANGERED,
+    },
+    ele: p.hae
+  };
+  viewer.entities.add(entity);
+  return entity;
 }
 
 function parseFrame(frame) {
@@ -33,6 +41,16 @@ function parseFrame(frame) {
   var stateEstimates = frame.getElementsByTagName('stateEstimate');
   $.each(stateEstimates, function(i, se) {
     parseStateEstimate(se, t);
+  });
+
+  var sensors = trackData.getElementsByTagName("sensor");
+  parseAllSensors(sensors);
+}
+
+function parseAllSensors(sensors) {
+  $.each(sensors, function(i, sensor) {
+    var sensorEnt = addSensorSample(sensor);
+    sensors[i] = sensorEnt;
   });
 }
 
@@ -51,8 +69,20 @@ function parseStateEstimate(se, time) {
   track.addStateEstimate(se, time);
 }
 
+function parsePos(kse) {
+  var pos = kse.getElementsByTagName('position')[0];
+  var lat = Number(pos.getAttribute('lat'));
+  var lon = Number(pos.getAttribute('lon'));
+  var hae = Number(pos.getAttribute('hae'));
+  return {
+    "lat": lat,
+    "lon": lon,
+    "hae": hae
+  };
+}
+
 function addUpdateTrackNodes() {
-  for(var id in tracks){
+  for (var id in tracks) {
     var track = tracks[id];
     track.createTrackNode();
   }

@@ -80,18 +80,6 @@ Object.defineProperties(TrackDataSource.prototype, {
   }
 });
 
-TrackDataSource.prototype._getXMLPos = function(data) {
-  var pos = data.getElementsByTagName('position')[0];
-  var lat = Number(pos.getAttribute('lat'));
-  var lon = Number(pos.getAttribute('lon'));
-  var hae = Number(pos.getAttribute('hae'));
-  return {
-    "lat": lat,
-    "lon": lon,
-    "hae": hae
-  };
-};
-
 TrackDataSource.prototype._setTrackColor = function(name) {
   try {
     var id = parseInt(name);
@@ -114,7 +102,7 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
   var kse = se.getElementsByTagName('kse')[0];
   var covariance = '<h2>Covariance</h1>' + kse.getAttribute('covariance');
 
-  var p = this._getXMLPos(kse);
+  var p = parsePos(kse);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
 
   var epoch = Cesium.JulianDate.fromIso8601('1970-01-01T00:00:00');

@@ -54,7 +54,6 @@ function createNewCollection(target) {
 }
 
 function renderCollectionSources(context) {
-  console.log(context);
   getTemplateHTML('sourceList').done(function(data) {
     result = applyTemplate(data, context);
     var list = "#sourceList" + "-" + context.name;
