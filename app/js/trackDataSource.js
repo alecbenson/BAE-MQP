@@ -2,6 +2,7 @@ var TrackDataSource = function(name) {
 
   this._name = name;
   this._entityCollection = new Cesium.EntityCollection();
+
   this._clock = new Cesium.DataSourceClock();
   this._clock.startTime = viewer.clock.startTime;
   this._clock.currentTime = viewer.clock.currentTime;
@@ -9,15 +10,15 @@ var TrackDataSource = function(name) {
   this._clock.clockRange = Cesium.ClockRange.LOOP_STOP;
   this._clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER;
   this._clock.multiplier = 1;
+
   this._changed = new Cesium.Event();
   this._error = new Cesium.Event();
   this._isLoading = false;
   this._loading = new Cesium.Event();
-  this._entityCollection = new Cesium.EntityCollection();
   this._trackNode = undefined;
   this._position = new Cesium.SampledPositionProperty();
   this._color = this._setTrackColor(name);
-  this._polylines = new Cesium.PolylineCollection();
+  this._lastAddedSE = undefined;
 };
 
 Object.defineProperties(TrackDataSource.prototype, {
@@ -49,6 +50,14 @@ Object.defineProperties(TrackDataSource.prototype, {
       return this._isLoading;
     }
   },
+  lastAddedSE: {
+    get: function() {
+      return this._lastAddedSE;
+    },
+    set: function(se) {
+      this._lastAddedSE = se;
+    }
+  },
   changedEvent: {
     get: function() {
       return this._changed;
@@ -67,11 +76,6 @@ Object.defineProperties(TrackDataSource.prototype, {
   trackNode: {
     get: function() {
       return this._trackNode;
-    }
-  },
-  polylines: {
-    get: function() {
-      return this._polylines;
     }
   }
 });
@@ -112,7 +116,6 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
 
   var p = this._getXMLPos(kse);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
-  var entities = this._entityCollection;
 
   var epoch = Cesium.JulianDate.fromIso8601('1970-01-01T00:00:00');
   var set_time = Cesium.JulianDate.addSeconds(epoch, time, new Cesium.JulianDate());
@@ -130,26 +133,29 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
     ele: p.hae,
     description: covariance
   };
-  entities.add(entity);
+  this.addSEpolyline(entity);
+  this.entities.add(entity);
+  this.lastAddedSE = entity;
   this._slideTimeWindow(set_time);
   this._setLoadStatus(false);
 };
 
-TrackDataSource.prototype.addPolyline = function(position) {
-  var entities = this.entities.values;
-  if (entities.length < 1) {
+TrackDataSource.prototype.addSEpolyline = function(entity) {
+  if (this.lastAddedSE === undefined) {
     return;
   }
-  var lastEl = entities[entities.length - 1];
-  var lastPos = lastEl.position.getValue();
+  var lastPos = this.lastAddedSE.position;
+  var currentPos = entity.position;
 
-  var polyln = new Cesium.Polyline({
-    positions: [lastPos, position],
-    width: 3,
+  var polyline = this.entities.add({
+    polyline: {
+      positions: [lastPos, currentPos],
+      width: 3,
+      material: new Cesium.PolylineOutlineMaterialProperty({
+        color: this.color,
+      }),
+    }
   });
-  //this.polylines.add(polyline);
-  //console.log(this.polylines);
-  //entities.add(polylines);
 };
 
 /**
@@ -160,7 +166,6 @@ TrackDataSource.prototype._addSensorSample = function(sensor) {
   this.setLoadStatus(true);
   var p = this._getXMLPos(sensor);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
-  var entities = this._entityCollection;
 
   var entity = {
     position: position,
@@ -171,7 +176,7 @@ TrackDataSource.prototype._addSensorSample = function(sensor) {
     },
     ele: p.hae
   };
-  entities.add(entity);
+  this.entities.add(entity);
   this.setLoadStatus(false);
 };
 
@@ -203,13 +208,11 @@ TrackDataSource.prototype._slideTimeWindow = function(new_time) {
  * @param data - a JSON object with data to fill the TrackDataSource with
  */
 TrackDataSource.prototype._setLoadStatus = function(status) {
-  var entities = this._entityCollection;
-
   if (status === true) {
     this._setLoading(true);
-    entities.suspendEvents();
+    this.entities.suspendEvents();
   } else {
-    entities.resumeEvents();
+    this.entities.resumeEvents();
     this._changed.raiseEvent(this);
     this._setLoading(false);
   }
@@ -222,8 +225,7 @@ TrackDataSource.prototype._setLoadStatus = function(status) {
  */
 TrackDataSource.prototype.createTrackNode = function() {
   this._setLoadStatus(true);
-  var entities = this._entityCollection;
-  var entity = entities.add({
+  var entity = this.entities.add({
     position: this._position,
     point: {
       pixelSize: 20,
@@ -232,8 +234,8 @@ TrackDataSource.prototype.createTrackNode = function() {
   });
 
   //Also set the availability of the entity to match our simulation time.
-  entity.availability = new Cesium.TimeIntervalCollection();
-  entity.availability.addInterval({
+  this.entities.availability = new Cesium.TimeIntervalCollection();
+  this.entities.availability.addInterval({
     start: this._clock.startTime,
     stop: this._clock.stopTime
   });
@@ -306,7 +308,7 @@ TrackDataSource.prototype.orientTrackNode = function() {
  * @param isLoading {bool}
  */
 TrackDataSource.prototype.highlightOnCondition = function(callback) {
-  var entities = this._entityCollection.values;
+  var entities = this.entities.values;
   for (var i = 0; i < entities.length; i++) {
     var entity = entities[i];
     if (entity.point !== undefined) {
