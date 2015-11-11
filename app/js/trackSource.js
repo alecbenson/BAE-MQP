@@ -102,23 +102,22 @@ TrackDataSource.prototype._getXMLPos = function(data) {
  */
 TrackDataSource.prototype._addTrackSample = function(property, data, time) {
   var kse = data.getElementsByTagName('kse')[0];
+  var id = data.getAttribute('trackId');
   var p = this._getXMLPos(kse);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
   var entities = this._entityCollection;
+  var color = trackColor(parseInt(id));
   //Epoch time
   var epoch = Cesium.JulianDate.fromIso8601('1970-01-01T00:00:00');
   var set_time = Cesium.JulianDate.addSeconds(epoch, time, new Cesium.JulianDate());
-  console.log(set_time);
   property.addSample(set_time, position);
 
   //Create a point for the sample data
   var entity = {
     position: position,
     point: {
-      pixelSize: 5,
-      color: Cesium.Color.BLUE,
-      outlineColor: Cesium.Color.CYAN,
-      outlineWidth: 2,
+      pixelSize: 10,
+      color: Cesium.Color.fromCssColorString(color),
       translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0)
     },
     time: set_time,
@@ -237,6 +236,7 @@ TrackDataSource.prototype.load = function(data) {
  * @param position - the SampledPositionProperty to create the tracking node with
  */
 TrackDataSource.prototype.createTrackNode = function(position) {
+  console.log(position);
   var entities = this._entityCollection;
   var entity = entities.add({
     position: position,

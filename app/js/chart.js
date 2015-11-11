@@ -58,7 +58,7 @@ function tick() {
       return d.target.y;
     })
     .attr("stroke-width", function(d) {
-      return d.weight
+      return d.weight;
     });
 
   node.attr("cx", function(d) {
@@ -66,6 +66,9 @@ function tick() {
     })
     .attr("cy", function(d) {
       return d.y;
+    })
+    .attr("fill", function(d) {
+      return trackColor(d.id);
     });
 }
 
@@ -148,4 +151,19 @@ function start() {
 function addNode(node) {
   nodes.push(node);
   start();
+}
+
+function trackColor(trackId) {
+  var red = colorSeed(trackId + 123);
+  var green = colorSeed(trackId + 456);
+  var blue = colorSeed(trackId + 789);
+  var result = "#" + red + green + blue;
+  return result;
+}
+
+function colorSeed(id) {
+  var num = Math.sin(id) * 10000;
+  num = num - Math.floor(num);
+  result = Math.round((num * 154) + 100).toString(16);
+  return result;
 }
