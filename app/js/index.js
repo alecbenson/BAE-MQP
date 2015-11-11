@@ -19,6 +19,7 @@ $(function() {
   bindCancelButton();
   bindNewCollectionButton();
   bindSubmitCollectionButton();
+  bindToggleNavPane();
   bindUploadDataButton();
   bindUploadModelButton();
 });

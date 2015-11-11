@@ -111,3 +111,28 @@ function bindFileSelectionText() {
     input.val(label);
   });
 }
+
+/**
+ * Toggles the visibility of the nav-pane
+ */
+function bindToggleNavPane() {
+  $(document).on("click", ".btn-hideControls", function(event) {
+    $("#nav-pane").animate({
+      width: 'toggle'
+    }, 0).promise().done(function() {
+      $("#cesiumContainer").width(function() {
+        var navWidth;
+        if ($("#nav-pane").is(':visible')) {
+          navWidth = '400px';
+        } else {
+          navWidth = '0px';
+        }
+        return ('calc(100% - ' + navWidth + ')');
+      });
+    });
+
+    var inner = $(event.target).children().first();
+    $(inner).toggleClass("fa-chevron-right fa-chevron-left");
+
+  });
+}

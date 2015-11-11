@@ -35,10 +35,6 @@
 </head>
 
 <body>
-  <!-- D3 container -->
-  <div id="chart"></div>
-  <div id="info" title="Test title"></div>
-
   <div id="nav-pane">
     <div class="nav-section">
       <div class="page-header">
@@ -87,7 +83,14 @@
     </div>
 
   </div>
-  <div id="cesiumContainer"></div>
+  <div id="cesiumContainer">
+    <a class="btn btn-primary btn-hideControls">
+      <i class="fa fa-chevron-left"></i>
+    </a>
+    <div id="d3Container">
+      <div id="chart"></div>
+    </div>
+  </div>
   <script src="/js/trackDataSource.js"></script>
   <script src="/js/sensorDataSource.js"></script>
   <script src="/js/trackParser.js"></script>
