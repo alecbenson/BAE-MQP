@@ -52,7 +52,7 @@ function bindDeleteGraphButton() {
  */
 function bindUploadDataButton() {
   $(document).on("click", ".btn-upload-data", function(event) {
-    uploadCollectionSource(event.target);
+    uploadCollectionSource(this);
     return false;
   });
 }
@@ -62,7 +62,7 @@ function bindUploadDataButton() {
  */
 function bindUploadModelButton() {
   $(document).on("click", ".btn-upload-model", function(event) {
-    uploadCollectionModel(event.target);
+    uploadCollectionModel(this);
     return false;
   });
 }
@@ -72,7 +72,7 @@ function bindUploadModelButton() {
  */
 function bindSubmitCollectionButton() {
   $(document).on("click", ".btn-submitCollection", function(event) {
-    createNewCollection(event.target);
+    createNewCollection(this);
     event.preventDefault();
   });
 }
@@ -117,6 +117,9 @@ function bindFileSelectionText() {
  */
 function bindToggleNavPane() {
   $(document).on("click", ".btn-hideControls", function(event) {
+    var inner = $(this).children(":first");
+    $(inner).toggleClass("fa-chevron-left fa-chevron-right");
+
     $("#nav-pane").animate({
       width: 'toggle'
     }, 0).promise().done(function() {
@@ -130,9 +133,5 @@ function bindToggleNavPane() {
         return ('calc(100% - ' + navWidth + ')');
       });
     });
-
-    var inner = $(event.target).children().first();
-    $(inner).toggleClass("fa-chevron-right fa-chevron-left");
-
   });
 }

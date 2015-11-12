@@ -32,6 +32,10 @@
 .link {
   stroke: #ffffff;
 }
+.chart-label {
+  font-size: 30px;
+  fill: #eee;
+}
 .node {
   cursor: move;
   stroke: #000;

@@ -22,7 +22,7 @@ router.get('/', function(req, res) {
 
 //GET a collection with the given name
 router.get('/:collectionName', function(req, res) {
-  var collectionName = req.params.collectionName;
+  var collectionName = req.params.collectionName.replace(/\W/g, '');
   var collection = collectionSet.get(collectionName);
 
   if (collection === undefined) {
@@ -34,7 +34,7 @@ router.get('/:collectionName', function(req, res) {
 
 //POST a new collection
 router.post('/', function(req, res) {
-  var collectionName = req.body.collectionName;
+  var collectionName = req.body.collectionName.replace(/\W/g, '');
 
   //If the collection exists already
   if (collectionSet.contains(collectionName)) {
@@ -51,7 +51,7 @@ router.post('/', function(req, res) {
 
 //DELETE a collection by name
 router.delete('/:collectionName', function(req, res) {
-  var collectionName = req.params.collectionName;
+  var collectionName = req.params.collectionName.replace(/\W/g, '');
   if (collectionName === undefined) {
     res.status(404).send();
     return;
@@ -66,7 +66,7 @@ router.delete('/:collectionName', function(req, res) {
 
 //DELETE a collection track by name
 router.delete('/:collectionName/track/:sourceName', function(req, res) {
-  var collectionName = req.params.collectionName;
+  var collectionName = req.params.collectionName.replace(/\W/g, '');
   var sourceName = req.params.sourceName;
   if (collectionName === undefined || sourceName === undefined) {
     res.status(404).send();
@@ -121,7 +121,7 @@ var diskStorage = StorageEngine({
 
 var getDestination = function(req, file) {
   var fullPath;
-  var collectionName = req.body.collectionName;
+  var collectionName = req.body.collectionName.replace(/\W/g, '');
   var uploadType = req.body.uploadType;
   if (uploadType == 'sage') {
     fullPath = path.join(collectionSet.dataDir, collectionName, collectionSet.graphDir);
@@ -160,7 +160,7 @@ router.post('/upload/data', function(req, res) {
       res.status(500).send("No file specified.");
       return;
     }
-    var collectionName = req.body.collectionName;
+    var collectionName = req.body.collectionName.replace(/\W/g, '');
     var collection = collectionSet.get(collectionName);
     var uploadType = req.body.uploadType;
 
@@ -181,7 +181,7 @@ router.post('/upload/data', function(req, res) {
 //Define rules for storing data
 var modelstorage = multer.diskStorage({
   destination: function(req, file, cb) {
-    var collectionName = req.body.collectionName;
+    var collectionName = req.body.collectionName.replace(/\W/g, '');
     cb(null, path.join(collectionSet.dataDir, collectionName, collectionSet.modelDir));
   },
   filename: function(req, file, cb) {
@@ -210,7 +210,7 @@ router.post('/upload/model', function(req, res) {
       res.status(500).send("No model file specified.");
       return;
     }
-    var collectionName = req.body.collectionName;
+    var collectionName = req.body.collectionName.replace(/\W/g, '');
     var collection = collectionSet.get(collectionName);
     collection.model = req.file.destination + req.file.filename;
 

@@ -40,6 +40,13 @@ var rect = container.append("rect")
   .style("fill", "none")
   .style("pointer-events", "all");
 
+var chartLabel = svg.append("text")
+  .attr("class", "chart-label")
+  .attr("text-anchor", "start")
+  .attr("y", "5%")
+  .attr("x", "40%")
+  .text("Graph");
+
 // Get a list of the links and nodes
 var link = container.selectAll(".link"),
   node = container.selectAll(".node");
