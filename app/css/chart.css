@@ -24,11 +24,6 @@
   -moz-transform: scale(1.5);
   transform: scale(1.5);
 }
-.btn-hideControls {
-  position: absolute;
-  top: 5px;
-  z-index: 101;
-}
 .link {
   stroke: #ffffff;
 }

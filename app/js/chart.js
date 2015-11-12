@@ -43,8 +43,8 @@ var rect = container.append("rect")
 var text = svg.append("text")
   .attr("x", width / 2)
   .attr("y", height / 2)
-  .text("Empty")
-  .attr("font-size", "100px")
+  .text(graphText())
+  .attr("font-size", "30px")
   .attr("text-anchor", "middle")
   .attr("fill", "white");
 
@@ -79,11 +79,15 @@ function tick() {
       return trackColor(d.id);
     });
 
-    var emptyText = "";
-    if(isGraphEmpty()) {
-      emptyText = "Empty";
-    }
-    text.text(emptyText);
+    text.text(graphText);
+}
+
+function graphText() {
+  if(isGraphEmpty()) {
+    return "No graph data has been loaded";
+  } else{
+    return "";
+  }
 }
 
 function dblclick(d) {}

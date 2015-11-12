@@ -16,6 +16,14 @@ html, body {
   margin-bottom: 0px;
   font-size: 14px;
 }
+.btn-hideControls {
+  position: absolute;
+  top: 0px;
+  left: -7px;
+  z-index: 101;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
 h5 {
   font-weight: bold;
   font-style: oblique;
