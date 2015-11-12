@@ -40,12 +40,13 @@ var rect = container.append("rect")
   .style("fill", "none")
   .style("pointer-events", "all");
 
-var chartLabel = svg.append("text")
-  .attr("class", "chart-label")
-  .attr("text-anchor", "start")
-  .attr("y", "5%")
-  .attr("x", "40%")
-  .text("Graph");
+var text = svg.append("text")
+  .attr("x", width / 2)
+  .attr("y", height / 2)
+  .text("Empty")
+  .attr("font-size", "100px")
+  .attr("text-anchor", "middle")
+  .attr("fill", "white");
 
 // Get a list of the links and nodes
 var link = container.selectAll(".link"),
@@ -77,6 +78,12 @@ function tick() {
     .attr("fill", function(d) {
       return trackColor(d.id);
     });
+
+    var emptyText = "";
+    if(isGraphEmpty()) {
+      emptyText = "Empty";
+    }
+    text.text(emptyText);
 }
 
 function dblclick(d) {}
@@ -194,4 +201,16 @@ function colorSeed(id) {
   num = num - Math.floor(num);
   result = Math.round((num * 154) + 100).toString(16);
   return result;
+}
+
+function isGraphEmpty() {
+  return isNodesEmpty() && isLinksEmpty();
+}
+
+function isNodesEmpty() {
+  return 0 === nodes.length;
+}
+
+function isLinksEmpty() {
+  return 0 === nodes.length;
 }

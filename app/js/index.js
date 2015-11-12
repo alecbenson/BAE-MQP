@@ -37,7 +37,6 @@ function getCollections() {
     success: function(data, status) {
       var results = JSON.parse(data);
       collectionSet.populateCollections(results);
-      collectionSet.renderAllCollections();
     },
     error: function(xhr, desc, err) {
       console.log("Failed: " + desc + err);
