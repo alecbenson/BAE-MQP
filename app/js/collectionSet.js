@@ -37,6 +37,17 @@ CollectionSet.prototype.getCollection = function(collectionName) {
   return this.collections[collectionName];
 };
 
+CollectionSet.prototype.findTrackByID = function(trackID) {
+  var idString = trackID.toString();
+  for (var name in this.collections) {
+    var collection = this.collections[name];
+    if (idString in collection.tracks) {
+      return collection.tracks[idString];
+    }
+  }
+  return undefined;
+};
+
 CollectionSet.prototype.renderAllCollections = function() {
   $(dataDiv).empty();
   //Loop through each file to render

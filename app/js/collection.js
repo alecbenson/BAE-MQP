@@ -64,7 +64,7 @@ Collection.prototype._parseAllFrames = function(frames) {
   $(frames).each(function(i, frame) {
     outerScope._parseFrame(frame);
   }).promise().done(function() {
-    Collection.addUpdateTrackNodes();
+    outerScope.addUpdateTrackNodes();
   });
 };
 
@@ -134,7 +134,7 @@ Collection.parsePos = function(kse) {
   };
 };
 
-Collection.addUpdateTrackNodes = function() {
+Collection.prototype.addUpdateTrackNodes = function() {
   for (var id in this.tracks) {
     var track = this.tracks[id];
     track.createTrackNode();
@@ -211,7 +211,7 @@ Collection.prototype.renderSources = function() {
  * Makes an ajax call to delete a given track source.
  * @param sourceName - the name of the data source to delete
  */
-Collection.prototype.deleteTrackData = function(sourceName) {
+Collection.prototype.deleteSourceData = function(sourceName) {
   var outerScope = this;
   $.ajax({
     url: "/collections/" + outerScope.name + "/track/" + sourceName,

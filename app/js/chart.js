@@ -82,7 +82,7 @@ function tick() {
 function dblclick(d) {}
 
 function click(d) {
-  var track = tracks[d.id.toString()];
+  var track = collectionSet.findTrackByID(d.id);
   if (track === undefined) {
     return;
   }

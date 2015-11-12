@@ -31,12 +31,12 @@ function bindNewCollectionButton() {
 /**
  * binds a .btn-newCollection click to the renderNewCollection method
  */
-function bindDeleteTrackButton() {
-  $(document).on("click", ".btn-deleteTrack", function() {
+function bindDeleteSourceButton() {
+  $(document).on("click", ".btn-deleteSource", function() {
     var sourceName = $(this).attr('data-source');
     var collectionName = $(this).attr('data-collection');
     var collection = collectionSet.collections[collectionName];
-    collection.deleteTrackData(sourceName);
+    collection.deleteSourceData(sourceName);
   });
 }
 

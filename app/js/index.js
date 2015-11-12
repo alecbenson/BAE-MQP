@@ -14,7 +14,7 @@ $(function() {
   getCollections();
   bindFileSelectionText();
   bindDeleteButton();
-  bindDeleteTrackButton();
+  bindDeleteSourceButton();
   bindDeleteGraphButton();
   bindCancelButton();
   bindNewCollectionButton();
