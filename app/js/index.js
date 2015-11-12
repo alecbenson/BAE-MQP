@@ -35,66 +35,13 @@ function getCollections() {
     processData: false,
     contentType: false,
     success: function(data, status) {
-      var collections = JSON.parse(data);
-      renderAllCollections(collections);
+      var results = JSON.parse(data);
+      collectionSet.populateCollections(results);
+      collectionSet.renderAllCollections();
     },
     error: function(xhr, desc, err) {
       console.log("Failed: " + desc + err);
     }
-  });
-}
-
-/**
- * Given a data file, create a new data source and draw the result in cesium
- * @param file - an data file to render in cesium
- */
-function loadCollection(context) {
-  $.each(context.sources, function(index, sourceName) {
-    addTrackData(context, sourceName);
-  });
-  $.each(context.graphs, function(index, graphName) {
-    addGraphData(context, graphName);
-  });
-}
-
-function addTrackData(context, sourceName) {
-  var collectionName = context.name;
-  var model = context.model;
-  var sourcespath = context.sourcespath;
-
-  loadTrackFile(sourcespath + sourceName);
-
-  //if (collections[collectionName] === undefined) {
-  //  collections[collectionName] = {};
-  //}
-  //collections[collectionName][sourceName] = dataSource;
-}
-
-function addGraphData(context, graphName) {
-  var graphFilePath = context.graphpath + graphName;
-  loadGraphFile(graphFilePath);
-}
-/**
- * Uploads a file to the server
- * @param target - an object close to the submission form (typically the button).
- */
-function uploadCollectionSource(target) {
-  var parentForm = $(target).closest('form');
-  $(parentForm).ajaxSubmit({
-    url: "/collections/upload/data",
-    type: "POST",
-    dataType: "JSON",
-    success: function(data, status) {
-      var uploadType = data.file.uploadType;
-      var sourceName = data.file.filename;
-      if (uploadType == "xml") {
-        addTrackData(data.context, sourceName);
-      } else {
-        addGraphData(data.context, sourceName);
-      }
-      renderCollectionSources(data.context);
-    },
-    error: function(xhr, desc, err) {}
   });
 }
 
@@ -127,55 +74,6 @@ function setCollectionModel(collectionName, modelPath) {
 }
 
 /**
- * Makes an ajax call to delete a given data collection.
- * @param collectionName - the name of the collection to delete
- */
-function deleteCollection(collectionName) {
-  $.ajax({
-    url: "/collections/" + collectionName,
-    type: "DELETE",
-    success: function(data, status) {
-      var collection = collections[collectionName];
-
-      //Remove all datasources in this collection from the viewer
-      for (var index in collection) {
-        var ds = collection[index];
-        if (viewer.dataSources.contains(ds)) {
-          viewer.dataSources.remove(ds, true);
-        }
-      }
-      delete collections[collectionName];
-      $(".collection-" + collectionName).remove();
-    },
-    error: function(xhr, desc, err) {
-      console.log("Failed: " + desc + err);
-    }
-  });
-}
-
-/**
- * Makes an ajax call to delete a given track source.
- * @param sourceName - the name of the data source to delete
- */
-function deleteTrackData(collectionName, sourceName) {
-  $.ajax({
-    url: "/collections/" + collectionName + "/track/" + sourceName,
-    type: "DELETE",
-    success: function(data, status) {
-      var ds = collections[collectionName][sourceName];
-      if (viewer.dataSources.contains(ds)) {
-        viewer.dataSources.remove(ds, true);
-      }
-      delete collections[collectionName][sourceName];
-      renderCollectionSources(data);
-    },
-    error: function(xhr, desc, err) {
-      console.log("Failed: " + desc + err);
-    }
-  });
-}
-
-/**
  * Makes an ajax call to delete a given graph source.
  * @param sourceName - the name of the data source to delete
  */
@@ -186,7 +84,7 @@ function deleteGraphData(collectionName, graphName) {
     success: function(data, status) {
       unloadGraphEntities(data.graph);
       console.log(nodes);
-      renderCollectionSources(data.context);
+      renderSources(data.context);
     },
     error: function(xhr, desc, err) {
       console.log("Failed: " + desc + err);

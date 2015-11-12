@@ -100,7 +100,7 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
   this._setLoadStatus(true);
 
   var kse = se.getElementsByTagName('kse')[0];
-  var p = parsePos(kse);
+  var p = Collection.parsePos(kse);
   var covariance = kse.getAttribute('covariance');
   var formattedCovariance = formatCovariance(covariance);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
@@ -152,7 +152,7 @@ TrackDataSource.prototype.addSEpolyline = function(entity) {
  **/
 TrackDataSource.prototype._addSensorSample = function(sensor) {
   this.setLoadStatus(true);
-  var p = parsePos(sensor);
+  var p = Collection.parsePos(sensor);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
 
   var entity = {

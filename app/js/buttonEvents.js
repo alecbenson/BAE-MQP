@@ -3,7 +3,10 @@
  */
 function bindDeleteButton() {
   $(document).on("click", ".btn-delete", function() {
-    deleteCollection($(this).attr('id'));
+    var collectionName = $(this).attr('id');
+    console.log(collectionName);
+    var collection = collectionSet.getCollection(collectionName);
+    collection.deleteCollection();
   });
 }
 
@@ -32,7 +35,8 @@ function bindDeleteTrackButton() {
   $(document).on("click", ".btn-deleteTrack", function() {
     var sourceName = $(this).attr('data-source');
     var collectionName = $(this).attr('data-collection');
-    deleteTrackData(collectionName, sourceName);
+    var collection = collectionSet.collections[collectionName];
+    collection.deleteTrackData(sourceName);
   });
 }
 
@@ -52,7 +56,7 @@ function bindDeleteGraphButton() {
  */
 function bindUploadDataButton() {
   $(document).on("click", ".btn-upload-data", function(event) {
-    uploadCollectionSource(this);
+    Collection.uploadCollectionSource(this);
     return false;
   });
 }
@@ -72,7 +76,7 @@ function bindUploadModelButton() {
  */
 function bindSubmitCollectionButton() {
   $(document).on("click", ".btn-submitCollection", function(event) {
-    createNewCollection(this);
+    Collection.createNewCollection(this);
     event.preventDefault();
   });
 }
@@ -86,17 +90,10 @@ function bindDataVisibilityToggle(checkbox) {
   $(checkbox).on('change', function() {
     var sourceName = $(this).attr('data-source');
     var collectionName = $(this).attr('data-collection');
+    var state = $(this).prop('checked');
 
-    var sources = collections[collectionName];
-    var dataSource = sources[sourceName];
-    if (dataSource === undefined) {
-      return;
-    }
-    var entityList = dataSource.entities.values;
-    for (var i = 0; i < entityList.length; i++) {
-      currentState = entityList[i].show;
-      entityList[i].show = !currentState;
-    }
+    var collection = collectionSet.collections[collectionName];
+    collection.setAllTrackVisibility(state);
   });
 }
 
