@@ -258,7 +258,7 @@ Collection.uploadCollectionSource = function(target) {
         //Load Sage file
         var graphFilePath = context.graphpath + sourceName;
         collection.graphs.push(sourceName);
-        loadGraphFile(graphFilePath);
+        graph.loadGraphFile(graphFilePath);
       }
       collection.renderSources();
     },

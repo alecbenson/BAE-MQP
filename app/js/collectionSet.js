@@ -83,7 +83,7 @@ CollectionSet.prototype.loadCollection = function(collection) {
   });
   $.each(collection.graphs, function(index, graphName) {
     var graphFilePath = collection.graphpath + graphName;
-    loadGraphFile(graphFilePath);
+    graph.loadGraphFile(graphFilePath);
   });
 };
 

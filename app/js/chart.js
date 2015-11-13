@@ -1,58 +1,161 @@
-/* global d3 */
-var nodes = [];
-var links = [];
+function D3Graph(width, height, el) {
 
-// Chart dimensions.
-var width = 500;
-var height = 500;
+  this._edges = [];
+  this._vertices = [];
+  this._width = width;
+  this._height = height;
 
-// Set the force between vertices
-var force = d3.layout.force()
-  .nodes(nodes)
-  .links(links)
-  .charge(-400)
-  .linkDistance(100)
-  .size([width, height])
-  .on("tick", tick);
+  this._svg = d3.select(el).append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g");
 
-var zoom = d3.behavior.zoom()
-  .scaleExtent([0.1, 10])
-  .on("zoom", zoomed);
+  this._text = this._svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height / 2)
+    .text(this.graphText())
+    .attr("font-size", "30px")
+    .attr("text-anchor", "middle")
+    .attr("fill", "white");
 
-// Make vertices dragable
-var drag = force.drag()
-  .on("dragstart", dragstart)
-  .on("drag", dragged)
-  .on("dragend", dragend);
+  this._container = this.svg.append("g");
 
-// Create the SVG container and set the origin.
-var svg = d3.select("#chart").append("svg")
-  .attr("width", width)
-  .attr("height", height)
-  .append("g")
-  .call(zoom);
+  this._rect = this.container.append("rect")
+    .attr("width", width * 10)
+    .attr("height", height * 10)
+    .attr("transform", "translate(" + width * -5 + "," + height * -5 + ")")
+    .style("fill", "none")
+    .style("pointer-events", "all");
 
-var container = svg.append("g");
-var rect = container.append("rect")
-  .attr("width", width * 10)
-  .attr("height", height * 10)
-  .attr("transform", "translate(" + width * -5 + "," + height * -5 + ")")
-  .style("fill", "none")
-  .style("pointer-events", "all");
+  this._force = d3.layout.force()
+    .nodes(this.vertices)
+    .links(this.edges)
+    .charge(-400)
+    .linkDistance(100)
+    .size([width, height]);
 
-var text = svg.append("text")
-  .attr("x", width / 2)
-  .attr("y", height / 2)
-  .text(graphText())
-  .attr("font-size", "30px")
-  .attr("text-anchor", "middle")
-  .attr("fill", "white");
+  this._drag = this._force.drag()
+    .on("dragstart", this.dragstart)
+    .on("drag", this.dragged)
+    .on("dragend", this.dragend);
 
-// Get a list of the links and nodes
-var link = container.selectAll(".link"),
-  node = container.selectAll(".node");
+  zoom.on("zoom", zoomed.bind(this));
+  this._svg.call(zoom);
+  this._force.on("tick", this._tick.bind(this));
+}
 
-function tick() {
+Object.defineProperties(D3Graph.prototype, {
+  'edges': {
+    get: function() {
+      return this._edges;
+    },
+    set: function(edges) {
+      this._edges = edges;
+    }
+  },
+  'vertices': {
+    get: function() {
+      return this._vertices;
+    },
+    set: function(vertices) {
+      this._vertices = vertices;
+    }
+  },
+  'width': {
+    get: function() {
+      return this._width;
+    },
+    set: function(width) {
+      this._width = width;
+    }
+  },
+  'height': {
+    get: function() {
+      return this._height;
+    },
+    set: function(height) {
+      this._height = height;
+    }
+  },
+  'svg': {
+    get: function() {
+      return this._svg;
+    },
+    set: function(svg) {
+      this._svg = svg;
+    }
+  },
+  'container': {
+    get: function() {
+      return this._container;
+    },
+    set: function(container) {
+      this._container = container;
+    }
+  },
+  'force': {
+    get: function() {
+      return this._force;
+    },
+    set: function(force) {
+      this._force = force;
+    }
+  },
+  'drag': {
+    get: function() {
+      return this._drag;
+    },
+    set: function(drag) {
+      this._drag = drag;
+    }
+  },
+  'text': {
+    get: function() {
+      return this._text;
+    },
+    set: function(text) {
+      this._text = text;
+    }
+  },
+  'rect': {
+    get: function() {
+      return this._rect;
+    },
+    set: function(rect) {
+      this._rect = rect;
+    }
+  }
+});
+
+D3Graph.prototype.loadGraphFile = function(filePath) {
+  var that = this;
+  d3.json(filePath, function(error, graph) {
+    if (error) {
+      throw error;
+    }
+    that.vertices = $.merge(that.vertices, graph.vertices);
+    that.edges = $.merge(that.edges, graph.edges);
+    that._start();
+  });
+};
+
+D3Graph.prototype._start = function() {
+  link = link.data(this.force.links());
+  link.enter().insert("line")
+    .attr("class", "link");
+  link.exit().remove();
+
+  node = node.data(this.force.nodes());
+  node.enter().append("circle")
+    .attr("class", "node")
+    .attr("r", 12)
+    .on("click", this._click)
+    .call(this.drag);
+  node.exit().remove();
+  this.force.start();
+};
+
+D3Graph.prototype._tick = function() {
   link.attr("x1", function(d) {
       return d.source.x;
     })
@@ -64,9 +167,6 @@ function tick() {
     })
     .attr("y2", function(d) {
       return d.target.y;
-    })
-    .attr("stroke-width", function(d) {
-      return d.weight;
     });
 
   node.attr("cx", function(d) {
@@ -76,28 +176,79 @@ function tick() {
       return d.y;
     })
     .attr("fill", function(d) {
-      return trackColor(d.id);
+      return D3Graph.trackColor(d.id);
     });
+  this.text.text(this.graphText());
+};
 
-    text.text(graphText);
-}
-
-function graphText() {
-  if(isGraphEmpty()) {
+D3Graph.prototype.graphText = function() {
+  if (this.isGraphEmpty()) {
     return "No graph data has been loaded";
-  } else{
+  } else {
     return "";
   }
+};
+
+D3Graph.prototype.isGraphEmpty = function() {
+  return this.vertices.length === 0 &&
+    this.edges.length === 0;
+};
+
+D3Graph.prototype.addNode = function(node) {
+  this.nodes.push(node);
+  this._start();
+};
+
+D3Graph.prototype.dragstart = function(d) {
+  d3.event.sourceEvent.stopPropagation();
+  d3.select(this).classed("dragging", true);
+};
+
+D3Graph.prototype.dragged = function(d) {
+  d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+};
+
+D3Graph.prototype.dragend = function(d) {
+  d3.select(this).classed("dragging", false);
+};
+
+D3Graph.prototype.unloadGraphEntities = function(data) {
+  this.vertices = this.vertices.filter(function(el) {
+    return data.vertices.indexOfObject(el) < 0;
+  });
+  this.edges = this.edges.filter(function(el) {
+    return data.edges.indexOfObject(el) < 0;
+  });
+  this._start();
+};
+
+D3Graph.trackColor = function(trackId) {
+  var red = D3Graph._colorSeed(trackId + 123);
+  var green = D3Graph._colorSeed(trackId + 456);
+  var blue = D3Graph._colorSeed(trackId + 789);
+  var result = "#" + red + green + blue;
+  return result;
+};
+
+D3Graph._colorSeed = function(id) {
+  var num = Math.sin(id) * 10000;
+  num = num - Math.floor(num);
+  result = Math.round((num * 154) + 100).toString(16);
+  return result;
+};
+
+function zoomed() {
+  graph.container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 }
 
-function dblclick(d) {}
+var zoom = d3.behavior.zoom()
+  .scaleExtent([0.1, 10]);
 
-function click(d) {
+D3Graph.prototype._click = function(d) {
   var track = collectionSet.findTrackByID(d.id);
   if (track === undefined) {
     return;
   }
-
   var trackNode = track.trackNode;
   var entities = track.entities.values;
   var currentTime = viewer.clock.currentTime;
@@ -110,33 +261,7 @@ function click(d) {
   } else {
     viewer.flyTo(entities);
   }
-}
-
-function zoomed() {
-  container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-}
-
-function dragstart(d) {
-  d3.event.sourceEvent.stopPropagation();
-  d3.select(this).classed("dragging", true);
-}
-
-function dragged(d) {
-  d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
-}
-
-function dragend(d) {
-  d3.select(this).classed("dragging", false);
-}
-
-function loadGraphFile(filePath) {
-  $.get(filePath, function(data) {
-    var json = $.parseJSON(data);
-    nodes = $.extend(nodes, json.vertices);
-    links = $.extend(links, json.edges);
-    start();
-  });
-}
+};
 
 Array.prototype.indexOfObject = function(other) {
   for (var i = 0; i < this.length; i++) {
@@ -158,63 +283,3 @@ Array.prototype.indexOfObject = function(other) {
   }
   return -1;
 };
-
-function unloadGraphEntities(data) {
-  nodes = nodes.filter(function(el) {
-    return data.vertices.indexOfObject(el) < 0;
-  });
-  links = links.filter(function(el) {
-    return data.edges.indexOfObject(el) < 0;
-  });
-  start();
-}
-
-function start() {
-  link = link.data(force.links());
-  link.enter().insert("line", ".node")
-    .attr("class", "link");
-  link.exit().remove();
-
-  node = node.data(force.nodes());
-  node.enter().append("circle")
-    .attr("class", "node")
-    .attr("r", 12)
-    .on("dblclick", dblclick)
-    .on("click", click)
-    .call(drag);
-  node.exit().remove();
-
-  force.start();
-}
-
-function addNode(node) {
-  nodes.push(node);
-  start();
-}
-
-function trackColor(trackId) {
-  var red = colorSeed(trackId + 123);
-  var green = colorSeed(trackId + 456);
-  var blue = colorSeed(trackId + 789);
-  var result = "#" + red + green + blue;
-  return result;
-}
-
-function colorSeed(id) {
-  var num = Math.sin(id) * 10000;
-  num = num - Math.floor(num);
-  result = Math.round((num * 154) + 100).toString(16);
-  return result;
-}
-
-function isGraphEmpty() {
-  return isNodesEmpty() && isLinksEmpty();
-}
-
-function isNodesEmpty() {
-  return 0 === nodes.length;
-}
-
-function isLinksEmpty() {
-  return 0 === nodes.length;
-}

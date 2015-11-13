@@ -83,7 +83,7 @@ Object.defineProperties(TrackDataSource.prototype, {
 TrackDataSource.prototype._setTrackColor = function(name) {
   try {
     var id = parseInt(name);
-    var color = trackColor(id);
+    var color = D3Graph.trackColor(id);
     return Cesium.Color.fromCssColorString(color);
   } catch (err) {
     console.log(err);

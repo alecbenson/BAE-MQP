@@ -8,6 +8,11 @@ var terrainProvider = new Cesium.CesiumTerrainProvider({
 });
 viewer.terrainProvider = terrainProvider;
 
+var graph = new D3Graph(500, 500, "#chart");
+var link = graph.container.selectAll(".link"),
+  node = graph.container.selectAll(".node");
+
+
 $(function() {
   registerAllPartials();
   addAllFilters();
@@ -81,9 +86,12 @@ function deleteGraphData(collectionName, graphName) {
     url: "/collections/" + collectionName + "/graph/" + graphName,
     type: "DELETE",
     success: function(data, status) {
-      unloadGraphEntities(data.graph);
-      console.log(nodes);
-      renderSources(data.context);
+      graph.unloadGraphEntities(data.graph);
+
+      var collection = collectionSet.getCollection(collectionName);
+      var index = collection.graphs.indexOf(graphName);
+      delete collection.graphs[index];
+      collection.renderSources(data.context);
     },
     error: function(xhr, desc, err) {
       console.log("Failed: " + desc + err);
