@@ -19,6 +19,8 @@ function D3Graph(width, height, el) {
     .attr("fill", "white");
 
   this._container = this.svg.append("g");
+  this._vertice_el = this._container.selectAll(".node");
+  this._edge_el = this._container.selectAll(".link");
 
   this._rect = this.container.append("rect")
     .attr("width", width * 10)
@@ -59,6 +61,22 @@ Object.defineProperties(D3Graph.prototype, {
     },
     set: function(vertices) {
       this._vertices = vertices;
+    }
+  },
+  'edge_el': {
+    get: function() {
+      return this._edge_el;
+    },
+    set: function(edge_el) {
+      this._edge_el = edge_el;
+    }
+  },
+  'vertice_el': {
+    get: function() {
+      return this._vertice_el;
+    },
+    set: function(vertice_el) {
+      this._vertice_el = vertice_el;
     }
   },
   'width': {
@@ -140,23 +158,23 @@ D3Graph.prototype.loadGraphFile = function(filePath) {
 };
 
 D3Graph.prototype._start = function() {
-  link = link.data(this.force.links());
-  link.enter().insert("line")
+  this.edge_el = this.edge_el.data(this.force.links());
+  this.edge_el.enter().insert("line")
     .attr("class", "link");
-  link.exit().remove();
+  this.edge_el.exit().remove();
 
-  node = node.data(this.force.nodes());
-  node.enter().append("circle")
+  this.vertice_el = this.vertice_el.data(this.force.nodes());
+  this.vertice_el.enter().append("circle")
     .attr("class", "node")
     .attr("r", 12)
     .on("click", this._click)
     .call(this.drag);
-  node.exit().remove();
+  this.vertice_el.exit().remove();
   this.force.start();
 };
 
 D3Graph.prototype._tick = function() {
-  link.attr("x1", function(d) {
+  this.edge_el.attr("x1", function(d) {
       return d.source.x;
     })
     .attr("y1", function(d) {
@@ -169,7 +187,7 @@ D3Graph.prototype._tick = function() {
       return d.target.y;
     });
 
-  node.attr("cx", function(d) {
+  this.vertice_el.attr("cx", function(d) {
       return d.x;
     })
     .attr("cy", function(d) {
@@ -192,6 +210,14 @@ D3Graph.prototype.graphText = function() {
 D3Graph.prototype.isGraphEmpty = function() {
   return this.vertices.length === 0 &&
     this.edges.length === 0;
+};
+
+D3Graph.prototype.vertice_el = function() {
+  return this.container.selectAll(".node");
+};
+
+D3Graph.prototype.edge_el = function() {
+  return this.container.selectAll(".link");
 };
 
 D3Graph.prototype.addNode = function(node) {

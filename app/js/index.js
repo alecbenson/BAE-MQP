@@ -9,9 +9,6 @@ var terrainProvider = new Cesium.CesiumTerrainProvider({
 viewer.terrainProvider = terrainProvider;
 
 var graph = new D3Graph(500, 500, "#chart");
-var link = graph.container.selectAll(".link"),
-  node = graph.container.selectAll(".node");
-
 
 $(function() {
   registerAllPartials();
