@@ -230,7 +230,10 @@ D3Graph.prototype._start = function() {
     return d.source.id + "-" + d.target.id;
   });
   this.edge_el.enter().insert("line")
-    .attr("class", "link");
+    .attr("class", "link")
+    .attr("stroke-width", function(d){
+      return d.weight;
+    });
   this.edge_el.exit().remove();
 
   this.vertice_el = this.vertice_el.data(this.force.nodes(), function(d) {
@@ -242,7 +245,6 @@ D3Graph.prototype._start = function() {
     })
     .attr("r", 12)
     .attr("fill", function(d) {
-
       return D3Graph.trackColor(d.id);
     })
     .on("click", this._click)
@@ -282,6 +284,30 @@ D3Graph.prototype.graphText = function() {
   }
 };
 
+D3Graph.prototype.getAdjacentNodes = function(root, level, vis) {
+  var res, adj = [root];
+  if (vis === undefined) {
+    vis = [];
+  }
+  vis.push(root);
+
+  if (!level) {
+    return [];
+  }
+
+  for (var i = 0; i < this.edges.length; i++) {
+    var edge = this.edges[i];
+    if (edge.source == root && vis.indexOf(edge.target) == -1) {
+      res = this.getAdjacentNodes(edge.target, level--, vis);
+      adj.push.apply(adj, res);
+    } else if (edge.target == root && vis.indexOf(edge.target) == -1) {
+      res = this.getAdjacentNodes(edge.source, level--, vis);
+      adj.push.apply(adj, res);
+    }
+  }
+  return adj;
+};
+
 D3Graph.prototype.renderSlider = function(min, max, el) {
   //Append the template to the div
   var fo = this.control.append("foreignObject")
@@ -295,6 +321,7 @@ D3Graph.prototype.renderSlider = function(min, max, el) {
     start: 2,
     step: 1,
     orientation: "vertical",
+    direction: 'rtl',
     connect: "lower",
     range: {
       'min': [min],
@@ -311,8 +338,7 @@ D3Graph.prototype.renderSlider = function(min, max, el) {
   });
   slider.noUiSlider.on('set', function() {
     var vals = slider.noUiSlider.get();
-    var start = parseInt(vals[0]);
-    var stop = parseInt(vals[1]);
+    var level = parseInt(vals[0]);
   });
 };
 
