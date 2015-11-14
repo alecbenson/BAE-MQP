@@ -112,13 +112,14 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
   var entity = {
     position: position,
     point: {
-      pixelSize: 10,
+      pixelSize: 15,
       color: this.color,
       translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0),
     },
     time: set_time,
     ele: p.hae,
-    description: formattedCovariance
+    description: formattedCovariance,
+    parentTrack: this.name,
   };
   this.addSEpolyline(entity);
   this.entities.add(entity);
@@ -215,7 +216,7 @@ TrackDataSource.prototype.createTrackNode = function() {
   var entity = this.entities.add({
     position: this._position,
     point: {
-      pixelSize: 20,
+      pixelSize: 25,
       color: this.color,
     }
   });

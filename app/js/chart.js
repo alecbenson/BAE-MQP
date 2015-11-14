@@ -4,6 +4,12 @@ function D3Graph(width, height, el) {
   this._vertices = [];
   this._width = width;
   this._height = height;
+  this._fullGraph = {
+    "vertices": [],
+    "edges": []
+  };
+  this._root_el = undefined;
+  this._adj_level = 1;
 
   this._svg = d3.select(el).append("svg")
     .attr("width", width)
@@ -83,6 +89,22 @@ Object.defineProperties(D3Graph.prototype, {
       this._vertice_el = vertice_el;
     }
   },
+  'root_el': {
+    get: function() {
+      return this._root_el;
+    },
+    set: function(root_el) {
+      this._root_el = root_el;
+    }
+  },
+  'adj_level': {
+    get: function() {
+      return this._adj_level;
+    },
+    set: function(adj_level) {
+      this._adj_level = adj_level;
+    }
+  },
   'width': {
     get: function() {
       return this._width;
@@ -151,30 +173,44 @@ Object.defineProperties(D3Graph.prototype, {
     set: function(rect) {
       this._rect = rect;
     }
+  },
+  'fullGraph': {
+    get: function() {
+      return this._fullGraph;
+    },
+    set: function(fullGraph) {
+      this._fullGraph = fullGraph;
+    }
   }
 });
 
 D3Graph.prototype.loadGraphFile = function(filePath) {
   var outerScope = this;
+  var newEdge = {},
+    newVert = {};
   d3.json(filePath, function(error, graph) {
     if (error) {
       throw error;
     }
     for (var i = 0; i < graph.vertices.length; i++) {
-      outerScope.addVertice(graph.vertices[i]);
+      newVert = outerScope.addVertice(graph.vertices[i]);
     }
     for (var j = 0; j < graph.edges.length; j++) {
-      outerScope.addEdge(graph.edges[j]);
+      newEdge = outerScope.addEdge(graph.edges[j]);
     }
     outerScope._start();
+    outerScope.fullGraph.edges = outerScope.edges.slice(0);
+    outerScope.fullGraph.vertices = outerScope.vertices.slice(0);
   });
 };
 
 D3Graph.prototype.addVertice = function(json) {
-  this.vertices.push({
+  var newVert = {
     "id": json.id
-  });
+  };
+  this.vertices.push(newVert);
   this._start();
+  return newVert;
 };
 
 D3Graph.prototype.removeVertice = function(id) {
@@ -189,15 +225,34 @@ D3Graph.prototype.removeVertice = function(id) {
   this._start();
 };
 
+D3Graph.prototype.clearGraph = function() {
+  this.edges.splice(0, this.edges.length);
+  this.vertices.splice(0, this.vertices.length);
+  graph._start();
+};
+
 D3Graph.prototype.addEdge = function(json) {
   var s = this.findVertice(json.source);
   var t = this.findVertice(json.target);
   var w = json.weight;
-  this.edges.push({
+  var newEdge = {
     "source": s,
     "target": t,
     "weight": w
-  });
+  };
+  this.edges.push(newEdge);
+  this._start();
+  return newEdge;
+};
+
+D3Graph.prototype.addEdgeObj = function(edge) {
+  var newEdge = {
+    "source": this.findVertice(edge.source.id),
+    "target": this.findVertice(edge.target.id),
+    "weight": edge.weight
+  };
+  this.edges.push(newEdge);
+  this._start();
 };
 
 D3Graph.prototype.removeEdge = function(source, target) {
@@ -284,13 +339,32 @@ D3Graph.prototype.graphText = function() {
   }
 };
 
+D3Graph.prototype.displayAdjacencies = function(track_id) {
+  var root = this.findVertice(track_id);
+  if(root === undefined){
+    return;
+  }
+  this.root = root;
+  var adj = this.getAdjacencies(root, this.adj_level, []);
+  this.clearGraph();
+  for (var i = 0; i < adj.vertices.length; i++) {
+    this.addVertice(adj.vertices[i]);
+  }
+  for (var j = 0; j < adj.edges.length; j++) {
+    this.addEdgeObj(adj.edges[j]);
+  }
+  this._start();
+};
+
 D3Graph.prototype.getAdjacencies = function(root, level, vis) {
   var res;
   var adj = {
     "vertices": [root],
     "edges": []
   };
-  if (vis === undefined) {vis = [];}
+  if (vis === undefined) {
+    vis = [];
+  }
   vis.push(root);
 
   if (!level) {
@@ -299,12 +373,12 @@ D3Graph.prototype.getAdjacencies = function(root, level, vis) {
   for (var i = 0; i < this.edges.length; i++) {
     var edge = this.edges[i];
     if (edge.source == root && vis.indexOf(edge.target) == -1) {
-      res = this.getAdjacentNodes(edge.target, --level, vis);
+      res = this.getAdjacencies(edge.target, --level, vis);
       adj.vertices.push.apply(adj.vertices, res.vertices);
       adj.edges.push(edge);
       adj.edges.push.apply(adj.edges, res.edges);
     } else if (edge.target == root && vis.indexOf(edge.source) == -1) {
-      res = this.getAdjacentNodes(edge.source, --level, vis);
+      res = this.getAdjacencies(edge.source, --level, vis);
       adj.vertices.push.apply(adj.vertices, res.vertices);
       adj.edges.push(edge);
       adj.edges.push.apply(adj.edges, res.edges);
@@ -315,6 +389,7 @@ D3Graph.prototype.getAdjacencies = function(root, level, vis) {
 
 D3Graph.prototype.renderSlider = function(min, max, el) {
   //Append the template to the div
+  var outerScope = this;
   var fo = this.control.append("foreignObject")
     .attr("x", "90%")
     .attr("y", "5%")
@@ -344,6 +419,8 @@ D3Graph.prototype.renderSlider = function(min, max, el) {
   slider.noUiSlider.on('set', function() {
     var vals = slider.noUiSlider.get();
     var level = parseInt(vals[0]);
+    outerScope.adj_level = level;
+    outerScope.displayAdjacencies(outerScope.root.id, level);
   });
 };
 
@@ -380,9 +457,9 @@ D3Graph.trackColor = function(trackId) {
   for (var i = 0; i < trackId.length; i++) {
     id += trackId.charCodeAt(i);
   }
-  var red = D3Graph._colorSeed(id + 123);
-  var green = D3Graph._colorSeed(id + 456);
-  var blue = D3Graph._colorSeed(id + 789);
+  var red = D3Graph._colorSeed(id + 1);
+  var green = D3Graph._colorSeed(id + 4);
+  var blue = D3Graph._colorSeed(id + 7);
   var result = "#" + red + green + blue;
   return result;
 };

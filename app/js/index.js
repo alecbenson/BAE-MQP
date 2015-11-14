@@ -9,6 +9,16 @@ var terrainProvider = new Cesium.CesiumTerrainProvider({
 viewer.terrainProvider = terrainProvider;
 
 var graph = new D3Graph(500, 500, "#chart");
+//viewer.screenSpaceEventHandler.setInputAction(p, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+var clickHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+clickHandler.setInputAction(function(click) {
+  var pickedObject = viewer.scene.pick(click.position);
+  if (Cesium.defined(pickedObject)) {
+    var id = pickedObject.id;
+    graph.displayAdjacencies(id.parentTrack);
+  }
+}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
 $(function() {
   registerAllPartials();
@@ -24,6 +34,7 @@ $(function() {
   bindToggleNavPane();
   bindUploadDataButton();
   bindUploadModelButton();
+
 });
 
 /**
