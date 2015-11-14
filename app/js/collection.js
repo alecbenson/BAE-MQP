@@ -109,7 +109,7 @@ Collection.prototype._parseAllSensors = function(sensors) {
 
 Collection.prototype._parseStateEstimate = function(se, time) {
   var track;
-  var id = se.getAttribute('trackId');
+  var id = "n" + se.getAttribute('trackId');
 
   if (id in this.tracks) {
     track = this.tracks[id];

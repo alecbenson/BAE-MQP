@@ -192,6 +192,15 @@ D3Graph.prototype.addEdge = function(json) {
   });
 };
 
+D3Graph.prototype.removeEdge = function(source, target) {
+  for(var i = 0; i < this.edges.length; i++){
+    if (this.edges[i].source.id == source && this.edges[i].target.id == target){
+      this.edges.splice(i, 1);
+      break;
+    }
+  }
+};
+
 D3Graph.prototype.findVertice = function(id) {
   for (var i = 0; i < this.vertices.length; i++) {
     if (this.vertices[i].id == id) {
