@@ -8,7 +8,7 @@ var terrainProvider = new Cesium.CesiumTerrainProvider({
 });
 viewer.terrainProvider = terrainProvider;
 
-var graph = new D3Graph(500, 500, "#chart");
+var graph = new D3Graph(600, 500, "#chart");
 //viewer.screenSpaceEventHandler.setInputAction(p, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
 var clickHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);

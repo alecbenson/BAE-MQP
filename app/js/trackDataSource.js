@@ -142,7 +142,8 @@ TrackDataSource.prototype.addSEpolyline = function(entity) {
       material: new Cesium.PolylineOutlineMaterialProperty({
         color: this.color,
       }),
-    }
+    },
+    parentTrack: this.name,
   });
 };
 
@@ -162,7 +163,7 @@ TrackDataSource.prototype._addSensorSample = function(sensor) {
       scale: 0.04,
       color: this.color,
     },
-    ele: p.hae
+    ele: p.hae,
   };
   this.entities.add(entity);
   this.setLoadStatus(false);

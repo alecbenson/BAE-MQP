@@ -8,7 +8,7 @@ function D3Graph(width, height, el) {
     "vertices": [],
     "edges": []
   };
-  this._root_el = undefined;
+  this._root = undefined;
   this._adj_level = 1;
 
   this._svg = d3.select(el).append("svg")
@@ -92,12 +92,12 @@ Object.defineProperties(D3Graph.prototype, {
       this._vertice_el = vertice_el;
     }
   },
-  'root_el': {
+  'root': {
     get: function() {
-      return this._root_el;
+      return this._root;
     },
-    set: function(root_el) {
-      this._root_el = root_el;
+    set: function(root) {
+      this._root = root;
     }
   },
   'adj_level': {
@@ -220,16 +220,19 @@ D3Graph.prototype.addVertice = function(json, list) {
   return newVert;
 };
 
-D3Graph.prototype.removeVertice = function(id) {
-  var v = this.findVertice(id);
-  for (var i = 0; i < this.edges.length; i++) {
-    if ((this.edges[i].source == v) || (this.edges[i].target == v)) {
-      this.edges.splice(i, 1);
+D3Graph.prototype.removeVertice = function(vertice, edgeList, vertList) {
+  if (edgeList === undefined) {
+    edgeList = this.edges;
+  }
+  if (vertList === undefined) {
+    vertList = this.vertices;
+  }
+  for (var i = 0; i < edgeList.length; i++) {
+    if ((edgeList[i].source.id == vertice.id) || (edgeList[i].target.id == vertice.id)) {
+      edgeList.splice(i, 1);
     }
   }
-  var vertIndex = this.findVerticeIndex(id);
-  this.vertices.splice(vertIndex, 1);
-  this._start();
+  vertList.splice(vertList.indexOf(vertice), 1);
 };
 
 D3Graph.prototype.clearGraph = function() {
@@ -257,15 +260,6 @@ D3Graph.prototype.addEdge = function(json, edgeList, vertList) {
   return newEdge;
 };
 
-D3Graph.prototype.removeEdge = function(source, target) {
-  for (var i = 0; i < this.edges.length; i++) {
-    if (this.edges[i].source.id == source && this.edges[i].target.id == target) {
-      this.edges.splice(i, 1);
-      break;
-    }
-  }
-};
-
 D3Graph.prototype.findVertice = function(id, list) {
   if (list === undefined) {
     list = this.vertices;
@@ -273,14 +267,6 @@ D3Graph.prototype.findVertice = function(id, list) {
   for (var i = 0; i < list.length; i++) {
     if (list[i].id == id) {
       return list[i];
-    }
-  }
-};
-
-D3Graph.prototype.findVerticeIndex = function(id) {
-  for (var i = 0; i < this.vertices.length; i++) {
-    if (this.vertices[i].id == id) {
-      return i;
     }
   }
 };
@@ -311,6 +297,7 @@ D3Graph.prototype._start = function() {
 };
 
 D3Graph.prototype._tick = function() {
+  var outerScope = this;
   this.edge_el.attr("x1", function(d) {
       return d.source.x;
     })
@@ -334,8 +321,14 @@ D3Graph.prototype._tick = function() {
 };
 
 D3Graph.prototype.graphText = function() {
-  if (this.isGraphEmpty()) {
-    return "No graph data has been loaded";
+  if (this.fullGraph.vertices.length === 0) {
+    if (this.fullGraph.edges.length === 0) {
+      return "No graph data has been loaded";
+    }
+  } else if (this.vertices.length === 0) {
+    if (this.edges.length === 0) {
+      return "Click on a track to see graph data";
+    }
   } else {
     return "";
   }
@@ -394,18 +387,19 @@ D3Graph.prototype.renderSlider = function(min, max, el) {
   //Append the template to the div
   var outerScope = this;
   var fo = this.control.append("foreignObject")
-    .attr("x", "90%")
+    .attr("x", "0%")
     .attr("y", "5%")
     .append("xhtml:div")
     .attr('id', el);
 
   var slider = document.getElementById(el);
   noUiSlider.create(slider, {
-    start: 2,
+    start: 1,
     step: 1,
     orientation: "vertical",
     direction: 'rtl',
     connect: "lower",
+    tooltips: true,
     range: {
       'min': [min],
       'max': [max]
@@ -413,13 +407,8 @@ D3Graph.prototype.renderSlider = function(min, max, el) {
     format: wNumb({
       decimals: 0,
     }),
-    pips: {
-      mode: 'values',
-      values: [2, 4],
-      density: 4
-    }
   });
-  slider.noUiSlider.on('set', function() {
+  slider.noUiSlider.on('slide', function() {
     var vals = slider.noUiSlider.get();
     var level = parseInt(vals[0]);
     outerScope.adj_level = level;
@@ -427,11 +416,6 @@ D3Graph.prototype.renderSlider = function(min, max, el) {
       outerScope.displayAdjacencies(outerScope.root.id, level);
     }
   });
-};
-
-D3Graph.prototype.isGraphEmpty = function() {
-  return this.vertices.length === 0 &&
-    this.edges.length === 0;
 };
 
 D3Graph.prototype.dragstart = function(d) {
@@ -452,7 +436,8 @@ D3Graph.prototype.unloadGraphEntities = function(data) {
 
   for (var i = 0; i < data.vertices.length; i++) {
     var vert = data.vertices[i];
-    this.removeVertice(vert.id);
+    this.removeVertice(vert, this.fullGraph.edges, this.fullGraph.vertices);
+    this.removeVertice(vert);
   }
   this._start();
 };
