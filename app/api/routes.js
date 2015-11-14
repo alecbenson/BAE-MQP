@@ -36,17 +36,23 @@ router.get('/:collectionName', function(req, res) {
 router.post('/', function(req, res) {
   var collectionName = req.body.collectionName.replace(/\W/g, '');
 
+  if (collectionName.length > 100) {
+    res.status(400).send("The collection name you provided is too long.");
+    return;
+  }
+
   //If the collection exists already
   if (collectionSet.contains(collectionName)) {
     res.status(409).send("A collection with this name already exists.");
-    //The collection will be created otherwise
-  } else {
-    var newCollection = collectionSet.add(collectionName);
-    if (newCollection === undefined) {
-      res.status(500).send("Failed to create a collection with this name.");
-    }
-    res.json(newCollection);
+    return;
   }
+
+  //Valid name, everything looks good.
+  var newCollection = collectionSet.add(collectionName);
+  if (newCollection === undefined) {
+    res.status(500).send("Failed to create a collection with this name.");
+  }
+  res.json(newCollection);
 });
 
 //DELETE a collection by name
@@ -157,7 +163,7 @@ router.post('/upload/data', function(req, res) {
     }
     //Upload was successful
     if (req.file === undefined) {
-      res.status(500).send("No file specified.");
+      res.status(400).send("No file data specified.");
       return;
     }
     var collectionName = req.body.collectionName.replace(/\W/g, '');
@@ -207,7 +213,7 @@ router.post('/upload/model', function(req, res) {
     }
     //Upload was successful
     if (req.file === undefined) {
-      res.status(500).send("No model file specified.");
+      res.status(400).send("No model file specified.");
       return;
     }
     var collectionName = req.body.collectionName.replace(/\W/g, '');

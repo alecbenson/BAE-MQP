@@ -284,7 +284,7 @@ D3Graph.prototype._start = function() {
   });
   this.vertice_el.enter().append("circle")
     .attr("class", function(d) {
-      return "node id" + d.id;
+      return "node " + d.id;
     })
     .attr("r", 12)
     .attr("fill", function(d) {

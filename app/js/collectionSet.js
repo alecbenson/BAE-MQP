@@ -40,9 +40,12 @@ CollectionSet.prototype.getCollection = function(collectionName) {
 CollectionSet.prototype.findTrackByID = function(trackID) {
   var idString = trackID.toString();
   for (var name in this.collections) {
-    var collection = this.collections[name];
-    if (idString in collection.tracks) {
-      return collection.tracks[idString];
+    var collection = this.getCollection(name);
+    for (var sourceName in collection.tracks) {
+      var sourceTracks = collection.tracks[sourceName];
+      if (idString in sourceTracks) {
+        return collection.tracks[sourceName][idString];
+      }
     }
   }
   return undefined;
@@ -79,7 +82,7 @@ CollectionSet.prototype.loadCollection = function(collection) {
 
   $.each(collection.sources, function(index, sourceName) {
     var sourcespath = collection.sourcespath;
-    collection.loadTrackFile(sourcespath + sourceName);
+    collection.loadTrackFile(sourcespath + sourceName, sourceName);
   });
   $.each(collection.graphs, function(index, graphName) {
     var graphFilePath = collection.graphpath + graphName;

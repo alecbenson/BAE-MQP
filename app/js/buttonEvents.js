@@ -4,7 +4,6 @@
 function bindDeleteButton() {
   $(document).on("click", ".btn-delete", function() {
     var collectionName = $(this).attr('id');
-    console.log(collectionName);
     var collection = collectionSet.getCollection(collectionName);
     collection.deleteCollection();
   });
@@ -35,7 +34,7 @@ function bindDeleteSourceButton() {
   $(document).on("click", ".btn-deleteSource", function() {
     var sourceName = $(this).attr('data-source');
     var collectionName = $(this).attr('data-collection');
-    var collection = collectionSet.collections[collectionName];
+    var collection = collectionSet.getCollection(collectionName);
     collection.deleteSourceData(sourceName);
   });
 }
@@ -47,7 +46,8 @@ function bindDeleteGraphButton() {
   $(document).on("click", ".btn-deleteGraph", function() {
     var sourceName = $(this).attr('data-graph');
     var collectionName = $(this).attr('data-collection');
-    deleteGraphData(collectionName, sourceName);
+    var collection = collectionSet.getCollection(collectionName);
+    collection.deleteGraphData(sourceName);
   });
 }
 
@@ -56,7 +56,9 @@ function bindDeleteGraphButton() {
  */
 function bindUploadDataButton() {
   $(document).on("click", ".btn-upload-data", function(event) {
-    Collection.uploadCollectionSource(this);
+    var collectionName = $(this).data("collectionname");
+    var collection = collectionSet.getCollection(collectionName);
+    collection.uploadCollectionSource(this);
     return false;
   });
 }
@@ -66,7 +68,9 @@ function bindUploadDataButton() {
  */
 function bindUploadModelButton() {
   $(document).on("click", ".btn-upload-model", function(event) {
-    uploadCollectionModel(this);
+    var collectionName = $(this).data("collectionname");
+    var collection = collectionSet.getCollection(collectionName);
+    collection.uploadCollectionModel(this);
     return false;
   });
 }
@@ -88,12 +92,17 @@ function bindSubmitCollectionButton() {
  */
 function bindDataVisibilityToggle(checkbox) {
   $(checkbox).on('change', function() {
-    var sourceName = $(this).attr('data-source');
+    var sourceName = $(this).data("source");
+    var graphName = $(this).data("graph");
     var collectionName = $(this).attr('data-collection');
+    var collection = collectionSet.collections[collectionName];
     var state = $(this).prop('checked');
 
-    var collection = collectionSet.collections[collectionName];
-    collection.setAllTrackVisibility(state);
+    if (graphName === undefined) {
+      collection.setAllTrackVisibility(state);
+    } else {
+      collection.setGraphVisibility(graphName, state);
+    }
   });
 }
 

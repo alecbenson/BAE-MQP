@@ -1,7 +1,8 @@
-function Collection(obj, name) {
+function Collection(obj, name, model) {
   this._tracks = {};
   this._sensors = {};
   this._name = name;
+  this._model = model;
   for (var prop in obj) this[prop] = obj[prop];
 }
 
@@ -28,25 +29,34 @@ Object.defineProperties(Collection.prototype, {
     },
     set: function(sensors) {
       this._sensors = sensors;
+    },
+    'model': {
+      get: function() {
+        return this._model;
+      },
+      set: function() {
+        this._model = model;
+      }
     }
   }
 });
 
-Collection.prototype.loadTrackFile = function(xmlPath) {
+Collection.prototype.loadTrackFile = function(xmlPath, sourceName) {
   var parser = new DOMParser();
   var outerScope = this;
   $.get(xmlPath, function(data) {
     trackData = parser.parseFromString(data, "text/xml");
 
     var fusionFrames = trackData.getElementsByTagName('FusionFrame');
-    outerScope._parseAllFrames(fusionFrames);
+    outerScope._parseAllFrames(fusionFrames, sourceName);
   }).promise().done(function() {
+    outerScope.applyTrackModel();
     return outerScope;
   });
 };
 
-Collection.prototype.setTrackVisibility = function(trackID, state) {
-  var track = this.tracks[trackID];
+Collection.prototype.setTrackVisibility = function(sourceName, trackID, state) {
+  var track = this.tracks[sourceName][trackID];
   var entityList = track.entities.values;
   for (var i = 0; i < entityList.length; i++) {
     entityList[i].show = state;
@@ -54,21 +64,49 @@ Collection.prototype.setTrackVisibility = function(trackID, state) {
 };
 
 Collection.prototype.setAllTrackVisibility = function(state) {
-  for (var trackID in this.tracks) {
-    this.setTrackVisibility(trackID, state);
+  for (var sourceName in this.tracks) {
+    var sourceTracks = this.tracks[sourceName];
+    for (var id in sourceTracks) {
+      this.setTrackVisibility(sourceName, id, state);
+    }
   }
 };
 
-Collection.prototype._parseAllFrames = function(frames) {
+Collection.prototype.setGraphVisibility = function(graphName, state) {
+  var fullPath = this.graphpath + graphName;
+  if (state) {
+    graph.loadGraphFile(fullPath);
+  } else {
+    $.get(fullPath, function(data) {
+      data = JSON.parse(data);
+      graph.unloadGraphEntities(data);
+    });
+  }
+};
+
+Collection.prototype._parseAllFrames = function(frames, sourceName) {
   var outerScope = this;
   $(frames).each(function(i, frame) {
-    outerScope._parseFrame(frame);
+    outerScope._parseFrame(frame, sourceName);
   }).promise().done(function() {
     outerScope.addUpdateTrackNodes();
   });
 };
 
-Collection.prototype._addSensorSample = function(sensor) {
+Collection.prototype._parseFrame = function(frame, sourceName) {
+  var outerScope = this;
+
+  var t = parseInt(frame.getAttribute('time'));
+  var stateEstimates = frame.getElementsByTagName('stateEstimate');
+  $.each(stateEstimates, function(i, se) {
+    outerScope._parseStateEstimate(se, t, sourceName);
+  });
+
+  var sensors = frame.getElementsByTagName("sensor");
+  this._parseAllSensors(sensors, sourceName);
+};
+
+Collection.prototype._addSensorSample = function(sensor, sourceName) {
   var p = Collection.parsePos(sensor);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
 
@@ -82,40 +120,33 @@ Collection.prototype._addSensorSample = function(sensor) {
     ele: p.hae
   };
   viewer.entities.add(entity);
+  this.sensors[sourceName].push(entity);
   return entity;
 };
 
-Collection.prototype._parseFrame = function(frame) {
+Collection.prototype._parseAllSensors = function(sensors, sourceName) {
   var outerScope = this;
-
-  var t = parseInt(frame.getAttribute('time'));
-  var stateEstimates = frame.getElementsByTagName('stateEstimate');
-  $.each(stateEstimates, function(i, se) {
-    outerScope._parseStateEstimate(se, t);
-  });
-
-  var sensors = trackData.getElementsByTagName("sensor");
-  this._parseAllSensors(sensors);
-};
-
-Collection.prototype._parseAllSensors = function(sensors) {
-  var outerScope = this;
-
+  if (this.sensors[sourceName] === undefined) {
+    this.sensors[sourceName] = [];
+  }
   $.each(sensors, function(i, sensor) {
-    var sensorEnt = outerScope._addSensorSample(sensor);
-    outerScope.sensors[i] = sensorEnt;
+    outerScope._addSensorSample(sensor, sourceName);
   });
 };
 
-Collection.prototype._parseStateEstimate = function(se, time) {
+Collection.prototype._parseStateEstimate = function(se, time, sourceName) {
   var track;
   var id = "n" + se.getAttribute('trackId');
 
-  if (id in this.tracks) {
-    track = this.tracks[id];
+  if (this.tracks[sourceName] === undefined) {
+    this.tracks[sourceName] = [];
+  }
+
+  if (id in this.tracks[sourceName]) {
+    track = this.tracks[sourceName][id];
   } else {
     track = new TrackDataSource(id);
-    this.tracks[id] = track;
+    this.tracks[sourceName][id] = track;
     //Render the data source
     viewer.dataSources.add(track);
   }
@@ -135,9 +166,51 @@ Collection.parsePos = function(kse) {
 };
 
 Collection.prototype.addUpdateTrackNodes = function() {
-  for (var id in this.tracks) {
-    var track = this.tracks[id];
-    track.createTrackNode();
+  for (var sourceName in this.tracks) {
+    var sourceTracks = this.tracks[sourceName];
+    for (var id in sourceTracks) {
+      var track = sourceTracks[id];
+      track.createTrackNode();
+    }
+  }
+};
+
+/**
+ * Uploads a file to the server
+ * @param target - an object close to the submission form (typically the button).
+ */
+Collection.prototype.uploadCollectionModel = function(target) {
+  var outerScope = this;
+  var parentForm = $(target).closest('form');
+  $(parentForm).ajaxSubmit({
+    url: "/collections/upload/model",
+    type: "POST",
+    dataType: "JSON",
+    success: function(data, status) {
+      var destination = data.file.destination;
+      var name = data.file.filename;
+      var modelPath = destination + name;
+      outerScope.model = modelPath;
+      outerScope.applyTrackModel();
+    },
+    error: function(xhr, desc, err) {
+      var error = $(parentForm).find('.alert-danger');
+      $(error).show().text(xhr.responseText);
+    }
+  });
+};
+
+Collection.prototype.applyTrackModel = function() {
+  if (this.model === undefined) {
+    return;
+  }
+
+  for (var sourceName in this.tracks) {
+    var sourceTracks = this.tracks[sourceName];
+    for (var id in sourceTracks) {
+      var track = this.tracks[sourceName][id];
+      track.setTrackModel(this.model);
+    }
   }
 };
 
@@ -157,7 +230,7 @@ Collection.createNewCollection = function(target) {
       $(parentForm).remove();
     },
     error: function(xhr, desc, err) {
-      var error = $(parentForm).find('.errorMessage');
+      var error = $(parentForm).find('.alert-danger');
       $(error).show().text(xhr.responseText);
     }
   });
@@ -174,18 +247,16 @@ Collection.prototype.deleteCollection = function() {
     type: "DELETE",
     success: function(data, status) {
       //Remove all datasources in this collection from the viewer
-      for (var trackID in outerScope.tracks) {
-        var track = outerScope.tracks[trackID];
-        if (viewer.dataSources.contains(track)) {
-          viewer.dataSources.remove(track, true);
-        }
+      for (var sourceName in outerScope.tracks) {
+        outerScope.deleteSourceTracks(sourceName);
       }
       for (var i in outerScope.sensors) {
         var sensor = outerScope.sensors[i];
-        if (viewer.entities.contains(sensor)){
+        if (viewer.entities.contains(sensor)) {
           viewer.entities.remove(sensor, true);
         }
       }
+      //Delete collection from set
       collectionSet.deleteCollection(outerScope);
       $(".collection-" + outerScope.name).remove();
     },
@@ -193,6 +264,56 @@ Collection.prototype.deleteCollection = function() {
       console.log("Failed: " + desc + err);
     }
   });
+};
+
+Collection.prototype.deleteTrack = function(sourceName, id) {
+  var track = this.tracks[sourceName][id];
+  if (viewer.dataSources.contains(track)) {
+    viewer.dataSources.remove(track, true);
+  }
+};
+
+Collection.prototype.deleteSourceTracks = function(sourceName) {
+  var sourceTracks = this.tracks[sourceName];
+  for (var id in sourceTracks) {
+    this.deleteTrack(sourceName, id);
+  }
+};
+
+
+Collection.prototype.deleteSensor = function(sourceName, index) {
+  var sensor = this.sensors[sourceName][index];
+  if (viewer.entities.contains(sensor)) {
+    viewer.entities.remove(track, true);
+  }
+};
+
+/**
+ * Makes an ajax call to delete a given graph source.
+ * @param sourceName - the name of the data source to delete
+ */
+Collection.prototype.deleteGraphData = function(graphName) {
+  var outerScope = this;
+  $.ajax({
+    url: "/collections/" + outerScope.name + "/graph/" + graphName,
+    type: "DELETE",
+    success: function(data, status) {
+      graph.unloadGraphEntities(data.graph);
+      var index = outerScope.graphs.indexOf(graphName);
+      delete outerScope.graphs[index];
+      outerScope.renderSources(data.context);
+    },
+    error: function(xhr, desc, err) {
+      console.log("Failed: " + desc + err);
+    }
+  });
+};
+
+Collection.prototype.deleteSourceSensors = function(sourceName) {
+  var sourceSensors = this.sensors[sourceName];
+  for (var i = 0; i < sourceSensors.length; i++) {
+    this.deleteSensor(sourceName, i);
+  }
 };
 
 Collection.prototype.renderSources = function() {
@@ -217,10 +338,8 @@ Collection.prototype.deleteSourceData = function(sourceName) {
     url: "/collections/" + outerScope.name + "/track/" + sourceName,
     type: "DELETE",
     success: function(data, status) {
-      var ds = outerScope.tracks[sourceName];
-      if (viewer.dataSources.contains(ds)) {
-        viewer.dataSources.remove(ds, true);
-      }
+      //Delete all tracks
+      outerScope.deleteSourceTracks(sourceName);
       delete outerScope.tracks[sourceName];
       outerScope.sources = data.sources;
       outerScope.renderSources(data);
@@ -235,7 +354,7 @@ Collection.prototype.deleteSourceData = function(sourceName) {
  * Uploads a file to the server
  * @param target - an object close to the submission form (typically the button).
  */
-Collection.uploadCollectionSource = function(target) {
+Collection.prototype.uploadCollectionSource = function(target) {
   var parentForm = $(target).closest('form');
   var outerScope = this;
   $(parentForm).ajaxSubmit({
@@ -244,24 +363,25 @@ Collection.uploadCollectionSource = function(target) {
     dataType: "JSON",
     success: function(data, status) {
       var context = data.context;
-      var collectionName = data.context.name;
       var uploadType = data.file.uploadType;
       var sourceName = data.file.filename;
-      var collection = collectionSet.collections[collectionName];
 
       if (uploadType == "xml") {
         //Load XML file
         var xmlFilePath = context.sourcespath + sourceName;
-        collection.loadTrackFile(xmlFilePath);
-        collection.sources.push(sourceName);
+        outerScope.loadTrackFile(xmlFilePath, sourceName);
+        outerScope.sources.push(sourceName);
       } else {
         //Load Sage file
         var graphFilePath = context.graphpath + sourceName;
-        collection.graphs.push(sourceName);
+        outerScope.graphs.push(sourceName);
         graph.loadGraphFile(graphFilePath);
       }
-      collection.renderSources();
+      outerScope.renderSources();
     },
-    error: function(xhr, desc, err) {}
+    error: function(xhr, desc, err) {
+      var error = $(parentForm).find('.alert-danger');
+      $(error).show().text(xhr.responseText);
+    }
   });
 };

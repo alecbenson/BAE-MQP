@@ -16,7 +16,7 @@ var TrackDataSource = function(name) {
   this._isLoading = false;
   this._loading = new Cesium.Event();
   this._trackNode = undefined;
-  this._position = new Cesium.SampledPositionProperty();
+  this._positionProp = new Cesium.SampledPositionProperty();
   this._color = this._setTrackColor(name);
   this._lastAddedSE = undefined;
 };
@@ -77,6 +77,14 @@ Object.defineProperties(TrackDataSource.prototype, {
     get: function() {
       return this._trackNode;
     }
+  },
+  positionProp: {
+    get: function() {
+      return this._positionProp;
+    },
+    set: function(positionProp) {
+      this._positionProp = positionProp;
+    }
   }
 });
 
@@ -92,8 +100,6 @@ TrackDataSource.prototype._setTrackColor = function(name) {
 
 /**
  * Adds a time and position dependant sample to the data source
- * @param property - the sampled position property to add the sample to
- * @param data - the data to create the sample out of
  */
 TrackDataSource.prototype.addStateEstimate = function(se, time) {
   this._setLoadStatus(true);
@@ -101,12 +107,12 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
   var kse = se.getElementsByTagName('kse')[0];
   var p = Collection.parsePos(kse);
   var covariance = kse.getAttribute('covariance');
-  var formattedCovariance = formatCovariance(covariance);
+  var formattedCovariance = this.formatCovariance(covariance);
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
 
   var epoch = Cesium.JulianDate.fromIso8601('1970-01-01T00:00:00');
   var set_time = Cesium.JulianDate.addSeconds(epoch, time, new Cesium.JulianDate());
-  this._position.addSample(set_time, position);
+  this._positionProp.addSample(set_time, position);
 
   //Create a point for the sample data
   var entity = {
@@ -215,7 +221,7 @@ TrackDataSource.prototype._setLoadStatus = function(status) {
 TrackDataSource.prototype.createTrackNode = function() {
   this._setLoadStatus(true);
   var entity = this.entities.add({
-    position: this._position,
+    position: this.positionProp,
     point: {
       pixelSize: 25,
       color: this.color,
@@ -235,6 +241,7 @@ TrackDataSource.prototype.createTrackNode = function() {
     interpolationAlgorithm: Cesium.LagrangePolynomialApproximation
   });
   this._trackNode = entity;
+  entity.description = this.formatTrackNodeDesc();
   this._setLoadStatus(false);
 };
 
@@ -254,7 +261,7 @@ TrackDataSource.prototype._setLoading = function(isLoading) {
  * @param isLoading {bool}
  */
 TrackDataSource.prototype.setTrackModel = function(location) {
-  node = this._trackNode;
+  node = this.trackNode;
   if (node !== undefined) {
     node.point.show = false;
     node.model = {
@@ -312,7 +319,7 @@ TrackDataSource.prototype.highlightOnCondition = function(callback) {
   }
 };
 
-function formatCovariance(covariance) {
+TrackDataSource.prototype.formatCovariance = function(covariance) {
   var valueArray = covariance.split(' ');
   var arrayWidth = Math.sqrt(valueArray.length);
   var formattedCovariance = '<table cellpadding="6px">';
@@ -330,4 +337,17 @@ function formatCovariance(covariance) {
   }
   formattedCovariance += '</table>';
   return formattedCovariance;
-}
+};
+
+TrackDataSource.prototype.formatTrackNodeDesc = function() {
+  var outerScope = this;
+  var node = this._trackNode;
+  return new Cesium.CallbackProperty(function(time, result) {
+    var pos = node.position.getValue(time);
+    var c = Cesium.Ellipsoid.WGS84.cartesianToCartographic(pos);
+    return "<div><h3>Latitude</h3>" + c.latitude +
+      "<h3>Longitude</h3>" + c.longitude +
+      "<h3>Elevation</h3>" + c.height +
+      "</div>";
+  });
+};

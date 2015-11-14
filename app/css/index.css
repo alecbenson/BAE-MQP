@@ -75,6 +75,9 @@ h5 {
     display: none;
   }
 }
+.cesium-infoBox-description div{
+  clear: both;
+}
 .btn {
   margin: 5px;
 }
