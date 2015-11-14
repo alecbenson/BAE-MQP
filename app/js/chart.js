@@ -185,6 +185,12 @@ D3Graph.prototype._tick = function() {
     })
     .attr("y2", function(d) {
       return d.target.y;
+    })
+    .attr("source", function(d) {
+      return "vert" + d.source.id;
+    })
+    .attr("target", function(d) {
+      return "vert" + d.target.id;
     });
 
   this.vertice_el.attr("cx", function(d) {
@@ -195,6 +201,9 @@ D3Graph.prototype._tick = function() {
     })
     .attr("fill", function(d) {
       return D3Graph.trackColor(d.id);
+    })
+    .attr("id", function(d) {
+      return "vert" + d.id;
     });
   this.text.text(this.graphText());
 };
@@ -210,14 +219,6 @@ D3Graph.prototype.graphText = function() {
 D3Graph.prototype.isGraphEmpty = function() {
   return this.vertices.length === 0 &&
     this.edges.length === 0;
-};
-
-D3Graph.prototype.vertice_el = function() {
-  return this.container.selectAll(".node");
-};
-
-D3Graph.prototype.edge_el = function() {
-  return this.container.selectAll(".link");
 };
 
 D3Graph.prototype.addNode = function(node) {
@@ -239,11 +240,38 @@ D3Graph.prototype.dragend = function(d) {
 };
 
 D3Graph.prototype.unloadGraphEntities = function(data) {
+  //Filter is a built in javascript method that returns a new array with
+  //All elements that pass the 'test'
+  var outerScope = this;
+
+  //Set the vertices array to all elements that do not contain the vertices
+  //Defined in the file we are unloading
   this.vertices = this.vertices.filter(function(el) {
-    return data.vertices.indexOfObject(el) < 0;
+    var is_delete_el = data.vertices.indexOfProperty("id", el.id) >= 0;
+    //Delete the SVG circle
+    if (is_delete_el) {
+      outerScope.container.select("[id=vert" + el.id + "]").remove();
+    }
+    return !is_delete_el;
   });
+
+  //Set the edges array to all elements that do not contain the edges
+  //Defined in the file we are unloading
   this.edges = this.edges.filter(function(el) {
-    return data.edges.indexOfObject(el) < 0;
+    var contains_s, contains_t = false;
+    has_s = data.edges.indexOfProperty("source", el.source.id) >= 0;
+    if (!has_s) {
+      return false;
+    }
+    has_t = data.edges.indexOfProperty("target", el.target.id) >= 0;
+    var is_delete_el = has_s && has_t;
+    //Delete the SVG line
+    if (is_delete_el) {
+      var s_selector = "[source=vert" + el.source.id + "]";
+      var t_selector = "[target=vert" + el.target.id + "]";
+      outerScope.container.select(s_selector + t_selector).remove();
+    }
+    return !is_delete_el;
   });
   this._start();
 };
@@ -289,20 +317,11 @@ D3Graph.prototype._click = function(d) {
   }
 };
 
-Array.prototype.indexOfObject = function(other) {
+Array.prototype.indexOfProperty = function(attr, val) {
   for (var i = 0; i < this.length; i++) {
-    var obj = this[i];
-    var keys = Object.keys(obj).length;
-    var count = 0;
-    for (var prop in obj) {
-      if (!other.hasOwnProperty(prop)) {
-        break;
-      } else if (other[prop] === this[i][prop]) {
-        count++;
-      } else {
-        break;
-      }
-      if (count == keys) {
+    element = this[i];
+    if (element.hasOwnProperty(attr)) {
+      if (element[attr] == val) {
         return i;
       }
     }
