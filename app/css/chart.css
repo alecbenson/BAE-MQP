@@ -26,6 +26,7 @@
 }
 .link {
   stroke: #ffffff;
+  stroke-width: 2px;
 }
 #chart-slider {
   height: 400px;

@@ -39,8 +39,11 @@ function D3Graph(width, height, el) {
   this._force = d3.layout.force()
     .nodes(this.vertices)
     .links(this.edges)
-    .charge(-400)
-    .linkDistance(100)
+    .charge(-1000)
+    .linkDistance(function(d) {
+      var w = Math.max(0, (1.0 - d.weight));
+      return 5 + (w * 100);
+    })
     .size([width, height]);
 
   this._drag = this._force.drag()
@@ -188,27 +191,31 @@ D3Graph.prototype.loadGraphFile = function(filePath) {
   var outerScope = this;
   var newEdge = {},
     newVert = {};
+  var vertList = this.fullGraph.vertices;
+  var edgeList = this.fullGraph.edges;
+
   d3.json(filePath, function(error, graph) {
     if (error) {
       throw error;
     }
     for (var i = 0; i < graph.vertices.length; i++) {
-      newVert = outerScope.addVertice(graph.vertices[i]);
+      outerScope.addVertice(graph.vertices[i], vertList);
     }
     for (var j = 0; j < graph.edges.length; j++) {
-      newEdge = outerScope.addEdge(graph.edges[j]);
+      outerScope.addEdge(graph.edges[j], edgeList, vertList);
     }
     outerScope._start();
-    outerScope.fullGraph.edges = outerScope.edges.slice(0);
-    outerScope.fullGraph.vertices = outerScope.vertices.slice(0);
   });
 };
 
-D3Graph.prototype.addVertice = function(json) {
+D3Graph.prototype.addVertice = function(json, list) {
+  if (list === undefined) {
+    list = this.vertices;
+  }
   var newVert = {
     "id": json.id
   };
-  this.vertices.push(newVert);
+  list.push(newVert);
   this._start();
   return newVert;
 };
@@ -231,28 +238,23 @@ D3Graph.prototype.clearGraph = function() {
   graph._start();
 };
 
-D3Graph.prototype.addEdge = function(json) {
-  var s = this.findVertice(json.source);
-  var t = this.findVertice(json.target);
+D3Graph.prototype.addEdge = function(json, edgeList, vertList) {
+  if (edgeList === undefined) {
+    edgeList = this.edges;
+  }
+  if (vertList === undefined) {
+    vertList = this.vertices;
+  }
+  var s = this.findVertice(json.source, vertList);
+  var t = this.findVertice(json.target, vertList);
   var w = json.weight;
   var newEdge = {
     "source": s,
     "target": t,
     "weight": w
   };
-  this.edges.push(newEdge);
-  this._start();
+  edgeList.push(newEdge);
   return newEdge;
-};
-
-D3Graph.prototype.addEdgeObj = function(edge) {
-  var newEdge = {
-    "source": this.findVertice(edge.source.id),
-    "target": this.findVertice(edge.target.id),
-    "weight": edge.weight
-  };
-  this.edges.push(newEdge);
-  this._start();
 };
 
 D3Graph.prototype.removeEdge = function(source, target) {
@@ -264,10 +266,13 @@ D3Graph.prototype.removeEdge = function(source, target) {
   }
 };
 
-D3Graph.prototype.findVertice = function(id) {
-  for (var i = 0; i < this.vertices.length; i++) {
-    if (this.vertices[i].id == id) {
-      return this.vertices[i];
+D3Graph.prototype.findVertice = function(id, list) {
+  if (list === undefined) {
+    list = this.vertices;
+  }
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].id == id) {
+      return list[i];
     }
   }
 };
@@ -285,10 +290,7 @@ D3Graph.prototype._start = function() {
     return d.source.id + "-" + d.target.id;
   });
   this.edge_el.enter().insert("line")
-    .attr("class", "link")
-    .attr("stroke-width", function(d) {
-      return d.weight;
-    });
+    .attr("class", "link");
   this.edge_el.exit().remove();
 
   this.vertice_el = this.vertice_el.data(this.force.nodes(), function(d) {
@@ -340,23 +342,21 @@ D3Graph.prototype.graphText = function() {
 };
 
 D3Graph.prototype.displayAdjacencies = function(track_id) {
-  var root = this.findVertice(track_id);
-  if(root === undefined){
+  var graphVerts = this.fullGraph.vertices;
+  var graphEdges = this.fullGraph.edges;
+  var root = this.findVertice(track_id, graphVerts);
+  if (root === undefined) {
     return;
   }
   this.root = root;
-  var adj = this.getAdjacencies(root, this.adj_level, []);
+  var adj = this.getAdjacencies(root, this.adj_level, graphEdges);
   this.clearGraph();
-  for (var i = 0; i < adj.vertices.length; i++) {
-    this.addVertice(adj.vertices[i]);
-  }
-  for (var j = 0; j < adj.edges.length; j++) {
-    this.addEdgeObj(adj.edges[j]);
-  }
+  this.vertices.push.apply(this.vertices, adj.vertices);
+  this.edges.push.apply(this.edges, adj.edges);
   this._start();
 };
 
-D3Graph.prototype.getAdjacencies = function(root, level, vis) {
+D3Graph.prototype.getAdjacencies = function(root, level, edgeList, vis) {
   var res;
   var adj = {
     "vertices": [root],
@@ -365,20 +365,23 @@ D3Graph.prototype.getAdjacencies = function(root, level, vis) {
   if (vis === undefined) {
     vis = [];
   }
+  if (edgeList === undefined) {
+    edgeList = this.edges;
+  }
   vis.push(root);
 
   if (!level) {
     return adj;
   }
-  for (var i = 0; i < this.edges.length; i++) {
-    var edge = this.edges[i];
+  for (var i = 0; i < edgeList.length; i++) {
+    var edge = edgeList[i];
     if (edge.source == root && vis.indexOf(edge.target) == -1) {
-      res = this.getAdjacencies(edge.target, --level, vis);
+      res = this.getAdjacencies(edge.target, level - 1, edgeList, vis);
       adj.vertices.push.apply(adj.vertices, res.vertices);
       adj.edges.push(edge);
       adj.edges.push.apply(adj.edges, res.edges);
     } else if (edge.target == root && vis.indexOf(edge.source) == -1) {
-      res = this.getAdjacencies(edge.source, --level, vis);
+      res = this.getAdjacencies(edge.source, level - 1, edgeList, vis);
       adj.vertices.push.apply(adj.vertices, res.vertices);
       adj.edges.push(edge);
       adj.edges.push.apply(adj.edges, res.edges);
@@ -420,7 +423,9 @@ D3Graph.prototype.renderSlider = function(min, max, el) {
     var vals = slider.noUiSlider.get();
     var level = parseInt(vals[0]);
     outerScope.adj_level = level;
-    outerScope.displayAdjacencies(outerScope.root.id, level);
+    if (outerScope.root !== undefined) {
+      outerScope.displayAdjacencies(outerScope.root.id, level);
+    }
   });
 };
 
