@@ -44,6 +44,7 @@ function D3Graph(width, height, el) {
   zoom.on("zoom", zoomed.bind(this));
   this._svg.call(zoom);
   this._force.on("tick", this._tick.bind(this));
+  this._force.start();
 }
 
 Object.defineProperties(D3Graph.prototype, {
@@ -146,27 +147,87 @@ Object.defineProperties(D3Graph.prototype, {
 });
 
 D3Graph.prototype.loadGraphFile = function(filePath) {
-  var that = this;
+  var outerScope = this;
   d3.json(filePath, function(error, graph) {
     if (error) {
       throw error;
     }
-    that.vertices = $.merge(that.vertices, graph.vertices);
-    that.edges = $.merge(that.edges, graph.edges);
-    that._start();
+    for (var i = 0; i < graph.vertices.length; i++) {
+      outerScope.addVertice(graph.vertices[i]);
+    }
+    for (var j = 0; j < graph.edges.length; j++) {
+      outerScope.addEdge(graph.edges[j]);
+    }
+    outerScope._start();
   });
 };
 
+D3Graph.prototype.addVertice = function(json) {
+  this.vertices.push({
+    "id": json.id
+  });
+  this._start();
+};
+
+D3Graph.prototype.removeVertice = function(id) {
+  var v = this.findVertice(id);
+  for (var i = 0; i < this.edges.length; i++) {
+    if ((this.edges[i].source == v) || (this.edges[i].target == v)) {
+      this.edges.splice(i, 1);
+    }
+  }
+  var vertIndex = this.findVerticeIndex(id);
+  this.vertices.splice(vertIndex, 1);
+  this._start();
+};
+
+D3Graph.prototype.addEdge = function(json) {
+  var s = this.findVertice(json.source);
+  var t = this.findVertice(json.target);
+  var w = json.weight;
+  this.edges.push({
+    "source": s,
+    "target": t,
+    "weight": w
+  });
+};
+
+D3Graph.prototype.findVertice = function(id) {
+  for (var i = 0; i < this.vertices.length; i++) {
+    if (this.vertices[i].id == id) {
+      return this.vertices[i];
+    }
+  }
+};
+
+D3Graph.prototype.findVerticeIndex = function(id) {
+  for (var i = 0; i < this.vertices.length; i++) {
+    if (this.vertices[i].id == id) {
+      return i;
+    }
+  }
+};
+
 D3Graph.prototype._start = function() {
-  this.edge_el = this.edge_el.data(this.force.links());
+  this.edge_el = this.edge_el.data(this.force.links(), function(d) {
+    return d.source.id + "-" + d.target.id;
+  });
   this.edge_el.enter().insert("line")
     .attr("class", "link");
   this.edge_el.exit().remove();
 
-  this.vertice_el = this.vertice_el.data(this.force.nodes());
+  this.vertice_el = this.vertice_el.data(this.force.nodes(), function(d) {
+    return d.id;
+  });
   this.vertice_el.enter().append("circle")
-    .attr("class", "node")
+    .attr("class", function(d) {
+      return "node id" + d.id;
+    })
     .attr("r", 12)
+    .attr("fill", function(d) {
+
+      return D3Graph.trackColor(d.id);
+    })
     .on("click", this._click)
     .call(this.drag);
   this.vertice_el.exit().remove();
@@ -185,12 +246,6 @@ D3Graph.prototype._tick = function() {
     })
     .attr("y2", function(d) {
       return d.target.y;
-    })
-    .attr("source", function(d) {
-      return "vert" + d.source.id;
-    })
-    .attr("target", function(d) {
-      return "vert" + d.target.id;
     });
 
   this.vertice_el.attr("cx", function(d) {
@@ -198,12 +253,6 @@ D3Graph.prototype._tick = function() {
     })
     .attr("cy", function(d) {
       return d.y;
-    })
-    .attr("fill", function(d) {
-      return D3Graph.trackColor(d.id);
-    })
-    .attr("id", function(d) {
-      return "vert" + d.id;
     });
   this.text.text(this.graphText());
 };
@@ -221,11 +270,6 @@ D3Graph.prototype.isGraphEmpty = function() {
     this.edges.length === 0;
 };
 
-D3Graph.prototype.addNode = function(node) {
-  this.nodes.push(node);
-  this._start();
-};
-
 D3Graph.prototype.dragstart = function(d) {
   d3.event.sourceEvent.stopPropagation();
   d3.select(this).classed("dragging", true);
@@ -240,46 +284,23 @@ D3Graph.prototype.dragend = function(d) {
 };
 
 D3Graph.prototype.unloadGraphEntities = function(data) {
-  //Filter is a built in javascript method that returns a new array with
-  //All elements that pass the 'test'
   var outerScope = this;
 
-  //Set the vertices array to all elements that do not contain the vertices
-  //Defined in the file we are unloading
-  this.vertices = this.vertices.filter(function(el) {
-    var is_delete_el = data.vertices.indexOfProperty("id", el.id) >= 0;
-    //Delete the SVG circle
-    if (is_delete_el) {
-      outerScope.container.select("[id=vert" + el.id + "]").remove();
-    }
-    return !is_delete_el;
-  });
-
-  //Set the edges array to all elements that do not contain the edges
-  //Defined in the file we are unloading
-  this.edges = this.edges.filter(function(el) {
-    var contains_s, contains_t = false;
-    has_s = data.edges.indexOfProperty("source", el.source.id) >= 0;
-    if (!has_s) {
-      return false;
-    }
-    has_t = data.edges.indexOfProperty("target", el.target.id) >= 0;
-    var is_delete_el = has_s && has_t;
-    //Delete the SVG line
-    if (is_delete_el) {
-      var s_selector = "[source=vert" + el.source.id + "]";
-      var t_selector = "[target=vert" + el.target.id + "]";
-      outerScope.container.select(s_selector + t_selector).remove();
-    }
-    return !is_delete_el;
-  });
+  for(var i = 0; i< data.vertices.length; i++){
+    var vert = data.vertices[i];
+    this.removeVertice(vert.id);
+  }
   this._start();
 };
 
 D3Graph.trackColor = function(trackId) {
-  var red = D3Graph._colorSeed(trackId + 123);
-  var green = D3Graph._colorSeed(trackId + 456);
-  var blue = D3Graph._colorSeed(trackId + 789);
+  var id = 0;
+  for (var i = 0; i < trackId.length; i++) {
+    id += trackId.charCodeAt(i);
+  }
+  var red = D3Graph._colorSeed(id + 123);
+  var green = D3Graph._colorSeed(id + 456);
+  var blue = D3Graph._colorSeed(id + 789);
   var result = "#" + red + green + blue;
   return result;
 };
@@ -315,16 +336,4 @@ D3Graph.prototype._click = function(d) {
   } else {
     viewer.flyTo(entities);
   }
-};
-
-Array.prototype.indexOfProperty = function(attr, val) {
-  for (var i = 0; i < this.length; i++) {
-    element = this[i];
-    if (element.hasOwnProperty(attr)) {
-      if (element[attr] == val) {
-        return i;
-      }
-    }
-  }
-  return -1;
 };

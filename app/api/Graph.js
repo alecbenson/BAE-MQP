@@ -74,8 +74,8 @@ function formatEdges(edgesString) {
     var nums = val.split(",");
 
     var edge = {
-      "source": parseInt(nums[0]),
-      "target": parseInt(nums[1]),
+      "source": "n" + nums[0],
+      "target": "n" + nums[1],
       "weight": parseFloat(nums[2]),
     };
     array[index] = edge;
@@ -85,7 +85,7 @@ function formatEdges(edgesString) {
 
 function formatVertice(vertice) {
   return {
-    "id": parseInt(vertice)
+    "id": "n" + vertice
   };
 }
 
