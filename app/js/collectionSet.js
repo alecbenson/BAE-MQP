@@ -87,8 +87,8 @@ CollectionSet.prototype.loadCollection = function(collection) {
   });
 };
 
-function renderNewCollectionForm() {
+CollectionSet.renderNewCollectionForm = function() {
   getTemplateHTML('newCollection').done(function(data) {
     $(data).prependTo(dataDiv);
   });
-}
+};

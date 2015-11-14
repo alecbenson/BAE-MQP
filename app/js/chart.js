@@ -7,8 +7,9 @@ function D3Graph(width, height, el) {
 
   this._svg = d3.select(el).append("svg")
     .attr("width", width)
-    .attr("height", height)
-    .append("g");
+    .attr("height", height);
+
+  this._control = this._svg.append("g");
 
   this._text = this._svg.append("text")
     .attr("x", width / 2)
@@ -40,6 +41,8 @@ function D3Graph(width, height, el) {
     .on("dragstart", this.dragstart)
     .on("drag", this.dragged)
     .on("dragend", this.dragend);
+
+  this._slider = this.renderSlider(0, 5, "chart-slider");
 
   zoom.on("zoom", zoomed.bind(this));
   this._svg.call(zoom);
@@ -102,6 +105,11 @@ Object.defineProperties(D3Graph.prototype, {
     },
     set: function(svg) {
       this._svg = svg;
+    }
+  },
+  'control': {
+    get: function() {
+      return this._control;
     }
   },
   'container': {
@@ -193,8 +201,8 @@ D3Graph.prototype.addEdge = function(json) {
 };
 
 D3Graph.prototype.removeEdge = function(source, target) {
-  for(var i = 0; i < this.edges.length; i++){
-    if (this.edges[i].source.id == source && this.edges[i].target.id == target){
+  for (var i = 0; i < this.edges.length; i++) {
+    if (this.edges[i].source.id == source && this.edges[i].target.id == target) {
       this.edges.splice(i, 1);
       break;
     }
@@ -274,6 +282,40 @@ D3Graph.prototype.graphText = function() {
   }
 };
 
+D3Graph.prototype.renderSlider = function(min, max, el) {
+  //Append the template to the div
+  var fo = this.control.append("foreignObject")
+    .attr("x", "90%")
+    .attr("y", "5%")
+    .append("xhtml:div")
+    .attr('id', el);
+
+  var slider = document.getElementById(el);
+  noUiSlider.create(slider, {
+    start: 2,
+    step: 1,
+    orientation: "vertical",
+    connect: "lower",
+    range: {
+      'min': [min],
+      'max': [max]
+    },
+    format: wNumb({
+      decimals: 0,
+    }),
+    pips: {
+      mode: 'values',
+      values: [2, 4],
+      density: 4
+    }
+  });
+  slider.noUiSlider.on('set', function() {
+    var vals = slider.noUiSlider.get();
+    var start = parseInt(vals[0]);
+    var stop = parseInt(vals[1]);
+  });
+};
+
 D3Graph.prototype.isGraphEmpty = function() {
   return this.vertices.length === 0 &&
     this.edges.length === 0;
@@ -295,7 +337,7 @@ D3Graph.prototype.dragend = function(d) {
 D3Graph.prototype.unloadGraphEntities = function(data) {
   var outerScope = this;
 
-  for(var i = 0; i< data.vertices.length; i++){
+  for (var i = 0; i < data.vertices.length; i++) {
     var vert = data.vertices[i];
     this.removeVertice(vert.id);
   }

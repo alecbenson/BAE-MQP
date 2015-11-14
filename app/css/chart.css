@@ -2,7 +2,7 @@
   display: block;
   position: absolute;
   top: 50px;
-  left: 5px;
+  left: 30px;
   background: rgba(42, 42, 42, 0.8);
   border-radius: 7px;
   -webkit-transform: scale(0.6);
@@ -26,6 +26,10 @@
 }
 .link {
   stroke: #ffffff;
+}
+#chart-slider {
+  height: 400px;
+  color: black;
 }
 .node {
   cursor: move;
