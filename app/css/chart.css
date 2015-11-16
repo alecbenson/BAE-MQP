@@ -30,7 +30,10 @@
 }
 #chart-slider {
   height: 400px;
+  top: 20px;
+  left: 20px;
   color: black;
+  z-index: 101;
 }
 .node {
   cursor: move;
