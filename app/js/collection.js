@@ -47,7 +47,7 @@ Collection.prototype.loadTrackFile = function(xmlPath, sourceName) {
   $.get(xmlPath, function(data) {
     trackData = parser.parseFromString(data, "text/xml");
 
-    var fusionFrames = trackData.getElementsByTagName('FusionFrame');
+    var fusionFrames = trackData.getElementsByTagNameNS('*','FusionFrame');
     outerScope._parseAllFrames(fusionFrames, sourceName);
   }).promise().done(function() {
     outerScope.applyTrackModel();
@@ -97,12 +97,12 @@ Collection.prototype._parseFrame = function(frame, sourceName) {
   var outerScope = this;
 
   var t = parseInt(frame.getAttribute('time'));
-  var stateEstimates = frame.getElementsByTagName('stateEstimate');
+  var stateEstimates = frame.getElementsByTagNameNS('*','stateEstimate');
   $.each(stateEstimates, function(i, se) {
     outerScope._parseStateEstimate(se, t, sourceName);
   });
 
-  var sensors = frame.getElementsByTagName("sensor");
+  var sensors = frame.getElementsByTagNameNS('*',"sensor");
   this._parseAllSensors(sensors, sourceName);
 };
 
@@ -154,7 +154,7 @@ Collection.prototype._parseStateEstimate = function(se, time, sourceName) {
 };
 
 Collection.parsePos = function(kse) {
-  var pos = kse.getElementsByTagName('position')[0];
+  var pos = kse.getElementsByTagNameNS('*','position')[0];
   var lat = Number(pos.getAttribute('lat'));
   var lon = Number(pos.getAttribute('lon'));
   var hae = Number(pos.getAttribute('hae'));

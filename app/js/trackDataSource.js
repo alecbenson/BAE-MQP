@@ -104,7 +104,7 @@ TrackDataSource.prototype._setTrackColor = function(name) {
 TrackDataSource.prototype.addStateEstimate = function(se, time) {
   this._setLoadStatus(true);
 
-  var kse = se.getElementsByTagName('kse')[0];
+  var kse = se.getElementsByTagNameNS('*','kse')[0];
   var p = Collection.parsePos(kse);
   var covariance = kse.getAttribute('covariance');
   var formattedCovariance = this.formatCovariance(covariance);
