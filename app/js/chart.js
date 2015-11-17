@@ -317,6 +317,7 @@ D3Graph.prototype.findVertice = function(id, list) {
     list = this.vertices;
   }
   for (var i = 0; i < list.length; i++) {
+    var things = list[i].id.split('')
     if (list[i].id == id) {
       return list[i];
     }
@@ -443,7 +444,7 @@ D3Graph.prototype.renderSlider = function(min, max, el) {
     .attr('width', 150);
   var div = fo.append('xhtml:div')
     .attr('id', el);
-    
+
   var slider = document.getElementById(el);
   noUiSlider.create(slider, {
     start: 1,
