@@ -317,7 +317,6 @@ D3Graph.prototype.findVertice = function(id, list) {
     list = this.vertices;
   }
   for (var i = 0; i < list.length; i++) {
-    var things = list[i].id.split('')
     if (list[i].id == id) {
       return list[i];
     }
