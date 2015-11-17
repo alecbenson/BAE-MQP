@@ -33,13 +33,12 @@ function D3Graph(width, height, el) {
     .attr("width", width * 10)
     .attr("height", height * 10)
     .attr("transform", "translate(" + width * -5 + "," + height * -5 + ")")
-    .style("fill", "none")
-    .style("pointer-events", "all");
+    .style("fill", "none");
 
   this._force = d3.layout.force()
     .nodes(this.vertices)
     .links(this.edges)
-    .charge(-1000)
+    .charge(-500)
     .linkDistance(function(d) {
       var w = Math.max(0, (1.0 - d.weight));
       return 5 + (w * 100);
@@ -51,12 +50,11 @@ function D3Graph(width, height, el) {
     .on("drag", this.dragged)
     .on("dragend", this.dragend);
 
-  this._slider = this.renderSlider(0, 5, "chart-slider");
-
   zoom.on("zoom", zoomed.bind(this));
   this._svg.call(zoom);
   this._force.on("tick", this._tick.bind(this));
   this._force.start();
+  this._slider = this.renderSlider(0, 5, "chart-slider");
 }
 
 Object.defineProperties(D3Graph.prototype, {
@@ -265,6 +263,7 @@ D3Graph.prototype.findVertice = function(id, list) {
     list = this.vertices;
   }
   for (var i = 0; i < list.length; i++) {
+    var things = list[i].id.split('')
     if (list[i].id == id) {
       return list[i];
     }
@@ -341,6 +340,7 @@ D3Graph.prototype.displayAdjacencies = function(track_id) {
   if (root === undefined) {
     return;
   }
+  console.log("HI");
   this.root = root;
   var adj = this.getAdjacencies(root, this.adj_level, graphEdges);
   this.clearGraph();
@@ -386,11 +386,12 @@ D3Graph.prototype.getAdjacencies = function(root, level, edgeList, vis) {
 D3Graph.prototype.renderSlider = function(min, max, el) {
   //Append the template to the div
   var outerScope = this;
-  var fo = this.control.append("foreignObject")
-    .attr("x", "0%")
-    .attr("y", "5%")
-    .append("xhtml:div")
-    .attr('id', el);
+  var fo = this.control.append("svg:foreignObject")
+    .attr('height', this.height)
+    .attr('width', 150);
+  var div = fo.append('xhtml:div')
+    .attr('id', el)
+    .attr('type', 'button');
 
   var slider = document.getElementById(el);
   noUiSlider.create(slider, {

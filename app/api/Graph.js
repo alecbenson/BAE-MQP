@@ -48,8 +48,8 @@ Graph.prototype.toJSON = function() {
 // The code below is used to parse data from a sage file.
 Graph.fromSage = function(buffer) {
   try {
-    //Remove backslashes, newlines, and single quotes
-    var strippedData = buffer.replace(/['\\\n]/g, '');
+    //Remove backslashes, newlines, carraige returns, and single quotes
+    var strippedData = buffer.replace(/['\\\n\r]/g, '');
     //I hate this so much
     //Grab the text between 'add_vertices'
     var verticesString = /add_vertices\(\[([^)]+)\]/.exec(strippedData)[1];
