@@ -14,8 +14,10 @@ var graph = new D3Graph(600, 500, "#chart");
 var clickHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 clickHandler.setInputAction(function(click) {
   var pickedObject = viewer.scene.pick(click.position);
+  console.log(pickedObject);
   if (Cesium.defined(pickedObject)) {
     var id = pickedObject.id;
+    console.log("CLICKED");
     graph.displayAdjacencies(id.parentTrack);
   }
 }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
