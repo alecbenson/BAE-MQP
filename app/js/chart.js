@@ -276,6 +276,7 @@ D3Graph.prototype._start = function() {
   });
   this.edge_el.enter().insert("line")
     .attr("class", "link");
+  var edgeText = "thisisatest";
   this.edge_el.exit().remove();
 
   this.vertice_el = this.vertice_el.data(this.force.nodes(), function(d) {
@@ -317,6 +318,7 @@ D3Graph.prototype._tick = function() {
       return d.y;
     });
   this.text.text(this.graphText());
+  this.addEdgeText();
 };
 
 D3Graph.prototype.graphText = function() {
@@ -340,7 +342,6 @@ D3Graph.prototype.displayAdjacencies = function(track_id) {
   if (root === undefined) {
     return;
   }
-  console.log("HI");
   this.root = root;
   var adj = this.getAdjacencies(root, this.adj_level, graphEdges);
   this.clearGraph();
@@ -487,3 +488,15 @@ D3Graph.prototype._click = function(d) {
     viewer.flyTo(entities);
   }
 };
+
+D3Graph.prototype.addEdgeText = function() {
+  var edgeRect;
+  for(var i = 0; i < this.edges.length; i++) {
+    edgeRect = $(".link")[i];
+    this._svg.append("text")
+      .text(this.edges[i].weight)
+      .attr("fill", "white")
+      .attr("x", edgeRect.x1.animVal.value)
+      .attr("y", edgeRect.y1.animVal.value);
+  }
+}
