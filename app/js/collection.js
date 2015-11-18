@@ -43,16 +43,18 @@ Object.defineProperties(Collection.prototype, {
 
 Collection.prototype.loadTrackFile = function(xmlPath, sourceName) {
   var parser = new DOMParser();
+  var d = $.Deferred();
   var outerScope = this;
   $.get(xmlPath, function(data) {
     trackData = parser.parseFromString(data, "text/xml");
 
-    var fusionFrames = trackData.getElementsByTagNameNS('*','FusionFrame');
+    var fusionFrames = trackData.getElementsByTagNameNS('*', 'FusionFrame');
     outerScope._parseAllFrames(fusionFrames, sourceName);
   }).promise().done(function() {
     outerScope.applyTrackModel();
-    return outerScope;
+    d.resolve(outerScope);
   });
+  return d;
 };
 
 Collection.prototype.setTrackVisibility = function(sourceName, trackID, state) {
@@ -88,21 +90,20 @@ Collection.prototype._parseAllFrames = function(frames, sourceName) {
   var outerScope = this;
   $(frames).each(function(i, frame) {
     outerScope._parseFrame(frame, sourceName);
-  }).promise().done(function() {
-    outerScope.addUpdateTrackNodes();
   });
+  outerScope.addUpdateTrackNodes();
 };
 
 Collection.prototype._parseFrame = function(frame, sourceName) {
   var outerScope = this;
 
   var t = parseInt(frame.getAttribute('time'));
-  var stateEstimates = frame.getElementsByTagNameNS('*','stateEstimate');
+  var stateEstimates = frame.getElementsByTagNameNS('*', 'stateEstimate');
   $.each(stateEstimates, function(i, se) {
     outerScope._parseStateEstimate(se, t, sourceName);
   });
 
-  var sensors = frame.getElementsByTagNameNS('*',"sensor");
+  var sensors = frame.getElementsByTagNameNS('*', "sensor");
   this._parseAllSensors(sensors, sourceName);
 };
 
@@ -139,7 +140,7 @@ Collection.prototype._parseStateEstimate = function(se, time, sourceName) {
   var id = "n" + se.getAttribute('trackId');
 
   if (this.tracks[sourceName] === undefined) {
-    this.tracks[sourceName] = [];
+    this.tracks[sourceName] = {};
   }
 
   if (id in this.tracks[sourceName]) {
@@ -154,7 +155,7 @@ Collection.prototype._parseStateEstimate = function(se, time, sourceName) {
 };
 
 Collection.parsePos = function(kse) {
-  var pos = kse.getElementsByTagNameNS('*','position')[0];
+  var pos = kse.getElementsByTagNameNS('*', 'position')[0];
   var lat = Number(pos.getAttribute('lat'));
   var lon = Number(pos.getAttribute('lon'));
   var hae = Number(pos.getAttribute('hae'));
@@ -288,27 +289,6 @@ Collection.prototype.deleteSensor = function(sourceName, index) {
   }
 };
 
-/**
- * Makes an ajax call to delete a given graph source.
- * @param sourceName - the name of the data source to delete
- */
-Collection.prototype.deleteGraphData = function(graphName) {
-  var outerScope = this;
-  $.ajax({
-    url: "/collections/" + outerScope.name + "/graph/" + graphName,
-    type: "DELETE",
-    success: function(data, status) {
-      graph.unloadGraphEntities(data.graph);
-      var index = outerScope.graphs.indexOf(graphName);
-      delete outerScope.graphs[index];
-      outerScope.renderSources(data.context);
-    },
-    error: function(xhr, desc, err) {
-      console.log("Failed: " + desc + err);
-    }
-  });
-};
-
 Collection.prototype.deleteSourceSensors = function(sourceName) {
   var sourceSensors = this.sensors[sourceName];
   for (var i = 0; i < sourceSensors.length; i++) {
@@ -316,15 +296,50 @@ Collection.prototype.deleteSourceSensors = function(sourceName) {
   }
 };
 
+Collection.prototype.renderCollection = function() {
+  //Append the template to the div
+  var outerScope = this;
+  getTemplateHTML('dataCollection').done(function(data) {
+    var templated = applyTemplate(data, outerScope);
+    var target = $(templated).prependTo(dataDiv);
+  });
+  this.loadCollection();
+};
+
 Collection.prototype.renderSources = function() {
   var outerScope = this;
-  getTemplateHTML('sourceList').done(function(data) {
+  getTemplateHTML('collectionList').done(function(data) {
     result = applyTemplate(data, outerScope);
-    var list = "#sourceList" + "-" + outerScope.name;
+    var list = "#collectionList" + "-" + outerScope.name;
     $(list).html(result);
-    var checkbox = $(list + " ul li :checkbox");
+    var checkbox = $(list).find("input[type='checkbox']");
     checkbox.bootstrapToggle();
     bindDataVisibilityToggle(checkbox);
+  });
+};
+
+/**
+ * Loads all of the files within a collection into the viewer
+ */
+Collection.prototype.loadCollection = function() {
+  var outerScope = this;
+  var model = this.model;
+  var promises = [];
+
+  $.each(this.sources, function(index, sourceName) {
+    var sourcespath = outerScope.sourcespath;
+    var p = outerScope.loadTrackFile(sourcespath + sourceName, sourceName);
+    promises.push(p);
+  });
+  $.each(this.graphs, function(index, graphName) {
+    var graphFilePath = outerScope.graphpath + graphName;
+    var p = graph.loadGraphFile(graphFilePath);
+    promises.push(p);
+  });
+  //This will wait for all of the promises to return
+  //Before the sources are rendered
+  $.when.apply(null, promises).done(function() {
+    outerScope.renderSources();
   });
 };
 
@@ -365,23 +380,49 @@ Collection.prototype.uploadCollectionSource = function(target) {
       var context = data.context;
       var uploadType = data.file.uploadType;
       var sourceName = data.file.filename;
+      var promise;
 
       if (uploadType == "xml") {
         //Load XML file
         var xmlFilePath = context.sourcespath + sourceName;
-        outerScope.loadTrackFile(xmlFilePath, sourceName);
         outerScope.sources.push(sourceName);
+        promise = outerScope.loadTrackFile(xmlFilePath, sourceName);
       } else {
         //Load Sage file
         var graphFilePath = context.graphpath + sourceName;
         outerScope.graphs.push(sourceName);
-        graph.loadGraphFile(graphFilePath);
+        promise = graph.loadGraphFile(graphFilePath);
       }
-      outerScope.renderSources();
+
+      $.when(promise).done(function() {
+        outerScope.renderSources();
+      });
+
     },
     error: function(xhr, desc, err) {
       var error = $(parentForm).find('.alert-danger');
       $(error).show().text(xhr.responseText);
+    }
+  });
+};
+
+/**
+ * Makes an ajax call to delete a given graph source.
+ * @param sourceName - the name of the data source to delete
+ */
+Collection.prototype.deleteGraphData = function(graphName) {
+  var outerScope = this;
+  $.ajax({
+    url: "/collections/" + outerScope.name + "/graph/" + graphName,
+    type: "DELETE",
+    success: function(data, status) {
+      graph.unloadGraphEntities(data.graph);
+      var index = outerScope.graphs.indexOf(graphName);
+      delete outerScope.graphs[index];
+      outerScope.renderSources(data.context);
+    },
+    error: function(xhr, desc, err) {
+      console.log("Failed: " + desc + err);
     }
   });
 };

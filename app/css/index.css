@@ -63,23 +63,11 @@ h5 {
     height: 100%;
   }
 }
-@media (max-width: 640px) {
-  #cesiumContainer {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    width: 100%;
-    height: 100%;
-  }
-  #nav-pane {
-    display: none;
-  }
-}
-.cesium-infoBox-description div{
+.cesium-infoBox-description div {
   clear: both;
 }
 .btn {
-  margin: 5px;
+  margin-right: 5px;
 }
 .toggle-group .btn {
   margin: 0px;
@@ -93,9 +81,6 @@ h5 {
 .btn-file {
   position: relative;
   overflow: hidden;
-}
-.panel {
-  color: black;
 }
 .btn-file input[type=file] {
   position: absolute;
@@ -112,6 +97,17 @@ h5 {
   cursor: inherit;
   display: block;
 }
-#loading {
-  visibility: hidden;
+.panel {
+  color: black;
+}
+.panel-group .list-group {
+  margin-bottom: 0;
+}
+.panel-group .list-group .list-group-item {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+.panel-group .list-group .list-group-item:last-child {
+  border-bottom: none;
 }

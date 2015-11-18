@@ -221,6 +221,7 @@ D3Graph.prototype.loadGraphFile = function(filePath) {
     newVert = {};
   var vertList = this.fullGraph.vertices;
   var edgeList = this.fullGraph.edges;
+  var d = $.Deferred();
 
   d3.json(filePath, function(error, graph) {
     if (error) {
@@ -234,7 +235,9 @@ D3Graph.prototype.loadGraphFile = function(filePath) {
     }
     outerScope.addOrphanEdges();
     outerScope._start();
+    d.resolve();
   });
+  return d;
 };
 
 D3Graph.prototype.addVertice = function(json, list) {

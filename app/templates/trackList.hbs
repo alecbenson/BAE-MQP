@@ -1,0 +1,36 @@
+<h5>Track data within this collection:</h5>
+<ul class="list-group">
+  {{#each _tracks}}
+    <div class="panel-group" id="source-{{@key}}">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <span data-toggle="collapse" data-parent="#source-{{@key}}" data-target="#tracks-{{@key}}">{{@key}}</span>
+          <span class="navbar-right">
+            <input class="btn-visibility" data-size="mini" data-source="{{@key}}" data-collection="{{../name}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
+            <button type="button" class="btn btn-deleteSource btn-danger btn-xs" data-source="{{@key}}" data-collection="{{../name}}">
+              <i class="fa fa-trash-o"></i>
+            </button>
+          </span>
+        </div>
+
+        <div class="panel-collapse collapse" id="tracks-{{@key}}">
+          <div class="list-group">
+            {{#each this}}
+              <div class="list-group-item">
+                <span class="navbar-right">
+                  <input class="btn-visibility" data-size="mini" id="{{@key}}" data-collection="{{../../name}}" type="checkbox" checked data-toggle="toggle">
+                </span>
+                {{@key}}
+              </div>
+            {{/each}}
+          </div>
+        </div>
+
+      </div>
+    </div>
+    {{else}}
+      <li class="list-group-item">
+        This collection does not contain any track data.
+      </li>
+  {{/each}}
+</ul>
