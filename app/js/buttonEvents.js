@@ -99,7 +99,8 @@ function bindDataVisibilityToggle(checkbox) {
     var state = $(this).prop('checked');
 
     if (graphName === undefined) {
-      collection.setAllTrackVisibility(state);
+      var trackId = $(this).data("trackid");
+      collection.setTrackVisibility(sourceName, trackId, state);
     } else {
       collection.setGraphVisibility(graphName, state);
     }

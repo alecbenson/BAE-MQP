@@ -35,33 +35,31 @@ h5 {
 .nav-section h3 {
   margin-top: 0px;
 }
-@media (min-width: 640px) {
-  #nav-pane {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    height: 100%;
-    width: 400px;
-    border-right: 2px solid #111;
-    overflow: auto;
-    z-index: 1;
-  }
-  #ele-slider {
-    margin: 30px;
-  }
-  .noUi-connect {
-    background: #337ab7;
-  }
-  .noUi-tooltip {
-    width: 200%;
-  }
-  #cesiumContainer {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    width: calc(100% - 400px);
-    height: 100%;
-  }
+#nav-pane {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 400px;
+  border-right: 2px solid #111;
+  overflow: auto;
+  z-index: 1;
+}
+#ele-slider {
+  margin: 30px;
+}
+.noUi-connect {
+  background: #337ab7;
+}
+.noUi-tooltip {
+  width: 200%;
+}
+#cesiumContainer {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: calc(100% - 400px);
+  height: 100%;
 }
 .cesium-infoBox-description div {
   clear: both;

@@ -18,7 +18,7 @@
             {{#each this}}
               <div class="list-group-item">
                 <span class="navbar-right">
-                  <input class="btn-visibility" data-size="mini" id="{{@key}}" data-collection="{{../../name}}" type="checkbox" checked data-toggle="toggle">
+                  <input class="btn-visibility" data-size="mini" data-trackid="{{@key}}" data-collection="{{../../name}}" data-source="{{@../key}}" type="checkbox" checked data-toggle="toggle">
                 </span>
                 {{@key}}
               </div>
