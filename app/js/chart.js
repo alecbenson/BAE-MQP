@@ -496,7 +496,8 @@ D3Graph.prototype.addEdgeText = function() {
     this._svg.append("text")
       .text(this.edges[i].weight)
       .attr("fill", "white")
-      .attr("x", edgeRect.x1.animVal.value)
-      .attr("y", edgeRect.y1.animVal.value);
+      .attr("font-size", "20px")
+      .attr("x", (edgeRect.x1.animVal.value + edgeRect.x2.animVal.value) / 2)
+      .attr("y", (edgeRect.y1.animVal.value + edgeRect.y2.animVal.value) / 2);
   }
 }
