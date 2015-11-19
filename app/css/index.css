@@ -4,9 +4,9 @@ html, body {
   margin: 0px;
   padding: 0px;
   overflow: hidden;
-  background-color: #2D2D2D;
+  background-color: #21252b;
   color: white;
-  font-family: Verdana;
+  font-family: FontAwesome;
 }
 .nav-section {
   display: block;
