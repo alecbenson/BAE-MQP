@@ -19,7 +19,7 @@ html, body {
 .btn-hideControls {
   position: absolute;
   top: 0px;
-  left: -7px;
+  left: -1px;
   z-index: 101;
   border-top-left-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
@@ -29,57 +29,49 @@ h5 {
   font-style: oblique;
   color: gray;
 }
+h4 {
+  display: inline;
+}
+h3 {
+  display: inline;
+}
 .nav-section h2 {
   margin-top: 6px;
 }
 .nav-section h3 {
   margin-top: 0px;
 }
-@media (min-width: 640px) {
-  #nav-pane {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    height: 100%;
-    width: 400px;
-    border-right: 2px solid #111;
-    overflow: auto;
-    z-index: 1;
-  }
-  #ele-slider {
-    margin: 30px;
-  }
-  .noUi-connect {
-    background: #337ab7;
-  }
-  .noUi-tooltip {
-    width: 200%;
-  }
-  #cesiumContainer {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    width: calc(100% - 400px);
-    height: 100%;
-  }
+#nav-pane {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 400px;
+  border-right: 2px solid #111;
+  overflow: auto;
+  z-index: 1;
 }
-@media (max-width: 640px) {
-  #cesiumContainer {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    width: 100%;
-    height: 100%;
-  }
-  #nav-pane {
-    display: none;
-  }
+#ele-slider {
+  margin: 30px;
 }
-.cesium-infoBox-description div{
+.noUi-connect {
+  background: #337ab7;
+}
+.noUi-tooltip {
+  width: 200%;
+}
+#cesiumContainer {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: calc(100% - 400px);
+  height: 100%;
+}
+.cesium-infoBox-description div {
   clear: both;
 }
 .btn {
-  margin: 5px;
+  margin-right: 5px;
 }
 .toggle-group .btn {
   margin: 0px;
@@ -93,9 +85,6 @@ h5 {
 .btn-file {
   position: relative;
   overflow: hidden;
-}
-.panel {
-  color: black;
 }
 .btn-file input[type=file] {
   position: absolute;
@@ -112,6 +101,30 @@ h5 {
   cursor: inherit;
   display: block;
 }
-#loading {
-  visibility: hidden;
+.panel {
+  color: black;
+}
+.panel-group .list-group {
+  margin-bottom: 0;
+}
+.panel-group .list-group .list-group-item {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+.buffer {
+  margin-bottom: 20px;
+}
+.panel-group .list-group .list-group-item:last-child {
+  border-bottom: none;
+}
+.panel-heading .accordion.collapsed:after {
+  content: "\f054\00a0";
+}
+.panel-heading .accordion:after {
+  font-family: 'FontAwesome';
+  content: "\f078\00a0";
+  float: left;
+  color: grey;
+  text-indent: 5px;
 }

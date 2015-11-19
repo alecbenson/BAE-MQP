@@ -1,0 +1,19 @@
+<h5>Graph data within this collection:</h5>
+<ul class="list-group">
+  {{#unless graphs}}
+    <li class="list-group-item">
+      This collection does not contain any graph data.
+    </li>
+  {{/unless}}
+  {{#each graphs}}
+    <li class="list-group-item graph-{{this}}">
+      {{this}}
+      <span class="navbar-right">
+        <input class="btn-visibility" data-size="mini" data-graph="{{this}}" data-collection="{{../name}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
+        <button type="button" class="btn btn-deleteGraph btn-danger btn-xs" data-graph="{{this}}" data-collection="{{../name}}">
+          <i class="fa fa-trash-o"></i>
+        </button>
+      </span>
+    </li>
+  {{/each}}
+</ul>

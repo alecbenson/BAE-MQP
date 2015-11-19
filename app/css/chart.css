@@ -28,6 +28,16 @@
   stroke: #ffffff;
   stroke-width: 2px;
 }
+.link-label {
+  font-size: 20px;
+  paint-order: stroke;
+  fill: white;
+  stroke: black;
+  stroke-width: 3px;
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+  font-weight: 800;
+}
 #chart-slider {
   height: 400px;
   top: 25px;

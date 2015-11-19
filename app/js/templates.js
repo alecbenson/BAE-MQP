@@ -4,7 +4,9 @@
 function registerAllPartials() {
   registerExternalPartial("sourceUpload");
   registerExternalPartial("modelUpload");
-  registerExternalPartial("sourceList");
+  registerExternalPartial("collectionList");
+  registerExternalPartial("trackList");
+  registerExternalPartial("graphList");
   registerExternalPartial("datepicker");
   registerExternalPartial("numberpicker");
 }
