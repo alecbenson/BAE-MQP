@@ -3,7 +3,7 @@
  */
 function bindDeleteButton() {
   $(document).on("click", ".btn-delete", function() {
-    var collectionName = $(this).attr('id');
+    var collectionName = $(this).data('collection');
     var collection = collectionSet.getCollection(collectionName);
     collection.deleteCollection();
   });
@@ -99,7 +99,8 @@ function bindDataVisibilityToggle(checkbox) {
     var state = $(this).prop('checked');
 
     if (graphName === undefined) {
-      collection.setAllTrackVisibility(state);
+      var trackId = $(this).data("trackid");
+      collection.setTrackVisibility(sourceName, trackId, state);
     } else {
       collection.setGraphVisibility(graphName, state);
     }

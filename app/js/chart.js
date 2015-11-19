@@ -2,6 +2,7 @@ function D3Graph(width, height, el) {
 
   this._edges = [];
   this._vertices = [];
+  this._orphanEdges = [];
   this._width = width;
   this._height = height;
   this._fullGraph = {
@@ -15,8 +16,6 @@ function D3Graph(width, height, el) {
     .attr("width", width)
     .attr("height", height);
 
-  this._control = this._svg.append("g");
-
   this._text = this._svg.append("text")
     .attr("x", width / 2)
     .attr("y", height / 2)
@@ -25,9 +24,14 @@ function D3Graph(width, height, el) {
     .attr("text-anchor", "middle")
     .attr("fill", "white");
 
+  this._control = this._svg.append("g");
   this._container = this.svg.append("g");
   this._vertice_el = this._container.selectAll(".node");
   this._edge_el = this._container.selectAll(".link");
+
+  //Initialize empty selectors
+  this._edge_line = this._container.selectAll();
+  this._edge_text = this._container.selectAll();
 
   this._rect = this.container.append("rect")
     .attr("width", width * 10)
@@ -41,7 +45,7 @@ function D3Graph(width, height, el) {
     .charge(-500)
     .linkDistance(function(d) {
       var w = Math.max(0, (1.0 - d.weight));
-      return 5 + (w * 100);
+      return 50 + (w * 150);
     })
     .size([width, height]);
 
@@ -58,6 +62,7 @@ function D3Graph(width, height, el) {
 }
 
 Object.defineProperties(D3Graph.prototype, {
+  //List of edges currently being shown in the graph
   'edges': {
     get: function() {
       return this._edges;
@@ -66,6 +71,7 @@ Object.defineProperties(D3Graph.prototype, {
       this._edges = edges;
     }
   },
+  //List of vertices currently being shown in the graph
   'vertices': {
     get: function() {
       return this._vertices;
@@ -74,6 +80,7 @@ Object.defineProperties(D3Graph.prototype, {
       this._vertices = vertices;
     }
   },
+  //Selector for edges being shown in the graph
   'edge_el': {
     get: function() {
       return this._edge_el;
@@ -82,6 +89,23 @@ Object.defineProperties(D3Graph.prototype, {
       this._edge_el = edge_el;
     }
   },
+  'edge_line': {
+    get: function() {
+      return this._edge_line;
+    },
+    set: function(edge_line) {
+      this._edge_line = edge_line;
+    }
+  },
+  'edge_text': {
+    get: function() {
+      return this._edge_text;
+    },
+    set: function(edge_text) {
+      this._edge_text = edge_text;
+    }
+  },
+  //Selector for vertices being shown in the graph
   'vertice_el': {
     get: function() {
       return this._vertice_el;
@@ -90,6 +114,17 @@ Object.defineProperties(D3Graph.prototype, {
       this._vertice_el = vertice_el;
     }
   },
+  //List of edges that are loaded, but cannot be displayed because
+  //They referenced an unresolved vertice
+  'orphanEdges': {
+    get: function() {
+      return this._orphanEdges;
+    },
+    set: function(orphanEdges) {
+      thi._orphanEdges = orphanEdges;
+    }
+  },
+  //The vertice at the center of the graph -- the track being selected
   'root': {
     get: function() {
       return this._root;
@@ -98,6 +133,7 @@ Object.defineProperties(D3Graph.prototype, {
       this._root = root;
     }
   },
+  //How many levels of adjacency to display in the graph
   'adj_level': {
     get: function() {
       return this._adj_level;
@@ -106,6 +142,7 @@ Object.defineProperties(D3Graph.prototype, {
       this._adj_level = adj_level;
     }
   },
+  //Width in pixels of the graph
   'width': {
     get: function() {
       return this._width;
@@ -114,6 +151,7 @@ Object.defineProperties(D3Graph.prototype, {
       this._width = width;
     }
   },
+  //Height in pixels of the graph
   'height': {
     get: function() {
       return this._height;
@@ -122,6 +160,7 @@ Object.defineProperties(D3Graph.prototype, {
       this._height = height;
     }
   },
+  //The base svg chart element
   'svg': {
     get: function() {
       return this._svg;
@@ -130,11 +169,13 @@ Object.defineProperties(D3Graph.prototype, {
       this._svg = svg;
     }
   },
+  //The svg group containing the slider
   'control': {
     get: function() {
       return this._control;
     }
   },
+  //The svg group containing the graph elements
   'container': {
     get: function() {
       return this._container;
@@ -143,6 +184,7 @@ Object.defineProperties(D3Graph.prototype, {
       this._container = container;
     }
   },
+  //D3 force object
   'force': {
     get: function() {
       return this._force;
@@ -151,6 +193,7 @@ Object.defineProperties(D3Graph.prototype, {
       this._force = force;
     }
   },
+  //D3 drag object
   'drag': {
     get: function() {
       return this._drag;
@@ -159,6 +202,7 @@ Object.defineProperties(D3Graph.prototype, {
       this._drag = drag;
     }
   },
+  //SVG text that is displayed on the chart
   'text': {
     get: function() {
       return this._text;
@@ -167,6 +211,7 @@ Object.defineProperties(D3Graph.prototype, {
       this._text = text;
     }
   },
+  //The svg rectangle within the graph that makes zooming and panning possible
   'rect': {
     get: function() {
       return this._rect;
@@ -175,6 +220,7 @@ Object.defineProperties(D3Graph.prototype, {
       this._rect = rect;
     }
   },
+  //The list of all (not loaded) edges and vertices in the graph
   'fullGraph': {
     get: function() {
       return this._fullGraph;
@@ -185,12 +231,17 @@ Object.defineProperties(D3Graph.prototype, {
   }
 });
 
+//Loads a JSON file containing node and edge information
+// into the graph. After, the list of orphan edges is checked so that
+// if it contains any edges that can now be resolved, the orphan edges
+//can be loaded into the graph
 D3Graph.prototype.loadGraphFile = function(filePath) {
   var outerScope = this;
   var newEdge = {},
     newVert = {};
   var vertList = this.fullGraph.vertices;
   var edgeList = this.fullGraph.edges;
+  var d = $.Deferred();
 
   d3.json(filePath, function(error, graph) {
     if (error) {
@@ -202,13 +253,22 @@ D3Graph.prototype.loadGraphFile = function(filePath) {
     for (var j = 0; j < graph.edges.length; j++) {
       outerScope.addEdge(graph.edges[j], edgeList, vertList);
     }
+    outerScope.addOrphanEdges();
     outerScope._start();
+    d.resolve();
   });
+  return d;
 };
 
 D3Graph.prototype.addVertice = function(json, list) {
   if (list === undefined) {
     list = this.vertices;
+  }
+  if (this.findVertice(json.id, this.fullGraph.vertices) !== undefined) {
+    return;
+  }
+  if (this.findVertice(json.id, this.vertices) !== undefined) {
+    return;
   }
   var newVert = {
     "id": json.id
@@ -239,6 +299,17 @@ D3Graph.prototype.clearGraph = function() {
   graph._start();
 };
 
+D3Graph.prototype.addOrphanEdges = function() {
+  var vertList = this.fullGraph.vertices;
+  var edgeList = this.fullGraph.edges;
+  //Store length here so that if an edge gets re-added to the
+  //List of orphan edges, the method does not attempt to re-add the edge.
+  var length = this.orphanEdges.length;
+  for (var i = 0; i < this.orphanEdges.length; i++) {
+    this.addEdge(this.orphanEdges.shift(), edgeList, vertList);
+  }
+};
+
 D3Graph.prototype.addEdge = function(json, edgeList, vertList) {
   if (edgeList === undefined) {
     edgeList = this.edges;
@@ -248,6 +319,12 @@ D3Graph.prototype.addEdge = function(json, edgeList, vertList) {
   }
   var s = this.findVertice(json.source, vertList);
   var t = this.findVertice(json.target, vertList);
+  //This edge cannot be resolved, put it into a temporary list
+  //And try to re-add it when another file is loaded.
+  if (s === undefined || t === undefined) {
+    this.orphanEdges.push(json);
+    return;
+  }
   var w = json.weight;
   var newEdge = {
     "source": s,
@@ -274,14 +351,22 @@ D3Graph.prototype._start = function() {
   this.edge_el = this.edge_el.data(this.force.links(), function(d) {
     return d.source.id + "-" + d.target.id;
   });
-  this.edge_el.enter().insert("line")
-    .attr("class", "link");
+  this.edge_line = this.edge_el.enter().insert("g")
+    .attr("class", "link")
+    .insert("line")
+    .attr("class", "link-line");
+  this.edge_text = this.edge_el.insert("text")
+    .attr("class", "link-label")
+    .text(function(d) {
+      return parseFloat(d.weight);
+    });
   this.edge_el.exit().remove();
 
   this.vertice_el = this.vertice_el.data(this.force.nodes(), function(d) {
     return d.id;
   });
-  this.vertice_el.enter().append("circle")
+  this.vertice_el.enter()
+    .insert("circle")
     .attr("class", function(d) {
       return "node " + d.id;
     })
@@ -297,7 +382,7 @@ D3Graph.prototype._start = function() {
 
 D3Graph.prototype._tick = function() {
   var outerScope = this;
-  this.edge_el.attr("x1", function(d) {
+  this.edge_line.attr("x1", function(d) {
       return d.source.x;
     })
     .attr("y1", function(d) {
@@ -308,6 +393,13 @@ D3Graph.prototype._tick = function() {
     })
     .attr("y2", function(d) {
       return d.target.y;
+    });
+
+  this.edge_text.attr("x", function(d) {
+      return (d.source.x + d.target.x) / 2;
+    })
+    .attr("y", function(d) {
+      return (d.source.y + d.target.y) / 2;
     });
 
   this.vertice_el.attr("cx", function(d) {
@@ -390,8 +482,7 @@ D3Graph.prototype.renderSlider = function(min, max, el) {
     .attr('height', this.height)
     .attr('width', 150);
   var div = fo.append('xhtml:div')
-    .attr('id', el)
-    .attr('type', 'button');
+    .attr('id', el);
 
   var slider = document.getElementById(el);
   noUiSlider.create(slider, {
@@ -433,12 +524,10 @@ D3Graph.prototype.dragend = function(d) {
 };
 
 D3Graph.prototype.unloadGraphEntities = function(data) {
-  var outerScope = this;
-
   for (var i = 0; i < data.vertices.length; i++) {
     var vert = data.vertices[i];
+    this.removeVertice(vert, this.edges, this.vertices);
     this.removeVertice(vert, this.fullGraph.edges, this.fullGraph.vertices);
-    this.removeVertice(vert);
   }
   this._start();
 };
@@ -480,6 +569,9 @@ D3Graph.prototype._click = function(d) {
 
   if (trackNode.isAvailable(currentTime)) {
     var currentPos = trackNode.position.getValue(currentTime);
+    if(currentPos === undefined){
+      return;
+    }
     var boundingSphere = new Cesium.BoundingSphere(currentPos, 5000);
     viewer.selectedEntity = trackNode;
     viewer.camera.flyToBoundingSphere(boundingSphere);

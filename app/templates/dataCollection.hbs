@@ -1,20 +1,20 @@
-<div class="panel panel-default collection-{{name}}">
-
-  <!-- Panel heading !-->
-  <div class="panel-heading clearfix">
-    <span data-toggle="collapse" data-target=".{{name}}">
-      <h4>{{name}}
-        <a class="btn btn-sm btn-danger btn-delete pull-right" id="{{name}}">
+<div class="panel-group">
+  <div class="panel panel-default collection-{{name}}">
+    <div class="panel-heading clearfix">
+      <span class="accordion" data-toggle="collapse" data-target="#collection-{{name}}">
+        <h4>{{name}}</h4>
+      </span>
+      <span class="navbar-right">
+        <button class="btn btn-sm btn-danger btn-delete" data-collection="{{name}}">
           <i class="fa fa-trash-o"></i>
-        </a>
-      </h4>
-    </span>
-  </div>
+        </button>
+      </span>
+    </div>
 
-  <!-- Panel contents !-->
-  <div class="panel-collapse collapse in {{name}}">
-    <div class="panel-body">
-      {{> sourceList}} {{> sourceUpload}} {{> modelUpload}}
+    <div class="panel-collapse collapse in" id="collection-{{name}}">
+      <div class="panel-body">
+        {{>collectionList}} {{> sourceUpload}} {{> modelUpload}}
+      </div>
     </div>
   </div>
 </div>
