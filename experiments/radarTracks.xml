@@ -1,4 +1,4 @@
-
+<root>
   <TAF:FusionFrame platform="RANGE_ELEVATION_BEARING_RANGEDOT" time="100.000000" xmlns:TAF="http://www.baesystems.com/TAF" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="TAF:FusionFrameICDObj">
     <TAF:sensor sensorType="RANGE_ELEVATION_BEARING_RANGEDOT"><TAF:position hae="37.749618" lat="-8.139279e-02" lon="1.796625e-01" xmlns:RIVETsCommon="http://www.baesystems.com/rivets/common" xsi:type="RIVETsCommon:Geo3DPositionDegreesICDObj"/><TAF:velocity x="99.999508" xmlns:RIVETsCommon="http://www.baesystems.com/rivets/common" xsi:type="RIVETsCommon:ENUVelocityMSICDObj" y="-99.999454" z="4.556265e-01"/></TAF:sensor><TAF:boundingRegion type="InfiniteRegion"/>
     <TAF:stateEstimate trackId="0" trackStatus="TRACKING">
@@ -3710,3 +3710,4 @@
         covariance="2508294.128053 565844.647745 -505.834028 65823.514322 12582.381106 15.112901 565844.647745 137981.451628 -333.486827 14443.268411 4456.758591 3.385592 -505.834028 -333.486827 933005.723498 1.194861 84.075043 33964.695116 65823.514322 14443.268411 1.194861 3551.822717 625.450364 -5.886777e-01 12582.381106 4456.758591 84.075043 625.450364 699.616638 2.666466 15.112901 3.385592 33964.695116 -5.886777e-01 2.666466 2601.341863"><RIVETsCommon:position hae="1240.942948" lat="-1.097770e-03" lon="7.926988e-01" xmlns:RIVETsCommon="http://www.baesystems.com/rivets/common" xsi:type="RIVETsCommon:Geo3DPositionDegreesICDObj"/><RIVETsCommon:velocity x="102.146060" xmlns:RIVETsCommon="http://www.baesystems.com/rivets/common" xsi:type="RIVETsCommon:ENUVelocityMSICDObj" y="65.346983" z="8.364110"/></TAF:kse>
     </TAF:stateEstimate>
   </TAF:FusionFrame>
+</root>

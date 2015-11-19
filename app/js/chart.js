@@ -567,6 +567,9 @@ D3Graph.prototype._click = function(d) {
 
   if (trackNode.isAvailable(currentTime)) {
     var currentPos = trackNode.position.getValue(currentTime);
+    if(currentPos === undefined){
+      return;
+    }
     var boundingSphere = new Cesium.BoundingSphere(currentPos, 5000);
     viewer.selectedEntity = trackNode;
     viewer.camera.flyToBoundingSphere(boundingSphere);

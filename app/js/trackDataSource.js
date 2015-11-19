@@ -103,7 +103,7 @@ TrackDataSource.prototype._setTrackColor = function(name) {
  */
 TrackDataSource.prototype.addStateEstimate = function(se, time) {
   this._setLoadStatus(true);
-  
+
   var kse = se.getElementsByTagNameNS('*', 'kse')[0];
   var p = Collection.parsePos(kse);
   var covariance = kse.getAttribute('covariance');
@@ -354,6 +354,9 @@ TrackDataSource.prototype.formatTrackNodeDesc = function() {
   var node = this._trackNode;
   return new Cesium.CallbackProperty(function(time, result) {
     var pos = node.position.getValue(time);
+    if (pos === undefined) {
+      return "Error getting position data";
+    }
     var c = Cesium.Ellipsoid.WGS84.cartesianToCartographic(pos);
     return "<div><h3>Latitude</h3>" + c.latitude +
       "<h3>Longitude</h3>" + c.longitude +
