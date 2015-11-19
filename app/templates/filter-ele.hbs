@@ -1,15 +1,18 @@
-<div class="panel panel-default">
-  <!-- Panel heading !-->
-  <div class="panel-heading clearfix">
-    <span data-toggle="collapse" data-target=".filter-ele-body">Elevation Filter</span>
-    <span class="navbar-right filter-ele-enabled">
-      <input class="btn-visibility" data-size="mini" type="checkbox" checked data-toggle="toggle" data-on="On" data-off="Off">
-    </span>
-  </div>
-  <!-- Panel contents !-->
-  <div class="panel-collapse collapse in filter-ele-body">
-    <div class="panel-body">
-      <div id="ele-slider"></div>
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading clearfix">
+      <span class="accordion" data-toggle="collapse" data-target="#filter-ele-body">
+        <h4>Elevation Filter</h4>
+      </span>
+      <span class="navbar-right filter-ele-enabled">
+        <input class="btn-visibility" data-size="mini" type="checkbox" checked data-toggle="toggle" data-on="On" data-off="Off">
+      </span>
+    </div>
+
+    <div class="panel-collapse collapse in" id="filter-ele-body">
+      <div class="panel-body">
+        <div id="ele-slider"></div>
+      </div>
     </div>
   </div>
 </div>

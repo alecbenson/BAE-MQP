@@ -3,7 +3,7 @@
  */
 function bindDeleteButton() {
   $(document).on("click", ".btn-delete", function() {
-    var collectionName = $(this).attr('id');
+    var collectionName = $(this).data('collection');
     var collection = collectionSet.getCollection(collectionName);
     collection.deleteCollection();
   });

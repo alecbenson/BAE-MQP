@@ -19,7 +19,7 @@ html, body {
 .btn-hideControls {
   position: absolute;
   top: 0px;
-  left: -7px;
+  left: -1px;
   z-index: 101;
   border-top-left-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
@@ -28,6 +28,9 @@ h5 {
   font-weight: bold;
   font-style: oblique;
   color: gray;
+}
+h4 {
+  display: inline;
 }
 .nav-section h2 {
   margin-top: 6px;
@@ -106,6 +109,19 @@ h5 {
   border-left: none;
   border-right: none;
 }
+.buffer {
+  margin-bottom: 20px;
+}
 .panel-group .list-group .list-group-item:last-child {
   border-bottom: none;
+}
+.panel-heading .accordion.collapsed:after {
+  content: "\f054\00a0";
+}
+.panel-heading .accordion:after {
+  font-family: 'FontAwesome';
+  content: "\f078\00a0";
+  float: left;
+  color: grey;
+  text-indent: 5px;
 }
