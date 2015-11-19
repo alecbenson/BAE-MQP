@@ -1,17 +1,24 @@
 <form>
-  <div class="panel panel-default newCollection">
+  <div class="panel-group">
+    <div class="panel panel-default newCollection">
+      <div class="panel-heading clearfix">
+        <h4>New Collection</h4>
+      </div>
 
-    <!-- Panel contents !-->
-    <div class="panel-body">
-      <input type="text" class="form-control" name="collectionName" placeholder="Enter a name for the new collection...">
-      <button type="button" class="btn btn-cancelCollection btn-danger pull-left">
-        <i class="fa fa-remove pull-left"></i>Cancel
-      </button>
+      <div class="panel-collapse">
+        <div class="panel-body">
+          <input type="text" class="form-control" name="collectionName" placeholder="Enter a name for the new collection...">
+          <br>
+          <button type="button" class="btn btn-cancelCollection btn-danger navbar-left">
+            <i class="fa fa-remove pull-left"></i>Cancel
+          </button>
 
-      <button type="submit" class="btn btn-submitCollection btn-success navbar-right">
-        <i class="fa fa-check pull-left"></i>Create
-      </button>
+          <button type="submit" class="btn btn-submitCollection btn-success navbar-right">
+            <i class="fa fa-check pull-left"></i>Create
+          </button>
+        </div>
+      </div>
+      <div class="errorMessage alert alert-danger collapse" role="alert">...</div>
     </div>
-    <div class="errorMessage alert alert-danger collapse" role="alert">...</div>
   </div>
 </form>
