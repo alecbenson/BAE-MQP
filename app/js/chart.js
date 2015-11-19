@@ -29,6 +29,10 @@ function D3Graph(width, height, el) {
   this._vertice_el = this._container.selectAll(".node");
   this._edge_el = this._container.selectAll(".link");
 
+  //Initialize empty selectors
+  this._edge_line = this._container.selectAll();
+  this._edge_text = this._container.selectAll();
+
   this._rect = this.container.append("rect")
     .attr("width", width * 10)
     .attr("height", height * 10)
@@ -41,7 +45,7 @@ function D3Graph(width, height, el) {
     .charge(-500)
     .linkDistance(function(d) {
       var w = Math.max(0, (1.0 - d.weight));
-      return 5 + (w * 100);
+      return 50 + (w * 150);
     })
     .size([width, height]);
 
@@ -83,6 +87,22 @@ Object.defineProperties(D3Graph.prototype, {
     },
     set: function(edge_el) {
       this._edge_el = edge_el;
+    }
+  },
+  'edge_line': {
+    get: function() {
+      return this._edge_line;
+    },
+    set: function(edge_line) {
+      this._edge_line = edge_line;
+    }
+  },
+  'edge_text': {
+    get: function() {
+      return this._edge_text;
+    },
+    set: function(edge_text) {
+      this._edge_text = edge_text;
     }
   },
   //Selector for vertices being shown in the graph
@@ -330,14 +350,22 @@ D3Graph.prototype._start = function() {
   this.edge_el = this.edge_el.data(this.force.links(), function(d) {
     return d.source.id + "-" + d.target.id;
   });
-  this.edge_el.enter().insert("line")
-    .attr("class", "link");
+  this.edge_line = this.edge_el.enter().insert("g")
+    .attr("class", "link")
+    .insert("line")
+    .attr("class", "link-line");
+  this.edge_text = this.edge_el.insert("text")
+    .attr("class", "link-label")
+    .text(function(d) {
+      return parseFloat(d.weight);
+    });
   this.edge_el.exit().remove();
 
   this.vertice_el = this.vertice_el.data(this.force.nodes(), function(d) {
     return d.id;
   });
-  this.vertice_el.enter().append("circle")
+  this.vertice_el.enter()
+    .insert("circle")
     .attr("class", function(d) {
       return "node " + d.id;
     })
@@ -353,7 +381,7 @@ D3Graph.prototype._start = function() {
 
 D3Graph.prototype._tick = function() {
   var outerScope = this;
-  this.edge_el.attr("x1", function(d) {
+  this.edge_line.attr("x1", function(d) {
       return d.source.x;
     })
     .attr("y1", function(d) {
@@ -364,6 +392,13 @@ D3Graph.prototype._tick = function() {
     })
     .attr("y2", function(d) {
       return d.target.y;
+    });
+
+  this.edge_text.attr("x", function(d) {
+      return (d.source.x + d.target.x) / 2;
+    })
+    .attr("y", function(d) {
+      return (d.source.y + d.target.y) / 2;
     });
 
   this.vertice_el.attr("cx", function(d) {
