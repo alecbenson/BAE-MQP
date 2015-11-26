@@ -17,7 +17,7 @@
   transform-origin: 0 0;
   transition-property: transform;
   transition-duration: 1s;
-  z-index: 100
+  z-index: 101
 }
 #chart:hover {
   -webkit-transform: scale(1.5);
