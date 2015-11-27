@@ -432,8 +432,8 @@ D3Graph.prototype.displayAdjacencies = function(track_id) {
   if (root === undefined) {
     return;
   }
-  console.log("HI");
   this.root = root;
+  this.highlightParent();
   var adj = this.getAdjacencies(root, this.adj_level, graphEdges);
   this.clearGraph();
   this.vertices.push.apply(this.vertices, adj.vertices);
@@ -579,3 +579,10 @@ D3Graph.prototype._click = function(d) {
     viewer.flyTo(entities);
   }
 };
+
+D3Graph.prototype.highlightParent = function() {
+  var rootid = this.root.id;
+  var classIdentifier = "#node n" + rootid;
+  d3.select(classIdentifier)
+    .attr("r", 1);
+}
