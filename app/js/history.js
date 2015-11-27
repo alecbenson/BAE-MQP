@@ -57,9 +57,27 @@ HistorySlider.prototype.getValues = function() {
   return this.slider.get();
 }
 
-HistorySLider.prototype._updateTrackHistory = function() {
-  this.slider.noUiSlider.on('change', function(values, handle) {};
-  }
+HistorySlider.prototype._updateTrackHistory = function() {
+  this.slider.noUiSlider.on('change', function(values, handle) {
+    //Loop through all collections
+    for (var name in collectionSet.collections) {
+      var collection = collectionSet.getCollection(name);
+
+      //Loop through all collection sources
+      for (var sourceName in collection.tracks) {
+
+        //Loop through all tracks
+        var tracks = collection.tracks[sourceName];
+        for (var n in tracks) {
+
+          //Update trailing and leadtime time
+          var track = tracks[n];
+          track.trackNode.path.trailTime = Math.abs(parseInt(values[0]));
+          track.trackNode.path.leadTime = Math.abs(parseInt(values[1]));
+        }
+      }
+    }
+  });
 }
 
 HistorySlider.prototype._makeSlider = function() {
@@ -85,6 +103,7 @@ HistorySlider.prototype._makeSlider = function() {
   });
   this.slider = slider;
   this._setSoftLimits();
+  this._updateTrackHistory();
 }
 
 HistorySlider.prototype._setSoftLimits = function() {

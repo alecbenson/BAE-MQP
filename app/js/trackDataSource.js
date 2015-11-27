@@ -18,7 +18,6 @@ var TrackDataSource = function(name) {
   this._trackNode = undefined;
   this._positionProp = new Cesium.SampledPositionProperty();
   this._color = this._setTrackColor(name);
-  this._lastAddedSE = undefined;
 };
 
 Object.defineProperties(TrackDataSource.prototype, {
@@ -48,14 +47,6 @@ Object.defineProperties(TrackDataSource.prototype, {
   isLoading: {
     get: function() {
       return this._isLoading;
-    }
-  },
-  lastAddedSE: {
-    get: function() {
-      return this._lastAddedSE;
-    },
-    set: function(se) {
-      this._lastAddedSE = se;
     }
   },
   changedEvent: {
@@ -127,9 +118,7 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
     description: formattedCovariance,
     parentTrack: this.name,
   };
-  this.addSEpolyline(entity);
-  this.entities.add(entity);
-  this.lastAddedSE = entity;
+  //this.entities.add(entity);
   this._slideTimeWindow(set_time);
   this._setLoadStatus(false);
 };
@@ -142,25 +131,6 @@ TrackDataSource.prototype.getCovarArray = function(covariance) {
     resultArray.push(covVal);
   }
   return resultArray;
-};
-
-TrackDataSource.prototype.addSEpolyline = function(entity) {
-  if (this.lastAddedSE === undefined) {
-    return;
-  }
-  var lastPos = this.lastAddedSE.position;
-  var currentPos = entity.position;
-
-  var polyline = this.entities.add({
-    polyline: {
-      positions: [lastPos, currentPos],
-      width: 3,
-      material: new Cesium.PolylineOutlineMaterialProperty({
-        color: this.color,
-      }),
-    },
-    parentTrack: this.name,
-  });
 };
 
 /**
@@ -235,6 +205,13 @@ TrackDataSource.prototype.createTrackNode = function() {
     point: {
       pixelSize: 25,
       color: this.color,
+    },
+    path: {
+      resolution: 1,
+      material: this.color,
+      width: 5,
+      leadTime: 5,
+      trailTime: 5,
     }
   });
 
