@@ -212,7 +212,8 @@ TrackDataSource.prototype.createTrackNode = function() {
       width: 5,
       leadTime: 5,
       trailTime: 5,
-    }
+    },
+    parentTrack: this.name,
   });
 
   //Also set the availability of the entity to match our simulation time.
