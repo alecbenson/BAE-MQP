@@ -87,24 +87,18 @@ Collection.prototype.setGraphVisibility = function(graphName, state) {
 };
 
 Collection.prototype._parseAllFrames = function(frames, sourceName) {
-  var outerScope = this;
-  $(frames).each(function(i, frame) {
-    outerScope._parseFrame(frame, sourceName);
-  });
-  outerScope.addUpdateTrackNodes();
+  async.each(frames, this._parseFrame.bind(this, sourceName));
+  this.addUpdateTrackNodes();
 };
 
-Collection.prototype._parseFrame = function(frame, sourceName) {
+Collection.prototype._parseFrame = function(sourceName, frame) {
   var outerScope = this;
 
   var t = parseInt(frame.getAttribute('time'));
   var stateEstimates = frame.getElementsByTagNameNS('*', 'stateEstimate');
   $.each(stateEstimates, function(i, se) {
-    outerScope._parseStateEstimate(se, t, sourceName);
+    outerScope._parseStateEstimate(t, sourceName, se);
   });
-
-  var sensors = frame.getElementsByTagNameNS('*', "sensor");
-  this._parseAllSensors(sensors, sourceName);
 };
 
 Collection.prototype._addSensorSample = function(sensor, sourceName) {
@@ -135,7 +129,7 @@ Collection.prototype._parseAllSensors = function(sensors, sourceName) {
   });
 };
 
-Collection.prototype._parseStateEstimate = function(se, time, sourceName) {
+Collection.prototype._parseStateEstimate = function(time, sourceName, se) {
   var track;
   var id = "n" + se.getAttribute('trackId');
 
@@ -325,7 +319,6 @@ Collection.prototype.loadCollection = function() {
   var outerScope = this;
   var model = this.model;
   var promises = [];
-
   $.each(this.sources, function(index, sourceName) {
     var sourcespath = outerScope.sourcespath;
     var p = outerScope.loadTrackFile(sourcespath + sourceName, sourceName);
@@ -397,7 +390,6 @@ Collection.prototype.uploadCollectionSource = function(target) {
       $.when(promise).done(function() {
         outerScope.renderSources();
       });
-
     },
     error: function(xhr, desc, err) {
       var error = $(parentForm).find('.alert-danger');

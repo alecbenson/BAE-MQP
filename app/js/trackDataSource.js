@@ -93,7 +93,6 @@ TrackDataSource.prototype._setTrackColor = function(name) {
  * Adds a time and position dependant sample to the data source
  */
 TrackDataSource.prototype.addStateEstimate = function(se, time) {
-  this._setLoadStatus(true);
 
   var kse = se.getElementsByTagNameNS('*', 'kse')[0];
   var p = Collection.parsePos(kse);
@@ -103,24 +102,9 @@ TrackDataSource.prototype.addStateEstimate = function(se, time) {
 
   var epoch = Cesium.JulianDate.fromIso8601('1970-01-01T00:00:00');
   var set_time = Cesium.JulianDate.addSeconds(epoch, time, new Cesium.JulianDate());
-  this._positionProp.addSample(set_time, position);
 
-  //Create a point for the sample data
-  var entity = {
-    position: position,
-    point: {
-      pixelSize: 15,
-      color: this.color,
-      translucencyByDistance: new Cesium.NearFarScalar(1.0e0, 1.0, 1.0e0, 1.0),
-    },
-    time: set_time,
-    ele: p.hae,
-    description: formattedCovariance,
-    parentTrack: this.name,
-  };
-  //this.entities.add(entity);
+  this._positionProp.addSample(set_time, position);
   this._slideTimeWindow(set_time);
-  this._setLoadStatus(false);
 };
 
 TrackDataSource.prototype.getCovarArray = function(covariance) {
