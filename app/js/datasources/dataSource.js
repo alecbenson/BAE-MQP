@@ -67,6 +67,9 @@ Object.defineProperties(DataSource.prototype, {
   trackNode: {
     get: function() {
       return this._trackNode;
+    },
+    set: function(trackNode) {
+      this._trackNode = trackNode;
     }
   },
   positionProp: {
@@ -162,7 +165,7 @@ DataSource.prototype.createTrackNode = function() {
     interpolationDegree: 5,
     interpolationAlgorithm: Cesium.LagrangePolynomialApproximation
   });
-  this._trackNode = entity;
+  this.trackNode = entity;
   entity.description = this.formatTrackNodeDesc();
   this._setLoadStatus(false);
 };

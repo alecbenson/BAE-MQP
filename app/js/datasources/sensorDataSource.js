@@ -8,21 +8,18 @@ SensorDataSource.prototype.constructor = SensorDataSource;
 /**
  * Adds a time and position dependant sample to the data source
  */
-SensorDataSource.prototype.addSensorSample = function(sensor, time) {
-
-  var kse = se.getElementsByTagNameNS('*', 'kse')[0];
-  var p = Collection.parsePos(kse);
-  var covariance = kse.getAttribute('covariance');
-  var formattedCovariance = this.formatCovariance(covariance);
+SensorDataSource.prototype.addSensorSample = function(s, time) {
+  var p = Collection.parsePos(s);
+  if(p === undefined){
+    return;
+  }
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
-
   var epoch = Cesium.JulianDate.fromIso8601('1970-01-01T00:00:00');
   var set_time = Cesium.JulianDate.addSeconds(epoch, time, new Cesium.JulianDate());
 
   this._positionProp.addSample(set_time, position);
   this._slideTimeWindow(set_time);
 };
-
 
 /**
  * Creates an entity that follows the track within the data source
@@ -35,7 +32,7 @@ SensorDataSource.prototype.createTrackNode = function() {
     billboard: {
       image: '../images/sensor.png',
       scale: 0.04,
-      color: Cesium.Color.ORANGERED,
+      color: this.color,
     },
     path: {
       resolution: 1,

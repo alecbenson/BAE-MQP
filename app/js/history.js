@@ -43,7 +43,7 @@ HistorySlider.prototype._renderSlider = function() {
     d.resolve(outerScope);
   });
   return d;
-}
+};
 
 HistorySlider.prototype._sliderStartStop = function(pct) {
   var diff = this.stop - this.start;
@@ -51,34 +51,51 @@ HistorySlider.prototype._sliderStartStop = function(pct) {
   var newStart = (diff * pct) - Math.abs(this.stop);
   var newStop = (diff * (1.0 - pct)) - Math.abs(this.start);
   return [newStart, newStop];
-}
+};
 
 HistorySlider.prototype.getValues = function() {
   return this.slider.get();
-}
+};
 
 HistorySlider.prototype._updateTrackHistory = function() {
+  var sourceName, name;
   this.slider.noUiSlider.on('change', function(values, handle) {
     //Loop through all collections
     for (var name in collectionSet.collections) {
       var collection = collectionSet.getCollection(name);
 
       //Loop through all collection sources
-      for (var sourceName in collection.tracks) {
-
+      for (sourceName in collection.tracks) {
         //Loop through all tracks
         var tracks = collection.tracks[sourceName];
-        for (var n in tracks) {
-
+        for (name in tracks) {
           //Update trailing and leadtime time
-          var track = tracks[n];
+          var track = tracks[name];
+          if (track.trackNode === undefined) {
+            continue;
+          }
           track.trackNode.path.trailTime = Math.abs(parseInt(values[0]));
           track.trackNode.path.leadTime = Math.abs(parseInt(values[1]));
         }
       }
+
+      //Loop through all collection sources
+      for (sourceName in collection.sensors) {
+        //Loop through all tracks
+        var sensors = collection.sensors[sourceName];
+        for (name in sensors) {
+          //Update trailing and leadtime time
+          var sensor = sensors[name];
+          if (sensor.trackNode === undefined) {
+            continue;
+          }
+          sensor.trackNode.path.trailTime = Math.abs(parseInt(values[0]));
+          sensor.trackNode.path.leadTime = Math.abs(parseInt(values[1]));
+        }
+      }
     }
   });
-}
+};
 
 HistorySlider.prototype._makeSlider = function() {
   var outerScope = this;
@@ -104,7 +121,7 @@ HistorySlider.prototype._makeSlider = function() {
   this.slider = slider;
   this._setSoftLimits();
   this._updateTrackHistory();
-}
+};
 
 HistorySlider.prototype._setSoftLimits = function() {
   var outerScope = this;
@@ -115,4 +132,4 @@ HistorySlider.prototype._setSoftLimits = function() {
       outerScope.slider.noUiSlider.set([null, 0]);
     }
   });
-}
+};

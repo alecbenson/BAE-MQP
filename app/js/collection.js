@@ -96,37 +96,35 @@ Collection.prototype._parseFrame = function(sourceName, frame) {
 
   var t = parseInt(frame.getAttribute('time'));
   var stateEstimates = frame.getElementsByTagNameNS('*', 'stateEstimate');
+  var sensors = frame.getElementsByTagNameNS('*', 'sensor');
+
+  //Parse all state estimates
   $.each(stateEstimates, function(i, se) {
     outerScope._parseStateEstimate(t, sourceName, se);
   });
-};
 
-Collection.prototype._addSensorSample = function(sensor, sourceName) {
-  var p = Collection.parsePos(sensor);
-  var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
-
-  var entity = {
-    position: position,
-    billboard: {
-      image: '../images/sensor.png',
-      scale: 0.04,
-      color: Cesium.Color.ORANGERED,
-    },
-    ele: p.hae
-  };
-  viewer.entities.add(entity);
-  this.sensors[sourceName].push(entity);
-  return entity;
-};
-
-Collection.prototype._parseAllSensors = function(sensors, sourceName) {
-  var outerScope = this;
-  if (this.sensors[sourceName] === undefined) {
-    this.sensors[sourceName] = [];
-  }
-  $.each(sensors, function(i, sensor) {
-    outerScope._addSensorSample(sensor, sourceName);
+  //Parse all sensors
+  $.each(sensors, function(i, s) {
+    outerScope._parseSensor(t, sourceName, s);
   });
+};
+
+Collection.prototype._parseSensor = function(time, sourceName, s) {
+  var sensor;
+  var id = s.getAttribute('sensorType');
+
+  if (this.sensors[sourceName] === undefined) {
+    this.sensors[sourceName] = {};
+  }
+
+  if (id in this.sensors[sourceName]) {
+    sensor = this.sensors[sourceName][id];
+  } else {
+    sensor = new SensorDataSource(id);
+    this.sensors[sourceName][id] = sensor;
+    viewer.dataSources.add(sensor);
+  }
+  sensor.addSensorSample(s, time);
 };
 
 Collection.prototype._parseStateEstimate = function(time, sourceName, se) {
@@ -148,8 +146,11 @@ Collection.prototype._parseStateEstimate = function(time, sourceName, se) {
   track.addStateEstimate(se, time);
 };
 
-Collection.parsePos = function(kse) {
-  var pos = kse.getElementsByTagNameNS('*', 'position')[0];
+Collection.parsePos = function(xml) {
+  var pos = xml.getElementsByTagNameNS('*', 'position')[0];
+  if(pos === undefined){
+      return undefined;
+  }
   var lat = Number(pos.getAttribute('lat'));
   var lon = Number(pos.getAttribute('lon'));
   var hae = Number(pos.getAttribute('hae'));
@@ -161,11 +162,21 @@ Collection.parsePos = function(kse) {
 };
 
 Collection.prototype.addUpdateTrackNodes = function() {
-  for (var sourceName in this.tracks) {
+  var id, sourceName;
+
+  for (sourceName in this.tracks) {
     var sourceTracks = this.tracks[sourceName];
-    for (var id in sourceTracks) {
+    for (id in sourceTracks) {
       var track = sourceTracks[id];
       track.createTrackNode();
+    }
+  }
+
+  for (sourceName in this.sensors) {
+    var sourceSensors = this.sensors[sourceName];
+    for (id in sourceSensors) {
+      var sensor = sourceSensors[id];
+      sensor.createTrackNode();
     }
   }
 };
