@@ -57,44 +57,51 @@ HistorySlider.prototype.getValues = function() {
   return this.slider.get();
 };
 
-HistorySlider.prototype._updateTrackHistory = function() {
+HistorySlider.prototype._updateHistory = function() {
   var sourceName, name;
+  var outerScope = this;
   this.slider.noUiSlider.on('change', function(values, handle) {
     //Loop through all collections
     for (var name in collectionSet.collections) {
       var collection = collectionSet.getCollection(name);
-
-      //Loop through all collection sources
-      for (sourceName in collection.tracks) {
-        //Loop through all tracks
-        var tracks = collection.tracks[sourceName];
-        for (name in tracks) {
-          //Update trailing and leadtime time
-          var track = tracks[name];
-          if (track.trackNode === undefined) {
-            continue;
-          }
-          track.trackNode.path.trailTime = Math.abs(parseInt(values[0]));
-          track.trackNode.path.leadTime = Math.abs(parseInt(values[1]));
-        }
-      }
-
-      //Loop through all collection sources
-      for (sourceName in collection.sensors) {
-        //Loop through all tracks
-        var sensors = collection.sensors[sourceName];
-        for (name in sensors) {
-          //Update trailing and leadtime time
-          var sensor = sensors[name];
-          if (sensor.trackNode === undefined) {
-            continue;
-          }
-          sensor.trackNode.path.trailTime = Math.abs(parseInt(values[0]));
-          sensor.trackNode.path.leadTime = Math.abs(parseInt(values[1]));
-        }
-      }
+      outerScope._updateTracks(collection, values);
+      outerScope._updateSensors(collection, values);
     }
   });
+};
+
+HistorySlider.prototype._updateSensors = function(collection, values) {
+  //Loop through all collection sources
+  for (var sourceName in collection.sensors) {
+    //Loop through all tracks
+    var sensors = collection.sensors[sourceName];
+    for (var name in sensors) {
+      //Update trailing and leadtime time
+      var sensor = sensors[name];
+      if (sensor.trackNode === undefined) {
+        continue;
+      }
+      sensor.trackNode.path.trailTime = Math.abs(parseInt(values[0]));
+      sensor.trackNode.path.leadTime = Math.abs(parseInt(values[1]));
+    }
+  }
+};
+
+HistorySlider.prototype._updateTracks = function(collection, values) {
+  //Loop through all collection sources
+  for (var sourceName in collection.tracks) {
+    //Loop through all tracks
+    var tracks = collection.tracks[sourceName];
+    for (var name in tracks) {
+      //Update trailing and leadtime time
+      var track = tracks[name];
+      if (track.trackNode === undefined) {
+        continue;
+      }
+      track.trackNode.path.trailTime = Math.abs(parseInt(values[0]));
+      track.trackNode.path.leadTime = Math.abs(parseInt(values[1]));
+    }
+  }
 };
 
 HistorySlider.prototype._makeSlider = function() {
@@ -120,7 +127,7 @@ HistorySlider.prototype._makeSlider = function() {
   });
   this.slider = slider;
   this._setSoftLimits();
-  this._updateTrackHistory();
+  this._updateHistory();
 };
 
 HistorySlider.prototype._setSoftLimits = function() {
