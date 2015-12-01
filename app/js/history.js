@@ -122,7 +122,7 @@ HistorySlider.prototype._makeSlider = function() {
   noUiSlider.create(slider, {
     connect: true,
     tooltips: true,
-    start: outerScope._sliderStartStop(20),
+    start: outerScope._sliderStartStop(30),
     range: {
       'min': this.start,
       'max': this.stop

@@ -1,5 +1,5 @@
-function TrackDataSource(name) {
-  DataSource.call(this, name);
+function TrackDataSource(platform, sensorType, name) {
+  DataSource.call(this, platform, sensorType, name);
 }
 TrackDataSource.prototype = Object.create(DataSource.prototype);
 TrackDataSource.prototype.constructor = TrackDataSource;
@@ -8,7 +8,6 @@ TrackDataSource.prototype.constructor = TrackDataSource;
  * Adds a time and position dependant sample to the data source
  */
 TrackDataSource.prototype.addStateEstimate = function(se, time) {
-
   var kse = se.getElementsByTagNameNS('*', 'kse')[0];
   var p = Collection.parsePos(kse);
   var covariance = kse.getAttribute('covariance');

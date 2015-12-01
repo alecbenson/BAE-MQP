@@ -1,5 +1,5 @@
-function SensorDataSource(name) {
-  DataSource.call(this, name);
+function SensorDataSource(platform, sensorType) {
+  DataSource.call(this, platform, sensorType);
 }
 
 SensorDataSource.prototype = Object.create(DataSource.prototype);
@@ -10,7 +10,7 @@ SensorDataSource.prototype.constructor = SensorDataSource;
  */
 SensorDataSource.prototype.addSensorSample = function(s, time) {
   var p = Collection.parsePos(s);
-  if(p === undefined){
+  if (p === undefined) {
     return;
   }
   var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);

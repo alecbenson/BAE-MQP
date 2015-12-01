@@ -9,7 +9,7 @@ var terrainProvider = new Cesium.CesiumTerrainProvider({
 viewer.terrainProvider = terrainProvider;
 
 var graph = new D3Graph(600, 500, "#chart");
-var historySlider = new HistorySlider(-200, 200);
+var historySlider = new HistorySlider(-60, 60);
 
 var clickHandler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 clickHandler.setInputAction(function(click) {

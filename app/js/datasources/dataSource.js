@@ -1,4 +1,4 @@
-var DataSource = function(name) {
+var DataSource = function(platform, sensorType, name) {
 
   this._name = name;
   this._entityCollection = new Cesium.EntityCollection();
@@ -17,13 +17,32 @@ var DataSource = function(name) {
   this._loading = new Cesium.Event();
   this._trackNode = undefined;
   this._positionProp = new Cesium.SampledPositionProperty();
-  this._color = this._setTrackColor(name);
+
+  this._platform = platform;
+  this._sensorType = sensorType;
+  this._color = this._setTrackColor();
 };
 
 Object.defineProperties(DataSource.prototype, {
   name: {
     get: function() {
       return this._name;
+    }
+  },
+  platform: {
+    get: function() {
+      return this._platform;
+    },
+    set: function(platform) {
+      this._platform = platform;
+    }
+  },
+  sensorType: {
+    get: function() {
+      return this._sensorType;
+    },
+    set: function(sensorType) {
+      this.sensorType = sensorType;
     }
   },
   clock: {
@@ -81,16 +100,6 @@ Object.defineProperties(DataSource.prototype, {
     }
   }
 });
-
-DataSource.prototype._setTrackColor = function(name) {
-  try {
-    var color = D3Graph.trackColor(this.name);
-    return Cesium.Color.fromCssColorString(color);
-  } catch (err) {
-    console.log(err);
-    return Cesium.Color.RED;
-  }
-};
 
 /**
  * Reads through the data and determines the start and end times of the data clock
@@ -289,4 +298,38 @@ DataSource.prototype.formatTrackNodeDesc = function() {
       "<h3>Elevation</h3>" + c.height +
       "</div>";
   });
+};
+
+DataSource.prototype._setTrackColor = function() {
+  var key = this.platform + this.sensorType;
+  try {
+    var color = DataSource.trackColor(key);
+    return Cesium.Color.fromCssColorString(color);
+  } catch (err) {
+    console.log(err);
+    return Cesium.Color.RED;
+  }
+};
+
+DataSource.trackColor = function(key) {
+  if (key === undefined) {
+    return "#FF0000";
+  }
+  var id = "";
+  for (var i = 0; i < key.length; i++) {
+    id += key.charCodeAt(i);
+  }
+  id = parseInt(id);
+  var red = DataSource._colorSeed(id + 1);
+  var green = DataSource._colorSeed(id + 4);
+  var blue = DataSource._colorSeed(id + 7);
+  var result = "#" + red + green + blue;
+  return result;
+};
+
+DataSource._colorSeed = function(id) {
+  var num = Math.sin(id) * 10000;
+  num = num - Math.floor(num);
+  result = Math.round((num * 154) + 100).toString(16);
+  return result;
 };

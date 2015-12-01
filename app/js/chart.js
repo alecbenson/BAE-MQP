@@ -377,7 +377,7 @@ D3Graph.prototype._start = function() {
       return 12;
     })
     .attr("fill", function(d) {
-      return D3Graph.trackColor(d.id);
+      return outerScope.getTrackColor(d.id);
     })
     .on("click", this._click)
     .call(this.drag);
@@ -428,6 +428,11 @@ D3Graph.prototype.graphText = function() {
   } else {
     return "";
   }
+};
+
+D3Graph.prototype.getTrackColor = function(track_id) {
+  var track = collectionSet.findTrackByID(track_id);
+  return DataSource.trackColor(track.platform + track.sensorType);
 };
 
 D3Graph.prototype.displayAdjacencies = function(track_id) {
@@ -534,25 +539,6 @@ D3Graph.prototype.unloadGraphEntities = function(data) {
     this.removeVertice(vert, this.fullGraph.edges, this.fullGraph.vertices);
   }
   this._start();
-};
-
-D3Graph.trackColor = function(trackId) {
-  var id = 0;
-  for (var i = 0; i < trackId.length; i++) {
-    id += trackId.charCodeAt(i);
-  }
-  var red = D3Graph._colorSeed(id + 1);
-  var green = D3Graph._colorSeed(id + 4);
-  var blue = D3Graph._colorSeed(id + 7);
-  var result = "#" + red + green + blue;
-  return result;
-};
-
-D3Graph._colorSeed = function(id) {
-  var num = Math.sin(id) * 10000;
-  num = num - Math.floor(num);
-  result = Math.round((num * 154) + 100).toString(16);
-  return result;
 };
 
 function zoomed() {

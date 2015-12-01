@@ -96,23 +96,22 @@ Collection.prototype._parseFrame = function(sourceName, frame) {
   var outerScope = this;
 
   var t = parseInt(frame.getAttribute('time'));
-  var stateEstimates = frame.getElementsByTagNameNS('*', 'stateEstimate');
-  var sensors = frame.getElementsByTagNameNS('*', 'sensor');
+  var platform = frame.getAttribute("platform");
 
+  var stateEstimates = frame.getElementsByTagNameNS('*', 'stateEstimate');
+
+  var sensor = frame.getElementsByTagNameNS('*', 'sensor')[0];
+  var sensorType = sensor.getAttribute("sensorType");
   //Parse all state estimates
   $.each(stateEstimates, function(i, se) {
-    outerScope._parseStateEstimate(t, sourceName, se);
+    outerScope._parseStateEstimate(se, sourceName, t, platform, sensorType);
   });
-
-  //Parse all sensors
-  $.each(sensors, function(i, s) {
-    outerScope._parseSensor(t, sourceName, s);
-  });
+  outerScope._parseSensor(sensor, sourceName, t, platform, sensorType);
 };
 
-Collection.prototype._parseSensor = function(time, sourceName, s) {
+Collection.prototype._parseSensor = function(s, sourceName, time, platform, sensorType) {
   var sensor;
-  var id = s.getAttribute('sensorType');
+  var id = platform + sensorType;
 
   if (this.sensors[sourceName] === undefined) {
     this.sensors[sourceName] = {};
@@ -121,26 +120,26 @@ Collection.prototype._parseSensor = function(time, sourceName, s) {
   if (id in this.sensors[sourceName]) {
     sensor = this.sensors[sourceName][id];
   } else {
-    sensor = new SensorDataSource(id);
+    sensor = new SensorDataSource(platform, sensorType);
     this.sensors[sourceName][id] = sensor;
     viewer.dataSources.add(sensor);
   }
   sensor.addSensorSample(s, time);
 };
 
-Collection.prototype._parseStateEstimate = function(time, sourceName, se) {
+Collection.prototype._parseStateEstimate = function(se, sourceName, time, platform, sensorType) {
   var track;
-  var id = "n" + se.getAttribute('trackId');
+  var name = "n" + se.getAttribute('trackId');
 
   if (this.tracks[sourceName] === undefined) {
     this.tracks[sourceName] = {};
   }
 
-  if (id in this.tracks[sourceName]) {
-    track = this.tracks[sourceName][id];
+  if (name in this.tracks[sourceName]) {
+    track = this.tracks[sourceName][name];
   } else {
-    track = new TrackDataSource(id);
-    this.tracks[sourceName][id] = track;
+    track = new TrackDataSource(platform, sensorType, name);
+    this.tracks[sourceName][name] = track;
     //Render the data source
     viewer.dataSources.add(track);
   }
