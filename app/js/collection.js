@@ -52,6 +52,7 @@ Collection.prototype.loadTrackFile = function(xmlPath, sourceName) {
     outerScope._parseAllFrames(fusionFrames, sourceName);
   }).promise().done(function() {
     outerScope.applyTrackModel();
+    historySlider.updateCollectionHistory(outerScope);
     d.resolve(outerScope);
   });
   return d;

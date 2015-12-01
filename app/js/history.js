@@ -54,20 +54,32 @@ HistorySlider.prototype._sliderStartStop = function(pct) {
 };
 
 HistorySlider.prototype.getValues = function() {
-  return this.slider.get();
+  var values = this.slider.noUiSlider.get();
+  return values.map(function(n) {
+    return parseInt(n);
+  });
 };
 
-HistorySlider.prototype._updateHistory = function() {
+HistorySlider.prototype._bindSlider = function() {
   var sourceName, name;
   var outerScope = this;
-  this.slider.noUiSlider.on('change', function(values, handle) {
-    //Loop through all collections
-    for (var name in collectionSet.collections) {
-      var collection = collectionSet.getCollection(name);
-      outerScope._updateTracks(collection, values);
-      outerScope._updateSensors(collection, values);
-    }
+  this.slider.noUiSlider.on('update', function(values, handle) {
+    outerScope.updateAllHistory();
   });
+};
+
+HistorySlider.prototype.updateCollectionHistory = function(collection) {
+  var values = this.getValues();
+  this._updateTracks(collection, values);
+  this._updateSensors(collection, values);
+};
+
+HistorySlider.prototype.updateAllHistory = function() {
+  var values = this.getValues();
+  for (var name in collectionSet.collections) {
+    var collection = collectionSet.getCollection(name);
+    this.updateCollectionHistory(collection);
+  }
 };
 
 HistorySlider.prototype._updateSensors = function(collection, values) {
@@ -81,8 +93,8 @@ HistorySlider.prototype._updateSensors = function(collection, values) {
       if (sensor.trackNode === undefined) {
         continue;
       }
-      sensor.trackNode.path.trailTime = Math.abs(parseInt(values[0]));
-      sensor.trackNode.path.leadTime = Math.abs(parseInt(values[1]));
+      sensor.trackNode.path.trailTime = Math.abs(values[0]);
+      sensor.trackNode.path.leadTime = Math.abs(values[1]);
     }
   }
 };
@@ -127,12 +139,12 @@ HistorySlider.prototype._makeSlider = function() {
   });
   this.slider = slider;
   this._setSoftLimits();
-  this._updateHistory();
+  this._bindSlider();
 };
 
 HistorySlider.prototype._setSoftLimits = function() {
   var outerScope = this;
-  this.slider.noUiSlider.on('change', function(values, handle) {
+  this.slider.noUiSlider.on('update', function(values, handle) {
     if (parseInt(values[0]) > 0) {
       outerScope.slider.noUiSlider.set([0, null]);
     } else if (parseInt(values[1]) < 0) {

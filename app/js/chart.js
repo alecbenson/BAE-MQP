@@ -44,8 +44,8 @@ function D3Graph(width, height, el) {
     .links(this.edges)
     .charge(-500)
     .linkDistance(function(d) {
-      var w = Math.max(0, (1.0 - d.weight));
-      return 50 + (w * 150);
+      var w = Math.abs(parseFloat(d.weight));
+      return 75 + (w * 2);
     })
     .size([width, height]);
 
@@ -347,6 +347,7 @@ D3Graph.prototype.findVertice = function(id, list) {
 };
 
 D3Graph.prototype._start = function() {
+  var outerScope = this;
   this.edge_el = this.edge_el.data(this.force.links(), function(d) {
     return d.source.id + "-" + d.target.id;
   });
@@ -369,7 +370,12 @@ D3Graph.prototype._start = function() {
     .attr("class", function(d) {
       return "node " + d.id;
     })
-    .attr("r", 12)
+    .attr("r", function(d) {
+      if (d.id === outerScope.root.id) {
+        return 20;
+      }
+      return 12;
+    })
     .attr("fill", function(d) {
       return D3Graph.trackColor(d.id);
     })
@@ -567,11 +573,12 @@ D3Graph.prototype._click = function(d) {
 
   if (trackNode.isAvailable(currentTime)) {
     var currentPos = trackNode.position.getValue(currentTime);
-    if(currentPos === undefined){
+    if (currentPos === undefined) {
       return;
     }
     var boundingSphere = new Cesium.BoundingSphere(currentPos, 5000);
     viewer.selectedEntity = trackNode;
+    viewer.trackedEntity = trackNode;
     viewer.camera.flyToBoundingSphere(boundingSphere);
   } else {
     viewer.flyTo(entities);
