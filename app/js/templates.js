@@ -9,6 +9,7 @@ function registerAllPartials() {
   registerExternalPartial("graphList");
   registerExternalPartial("datepicker");
   registerExternalPartial("numberpicker");
+  registerExternalPartial("history-slider");
 }
 
 /**

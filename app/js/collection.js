@@ -87,55 +87,47 @@ Collection.prototype.setGraphVisibility = function(graphName, state) {
 };
 
 Collection.prototype._parseAllFrames = function(frames, sourceName) {
-  var outerScope = this;
-  $(frames).each(function(i, frame) {
-    outerScope._parseFrame(frame, sourceName);
-  });
-  outerScope.addUpdateTrackNodes();
+  async.each(frames, this._parseFrame.bind(this, sourceName));
+  this.addUpdateTrackNodes();
 };
 
-Collection.prototype._parseFrame = function(frame, sourceName) {
+Collection.prototype._parseFrame = function(sourceName, frame) {
   var outerScope = this;
 
   var t = parseInt(frame.getAttribute('time'));
   var stateEstimates = frame.getElementsByTagNameNS('*', 'stateEstimate');
+  var sensors = frame.getElementsByTagNameNS('*', 'sensor');
+
+  //Parse all state estimates
   $.each(stateEstimates, function(i, se) {
-    outerScope._parseStateEstimate(se, t, sourceName);
+    outerScope._parseStateEstimate(t, sourceName, se);
   });
 
-  var sensors = frame.getElementsByTagNameNS('*', "sensor");
-  this._parseAllSensors(sensors, sourceName);
+  //Parse all sensors
+  $.each(sensors, function(i, s) {
+    outerScope._parseSensor(t, sourceName, s);
+  });
 };
 
-Collection.prototype._addSensorSample = function(sensor, sourceName) {
-  var p = Collection.parsePos(sensor);
-  var position = Cesium.Cartesian3.fromDegrees(p.lat, p.lon, p.hae);
+Collection.prototype._parseSensor = function(time, sourceName, s) {
+  var sensor;
+  var id = s.getAttribute('sensorType');
 
-  var entity = {
-    position: position,
-    billboard: {
-      image: '../images/sensor.png',
-      scale: 0.04,
-      color: Cesium.Color.ORANGERED,
-    },
-    ele: p.hae
-  };
-  viewer.entities.add(entity);
-  this.sensors[sourceName].push(entity);
-  return entity;
-};
-
-Collection.prototype._parseAllSensors = function(sensors, sourceName) {
-  var outerScope = this;
   if (this.sensors[sourceName] === undefined) {
-    this.sensors[sourceName] = [];
+    this.sensors[sourceName] = {};
   }
-  $.each(sensors, function(i, sensor) {
-    outerScope._addSensorSample(sensor, sourceName);
-  });
+
+  if (id in this.sensors[sourceName]) {
+    sensor = this.sensors[sourceName][id];
+  } else {
+    sensor = new SensorDataSource(id);
+    this.sensors[sourceName][id] = sensor;
+    viewer.dataSources.add(sensor);
+  }
+  sensor.addSensorSample(s, time);
 };
 
-Collection.prototype._parseStateEstimate = function(se, time, sourceName) {
+Collection.prototype._parseStateEstimate = function(time, sourceName, se) {
   var track;
   var id = "n" + se.getAttribute('trackId');
 
@@ -154,8 +146,11 @@ Collection.prototype._parseStateEstimate = function(se, time, sourceName) {
   track.addStateEstimate(se, time);
 };
 
-Collection.parsePos = function(kse) {
-  var pos = kse.getElementsByTagNameNS('*', 'position')[0];
+Collection.parsePos = function(xml) {
+  var pos = xml.getElementsByTagNameNS('*', 'position')[0];
+  if(pos === undefined){
+      return undefined;
+  }
   var lat = Number(pos.getAttribute('lat'));
   var lon = Number(pos.getAttribute('lon'));
   var hae = Number(pos.getAttribute('hae'));
@@ -167,11 +162,21 @@ Collection.parsePos = function(kse) {
 };
 
 Collection.prototype.addUpdateTrackNodes = function() {
-  for (var sourceName in this.tracks) {
+  var id, sourceName;
+
+  for (sourceName in this.tracks) {
     var sourceTracks = this.tracks[sourceName];
-    for (var id in sourceTracks) {
+    for (id in sourceTracks) {
       var track = sourceTracks[id];
       track.createTrackNode();
+    }
+  }
+
+  for (sourceName in this.sensors) {
+    var sourceSensors = this.sensors[sourceName];
+    for (id in sourceSensors) {
+      var sensor = sourceSensors[id];
+      sensor.createTrackNode();
     }
   }
 };
@@ -325,7 +330,6 @@ Collection.prototype.loadCollection = function() {
   var outerScope = this;
   var model = this.model;
   var promises = [];
-
   $.each(this.sources, function(index, sourceName) {
     var sourcespath = outerScope.sourcespath;
     var p = outerScope.loadTrackFile(sourcespath + sourceName, sourceName);
@@ -397,7 +401,6 @@ Collection.prototype.uploadCollectionSource = function(target) {
       $.when(promise).done(function() {
         outerScope.renderSources();
       });
-
     },
     error: function(xhr, desc, err) {
       var error = $(parentForm).find('.alert-danger');

@@ -141,7 +141,7 @@ var getDestination = function(req, file) {
 var datahandler = multer({
   storage: diskStorage,
   limits: {
-    fileSize: 1024 * 1024 * 5
+    fileSize: 1024 * 1024 * 15
   },
   fileFilter: function(req, file, cb) {
     var accepted = ['text/xml', 'application/octet-stream'];
