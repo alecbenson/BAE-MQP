@@ -32,6 +32,7 @@ function D3Graph(width, height, el) {
   //Initialize empty selectors
   this._edge_line = this._container.selectAll();
   this._edge_text = this._container.selectAll();
+  this._node_circle = this.container.selectAll();
   this._node_name = this._container.selectAll();
 
   this._rect = this.container.append("rect")
@@ -113,6 +114,22 @@ Object.defineProperties(D3Graph.prototype, {
     },
     set: function(vertice_el) {
       this._vertice_el = vertice_el;
+    }
+  },
+  'node_circle': {
+    get: function() {
+      return this._node_circle;
+    },
+    set: function(node_circle) {
+      this._node_circle = node_circle;
+    }
+  },
+  'node_name': {
+    get: function() {
+      return this._node_name;
+    },
+    set: function(node_name) {
+      this._node_name = node_name;
     }
   },
   //List of edges that are loaded, but cannot be displayed because
@@ -366,10 +383,13 @@ D3Graph.prototype._start = function() {
   this.vertice_el = this.vertice_el.data(this.force.nodes(), function(d) {
     return d.id;
   });
-  this.vertice_el.enter()
-    .insert("circle")
+  this.vertice_el.enter().insert("g")
     .attr("class", function(d) {
       return "node " + d.id;
+    })
+    .insert("circle")
+    .attr("class", function(d) {
+      return "node-circle " + d.id;
     })
     .attr("r", function(d) {
       if (d.id === outerScope.root.id) {
@@ -385,7 +405,6 @@ D3Graph.prototype._start = function() {
   this.node_name = this.vertice_el.insert("text")
     .attr("class", "node-label")
     .text(function(d) {
-      console.log(d.id);
       return "Track " + d.id;
     });
   this.vertice_el.exit().remove();
@@ -414,11 +433,17 @@ D3Graph.prototype._tick = function() {
       return (d.source.y + d.target.y) / 2;
     });
 
-  this.vertice_el.attr("cx", function(d) {
+  this.node_circle.attr("cx", function(d) {
       return d.x;
     })
     .attr("cy", function(d) {
       return d.y;
+    });
+  this.node_name.attr("x", function(d) {
+      return d.x + 50;
+    })
+    .attr("y", function(d) {
+      return d.y + 50;
     });
   this.text.text(this.graphText());
 };
