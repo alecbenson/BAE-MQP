@@ -32,6 +32,7 @@ function D3Graph(width, height, el) {
   //Initialize empty selectors
   this._edge_line = this._container.selectAll();
   this._edge_text = this._container.selectAll();
+  this._node_name = this._container.selectAll();
 
   this._rect = this.container.append("rect")
     .attr("width", width * 10)
@@ -381,6 +382,12 @@ D3Graph.prototype._start = function() {
     })
     .on("click", this._click)
     .call(this.drag);
+  this.node_name = this.vertice_el.insert("text")
+    .attr("class", "node-label")
+    .text(function(d) {
+      console.log(d.id);
+      return "Track " + d.id;
+    });
   this.vertice_el.exit().remove();
   this.force.start();
 };
