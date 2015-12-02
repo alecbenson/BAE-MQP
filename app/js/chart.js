@@ -47,7 +47,7 @@ function D3Graph(width, height, el) {
     .charge(-500)
     .linkDistance(function(d) {
       var w = Math.abs(parseFloat(d.weight));
-      return 75 + (w * 2);
+      return 150 + (w * 8);
     })
     .size([width, height]);
 
@@ -405,7 +405,7 @@ D3Graph.prototype._start = function() {
   this.node_name = this.vertice_el.insert("text")
     .attr("class", "node-label")
     .text(function(d) {
-      return "Track " + d.id;
+      return d.id;
     });
   this.vertice_el.exit().remove();
   this.force.start();
