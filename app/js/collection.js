@@ -287,6 +287,7 @@ Collection.prototype.deleteTrack = function(sourceName, id) {
   var track = this.tracks[sourceName][id];
   if (viewer.dataSources.contains(track)) {
     viewer.dataSources.remove(track, true);
+    delete this.tracks[sourceName][id];
   }
 };
 
@@ -295,12 +296,14 @@ Collection.prototype.deleteSourceTracks = function(sourceName) {
   for (var id in sourceTracks) {
     this.deleteTrack(sourceName, id);
   }
+  delete this.tracks[sourceName];
 };
 
 Collection.prototype.deleteSensor = function(sourceName, id) {
   var sensor = this.sensors[sourceName][id];
   if (viewer.dataSources.contains(sensor)) {
     viewer.dataSources.remove(sensor, true);
+    delete this.sensors[sourceName][id];
   }
 };
 
@@ -309,6 +312,7 @@ Collection.prototype.deleteSourceSensors = function(sourceName) {
   for (var id in sourceSensors) {
     this.deleteSensor(sourceName, id);
   }
+  delete this.sensors[sourceName];
 };
 
 Collection.prototype.renderCollection = function() {
@@ -369,9 +373,7 @@ Collection.prototype.deleteSourceData = function(sourceName) {
     success: function(data, status) {
       //Delete all tracks
       outerScope.deleteSourceTracks(sourceName);
-      delete outerScope.tracks[sourceName];
       outerScope.deleteSourceSensors(sourceName);
-      delete outerScope.sensors[sourceName];
       outerScope.sources = data.sources;
       outerScope.renderSources(data);
     },
