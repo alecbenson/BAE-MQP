@@ -383,7 +383,7 @@ D3Graph.prototype._start = function() {
   this.vertice_el = this.vertice_el.data(this.force.nodes(), function(d) {
     return d.id;
   });
-  this.vertice_el.enter().insert("g")
+  this.node_circle = this.vertice_el.enter().insert("g")
     .attr("class", function(d) {
       return "node " + d.id;
     })
@@ -440,10 +440,10 @@ D3Graph.prototype._tick = function() {
       return d.y;
     });
   this.node_name.attr("x", function(d) {
-      return d.x + 50;
+      return d.x + 20;
     })
     .attr("y", function(d) {
-      return d.y + 50;
+      return d.y + 20;
     });
   this.text.text(this.graphText());
 };
