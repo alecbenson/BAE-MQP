@@ -31,7 +31,6 @@
 .link-label, .node-label {
   font-size: 20px;
   paint-order: stroke;
-  fill: white;
   stroke: black;
   stroke-width: 3px;
   stroke-linecap: butt;

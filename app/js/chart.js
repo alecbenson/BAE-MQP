@@ -47,7 +47,7 @@ function D3Graph(width, height, el) {
     .charge(-500)
     .linkDistance(function(d) {
       var w = Math.abs(parseFloat(d.weight));
-      return 150 + (w * 8);
+      return 150 + (w * 2);
     })
     .size([width, height]);
 
@@ -377,7 +377,8 @@ D3Graph.prototype._start = function() {
     .attr("class", "link-label")
     .text(function(d) {
       return parseFloat(d.weight);
-    });
+    })
+    .attr("fill", "white");
   this.edge_el.exit().remove();
 
   this.vertice_el = this.vertice_el.data(this.force.nodes(), function(d) {
@@ -406,6 +407,9 @@ D3Graph.prototype._start = function() {
     .attr("class", "node-label")
     .text(function(d) {
       return d.id;
+    })
+    .attr("fill", function(d) {
+      return D3Graph.trackColor(d.id);
     });
   this.vertice_el.exit().remove();
   this.force.start();
