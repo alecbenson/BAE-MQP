@@ -23,7 +23,7 @@ function bindCancelButton() {
  */
 function bindNewCollectionButton() {
   $(document).on("click", ".btn-newCollection", function() {
-    CollectionSet.renderNewCollectionForm();
+    collectionSet.renderNewCollectionForm();
   });
 }
 

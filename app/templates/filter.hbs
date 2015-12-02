@@ -1,0 +1,23 @@
+<div class="panel-group">
+  <div class="panel panel-default">
+    <div class="panel-heading clearfix">
+      <span class="accordion" data-toggle="collapse" data-target="#filter-body">
+        <h4>Search</h4>
+      </span>
+      <span class="navbar-right filter-enabled">
+        <input class="btn-visibility" data-size="mini" type="checkbox" checked data-toggle="toggle" data-on="On" data-off="Off">
+      </span>
+    </div>
+
+    <div class="panel-collapse collapse in" id="filter-body">
+      <div class="panel-body">
+        <div id="ele-slider"></div>
+        {{> datepicker label='Start Time' id='filter-time-start'}}
+        {{> datepicker label='Stop Time' id='filter-time-stop'}}
+        <button type="button" class="btn btn-search btn-primary navbar-left">
+          <i class="fa fa-search pull-left"></i>Search
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

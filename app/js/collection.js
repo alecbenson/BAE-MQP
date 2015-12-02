@@ -315,12 +315,12 @@ Collection.prototype.deleteSourceSensors = function(sourceName) {
   delete this.sensors[sourceName];
 };
 
-Collection.prototype.renderCollection = function() {
+Collection.prototype.renderCollection = function(div) {
   //Append the template to the div
   var outerScope = this;
   getTemplateHTML('dataCollection').done(function(data) {
     var templated = applyTemplate(data, outerScope);
-    var target = $(templated).prependTo(dataDiv);
+    var target = $(templated).prependTo(div);
   });
   this.loadCollection();
 };

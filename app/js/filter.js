@@ -1,52 +1,60 @@
-var filterDiv = "#filters";
-
-function addAllFilters() {
-  renderTimeFilter();
-  renderEleFilter();
+function Filter(div) {
+  this._div = div;
+  this.renderFilter();
 }
 
-function renderTimeFilter() {
-  //Append the template to the div
-  getTemplateHTML('filter-time').done(function(data) {
+Object.defineProperties(Filter.prototype, {
+  'div': {
+    get: function() {
+      return this._div;
+    },
+    set: function(div) {
+      this._div = div;
+    }
+  }
+});
+
+Filter.prototype.renderFilter = function() {
+  var outerScope = this;
+  getTemplateHTML('filter').done(function(data) {
     var templated = applyTemplate(data, undefined);
-    var target = $(templated).prependTo(filterDiv);
-    var picker = $(".timepicker").datetimepicker();
-    $(picker).on('dp.change', function() {
-      applyTimeFilter();
-    });
-    $('.filter-time-enabled :checkbox').bootstrapToggle();
+    var target = $(templated).prependTo(outerScope.div);
+    outerScope.renderEleSlider();
+    outerScope.renderDatePicker();
+    $('.filter-enabled :checkbox').bootstrapToggle();
   });
-}
+};
 
-function renderEleFilter() {
-  //Append the template to the div
-  getTemplateHTML('filter-ele').done(function(data) {
-    var templated = applyTemplate(data, undefined);
-    var target = $(templated).prependTo(filterDiv);
-
-    var slider = document.getElementById('ele-slider');
-    noUiSlider.create(slider, {
-      start: [2000, 8000],
-      connect: true,
-      tooltips: true,
-      range: {
-        'min': 0,
-        'max': 10000
-      },
-      format: wNumb({
-        decimals: 0,
-        postfix: 'm'
-      })
-    });
-    slider.noUiSlider.on('set', function() {
-      var vals = slider.noUiSlider.get();
-      var start = parseInt(vals[0]);
-      var stop = parseInt(vals[1]);
-      applyElevationFilter(start, stop);
-    });
-    $('.filter-ele-enabled :checkbox').bootstrapToggle();
+Filter.prototype.renderDatePicker = function() {
+  var picker = $(".timepicker").datetimepicker();
+  $(picker).on('dp.change', function() {
+    applyTimeFilter();
   });
-}
+};
+
+Filter.prototype.renderEleSlider = function() {
+  var slider = document.getElementById('ele-slider');
+  noUiSlider.create(slider, {
+    start: [2000, 8000],
+    connect: true,
+    tooltips: true,
+    range: {
+      'min': 0,
+      'max': 10000
+    },
+    format: wNumb({
+      decimals: 0,
+      postfix: 'm'
+    })
+  });
+
+  slider.noUiSlider.on('set', function() {
+    var vals = slider.noUiSlider.get();
+    var start = parseInt(vals[0]);
+    var stop = parseInt(vals[1]);
+    applyElevationFilter(start, stop);
+  });
+};
 
 function applyTimeFilter() {
   var start = $("#filter-time-start").data('DateTimePicker').date();
