@@ -31,7 +31,6 @@
   <link rel="stylesheet" href="/css/font-awesome.min.css">
   <link rel="stylesheet" href="/css/index.css">
   <link rel="stylesheet" href="/css/chart.css">
-
 </head>
 
 <body>
@@ -83,14 +82,20 @@
       <h4>Filters</h4>
       <div id="filters"></div>
     </div>
-
   </div>
+
   <div id="cesiumContainer">
     <a class="btn btn-primary btn-hideControls">
       <i class="fa fa-chevron-left"></i>
     </a>
     <div id="d3Container">
       <div id="chart"></div>
+    </div>
+  </div>
+
+  <div id="loadingModal" class="modal">
+    <div class="modal-body">
+      <span class="fa fa-spinner loadSpinner fa-spin"></span>
     </div>
   </div>
 

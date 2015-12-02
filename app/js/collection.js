@@ -45,6 +45,7 @@ Collection.prototype.loadTrackFile = function(xmlPath, sourceName) {
   var parser = new DOMParser();
   var d = $.Deferred();
   var outerScope = this;
+  Collection.showLoadModal(true);
   $.get(xmlPath, function(data) {
     trackData = parser.parseFromString(data, "text/xml");
 
@@ -53,9 +54,21 @@ Collection.prototype.loadTrackFile = function(xmlPath, sourceName) {
   }).promise().done(function() {
     outerScope.applyTrackModel();
     historySlider.updateCollectionHistory(outerScope);
+    Collection.showLoadModal(false);
     d.resolve(outerScope);
   });
   return d;
+};
+
+Collection.showLoadModal = function(state) {
+  if (state) {
+    $("#loadingModal").modal({
+      backdrop: 'static',
+      keyboard: false
+    });
+  } else {
+    $("#loadingModal").modal('hide');
+  }
 };
 
 Collection.prototype.setTrackVisibility = function(sourceName, trackID, state) {
@@ -148,8 +161,8 @@ Collection.prototype._parseStateEstimate = function(se, sourceName, time, platfo
 
 Collection.parsePos = function(xml) {
   var pos = xml.getElementsByTagNameNS('*', 'position')[0];
-  if(pos === undefined){
-      return undefined;
+  if (pos === undefined) {
+    return undefined;
   }
   var lat = Number(pos.getAttribute('lat'));
   var lon = Number(pos.getAttribute('lon'));
@@ -252,15 +265,13 @@ Collection.prototype.deleteCollection = function() {
     url: "/collections/" + outerScope.name,
     type: "DELETE",
     success: function(data, status) {
+      var sourceName;
       //Remove all datasources in this collection from the viewer
-      for (var sourceName in outerScope.tracks) {
+      for (sourceName in outerScope.tracks) {
         outerScope.deleteSourceTracks(sourceName);
       }
-      for (var i in outerScope.sensors) {
-        var sensor = outerScope.sensors[i];
-        if (viewer.entities.contains(sensor)) {
-          viewer.entities.remove(sensor, true);
-        }
+      for (sourceName in outerScope.sensors) {
+        outerScope.deleteSourceSensors(sourceName);
       }
       //Delete collection from set
       collectionSet.deleteCollection(outerScope);
@@ -286,18 +297,17 @@ Collection.prototype.deleteSourceTracks = function(sourceName) {
   }
 };
 
-
-Collection.prototype.deleteSensor = function(sourceName, index) {
-  var sensor = this.sensors[sourceName][index];
-  if (viewer.entities.contains(sensor)) {
-    viewer.entities.remove(track, true);
+Collection.prototype.deleteSensor = function(sourceName, id) {
+  var sensor = this.sensors[sourceName][id];
+  if (viewer.dataSources.contains(sensor)) {
+    viewer.dataSources.remove(sensor, true);
   }
 };
 
 Collection.prototype.deleteSourceSensors = function(sourceName) {
   var sourceSensors = this.sensors[sourceName];
-  for (var i = 0; i < sourceSensors.length; i++) {
-    this.deleteSensor(sourceName, i);
+  for (var id in sourceSensors) {
+    this.deleteSensor(sourceName, id);
   }
 };
 
@@ -360,6 +370,8 @@ Collection.prototype.deleteSourceData = function(sourceName) {
       //Delete all tracks
       outerScope.deleteSourceTracks(sourceName);
       delete outerScope.tracks[sourceName];
+      outerScope.deleteSourceSensors(sourceName);
+      delete outerScope.sensors[sourceName];
       outerScope.sources = data.sources;
       outerScope.renderSources(data);
     },
