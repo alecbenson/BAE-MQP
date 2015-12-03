@@ -432,7 +432,7 @@ D3Graph.prototype.graphText = function() {
 
 D3Graph.prototype.getTrackColor = function(track_id) {
   var track = collectionSet.findTrackByID(track_id);
-  if(track === undefined){
+  if (track === undefined) {
     return "#ffffff";
   }
   return DataSource.trackColor(track.platform + track.sensorType);
@@ -472,16 +472,22 @@ D3Graph.prototype.getAdjacencies = function(root, level, edgeList, vis) {
   }
   for (var i = 0; i < edgeList.length; i++) {
     var edge = edgeList[i];
-    if (edge.source == root && vis.indexOf(edge.target) == -1) {
-      res = this.getAdjacencies(edge.target, level - 1, edgeList, vis);
-      adj.vertices.push.apply(adj.vertices, res.vertices);
+    if (edge.source == root && vis.indexOf(edge) == -1) {
+      vis.push(edge);
+      if (vis.indexOf(edge.target) == -1) {
+        res = this.getAdjacencies(edge.target, level - 1, edgeList, vis);
+        adj.vertices.push.apply(adj.vertices, res.vertices);
+        adj.edges.push.apply(adj.edges, res.edges);
+      }
       adj.edges.push(edge);
-      adj.edges.push.apply(adj.edges, res.edges);
-    } else if (edge.target == root && vis.indexOf(edge.source) == -1) {
-      res = this.getAdjacencies(edge.source, level - 1, edgeList, vis);
-      adj.vertices.push.apply(adj.vertices, res.vertices);
+    } else if (edge.target == root && vis.indexOf(edge) == -1) {
+      vis.push(edge);
+      if (vis.indexOf(edge.source) == -1) {
+        res = this.getAdjacencies(edge.source, level - 1, edgeList, vis);
+        adj.vertices.push.apply(adj.vertices, res.vertices);
+        adj.edges.push.apply(adj.edges, res.edges);
+      }
       adj.edges.push(edge);
-      adj.edges.push.apply(adj.edges, res.edges);
     }
   }
   return adj;
