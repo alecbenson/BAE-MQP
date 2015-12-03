@@ -30,6 +30,7 @@ Filter.prototype.renderFilter = function() {
     outerScope._renderEleSlider();
   });
   this._bindSearch();
+  this._bindReset();
 };
 
 Filter.prototype._renderEleSlider = function() {
@@ -65,23 +66,32 @@ Filter.prototype._bindSearch = function() {
   });
 };
 
+Filter.prototype._bindReset = function() {
+  var sourceName, name;
+  var outerScope = this;
+  $(this.div).on("click", ".btn-search-reset", function() {
+    outerScope.resetFilter();
+  });
+};
+
 Filter.prototype.applyToAll = function() {
+  var totalMatches = 0;
   var eleValues = this._getEleValues();
   var trackName = $(this.div).find("#filter-name").val();
 
   for (var name in collectionSet.collections) {
     var collection = collectionSet.getCollection(name);
-    this.applyToCollection(collection, {
+    totalMatches += this.applyToCollection(collection, {
       'ele': eleValues,
       'trackName': trackName
     });
   }
+  this.setResultsValue(totalMatches);
 };
 
 Filter.prototype.applyToCollection = function(collection, values) {
   var callback = function(entity) {
     var containsName = entity.parentTrack.indexOf(values.trackName) > -1;
-
     var pos = entity.position.getValue(viewer.clock.currentTime);
     if (pos === undefined) {
       return containsName;
@@ -91,11 +101,34 @@ Filter.prototype.applyToCollection = function(collection, values) {
     return containsName && inEleRange;
   };
 
+  var matches = 0;
   for (var sourceName in collection.tracks) {
     var sourceTracks = collection.tracks[sourceName];
     for (var id in sourceTracks) {
       var track = sourceTracks[id];
-      track.highlightOnCondition(callback);
+      matches += track.highlightOnCondition(callback);
     }
   }
+  return matches;
+};
+
+Filter.prototype.setResultsValue = function(matches) {
+  var results = $(this.div).find("#search-results");
+  results.text(matches.toString());
+};
+
+Filter.prototype.resetFilter = function() {
+  for (var name in collectionSet.collections) {
+    var collection = collectionSet.getCollection(name);
+    for (var sourceName in collection.tracks) {
+      var sourceTracks = collection.tracks[sourceName];
+      for (var id in sourceTracks) {
+        var track = sourceTracks[id];
+        track.highlightOnCondition(function() {
+          return false;
+        });
+      }
+    }
+  }
+  this.setResultsValue(0);
 };

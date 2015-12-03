@@ -157,3 +157,9 @@ h3 {
   line-height: 20px;
   margin-bottom: 0;
 }
+#search-results{
+  margin-right: 5px;
+}
+#search-results::after{
+  content: " results";
+}

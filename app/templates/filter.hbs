@@ -3,6 +3,9 @@
     <div class="panel-heading clearfix">
       <span class="accordion" data-toggle="collapse" data-target="#filter-body">
         <h4>Search</h4>
+        <span class="navbar-right">
+          <h4><span class="label label-pill label-primary" id=search-results>0</span><h4>
+        </span>
       </span>
     </div>
 
@@ -17,8 +20,11 @@
           <legend class="ele-legend">Elevation</legend>
           <div id="ele-slider"></div>
         </fieldset>
-        <button type="button" class="btn btn-search btn-primary">
+        <button type="button" class="btn btn-search btn-primary navbar-left">
           <i class="fa fa-search pull-left"></i>Search
+        </button>
+        <button type="button" class="btn btn-search-reset btn-danger navbar-right">
+          <i class="fa fa-search pull-left"></i>Reset
         </button>
       </div>
     </div>

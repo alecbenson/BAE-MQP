@@ -238,6 +238,7 @@ DataSource.prototype.orientTrackNode = function() {
  * @param isLoading {bool}
  */
 DataSource.prototype.highlightOnCondition = function(callback) {
+  var count = 0;
   var entities = this.entities.values;
   for (var i = 0; i < entities.length; i++) {
     var entity = entities[i];
@@ -245,12 +246,14 @@ DataSource.prototype.highlightOnCondition = function(callback) {
       if (callback(entity) === true) {
         entity.point.outlineColor = Cesium.Color.YELLOW;
         entity.point.outlineWidth = 5;
+        count += 1;
       } else {
         entity.point.color = this.color;
         entity.point.outlineWidth = 0;
       }
     }
   }
+  return count;
 };
 
 
