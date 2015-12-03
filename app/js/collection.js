@@ -71,6 +71,20 @@ Collection.showLoadModal = function(state) {
   }
 };
 
+Collection.prototype.setTrackLabelColor = function() {
+  for (var sourceName in this.tracks) {
+    var sourceTracks = this.tracks[sourceName];
+    var source = $("#source-" + sourceName);
+    for (var id in sourceTracks) {
+      var label = source.find(".track-label-" + id);
+      var track = sourceTracks[id];
+      var key = track.platform + track.sensorType;
+      var color = DataSource.trackColor(key);
+      label.css("background-color", color);
+    }
+  }
+};
+
 Collection.prototype.setTrackVisibility = function(sourceName, trackID, state) {
   var track = this.tracks[sourceName][trackID];
   var entityList = track.entities.values;
@@ -334,6 +348,7 @@ Collection.prototype.renderSources = function() {
     var checkbox = $(list).find("input[type='checkbox']");
     checkbox.bootstrapToggle();
     bindDataVisibilityToggle(checkbox);
+    outerScope.setTrackLabelColor();
   });
 };
 

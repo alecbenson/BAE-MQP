@@ -318,14 +318,16 @@ DataSource.trackColor = function(key) {
   if (key === undefined) {
     return "#FF0000";
   }
-  var id = "";
+  var id = 0;
   for (var i = 0; i < key.length; i++) {
-    id += key.charCodeAt(i);
+    var char = key.charCodeAt(i);
+    id = ((id << 5) - id) + char;
+    id = id & id;
   }
-  id = parseInt(id);
-  var red = DataSource._colorSeed(id + 1);
-  var green = DataSource._colorSeed(id + 4);
-  var blue = DataSource._colorSeed(id + 7);
+
+  var red = DataSource._colorSeed(id + 101);
+  var green = DataSource._colorSeed(id + 113);
+  var blue = DataSource._colorSeed(id + 127);
   var result = "#" + red + green + blue;
   return result;
 };

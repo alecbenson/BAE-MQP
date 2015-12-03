@@ -157,9 +157,14 @@ h3 {
   line-height: 20px;
   margin-bottom: 0;
 }
-#search-results{
+#search-results {
   margin-right: 5px;
 }
-#search-results::after{
+#search-results::after {
   content: " results";
+}
+.track-label {
+  font-size: 14px;
+  color: white;
+  text-shadow: -1px -1px 0 gray, 1px -1px 0 gray, -1px 1px 0 gray, 1px 1px 0 gray;
 }

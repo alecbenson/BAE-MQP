@@ -17,10 +17,10 @@
           <div class="list-group">
             {{#each this}}
               <div class="list-group-item">
+                <span class="label label-primary track-label track-label-{{@key}}">{{@key}}</span>
                 <span class="navbar-right">
                   <input class="btn-visibility" data-size="mini" data-trackid="{{@key}}" data-collection="{{../../name}}" data-source="{{@../key}}" type="checkbox" checked data-toggle="toggle">
                 </span>
-                {{@key}}
               </div>
             {{/each}}
           </div>
