@@ -409,7 +409,7 @@ D3Graph.prototype._start = function() {
       return d.id;
     })
     .attr("fill", function(d) {
-      return D3Graph.trackColor(d.id);
+      return outerScope.getTrackColor(d.id);
     });
   this.vertice_el.exit().remove();
   this.force.start();
