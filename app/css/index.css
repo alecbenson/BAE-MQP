@@ -150,3 +150,10 @@ h3 {
   margin: 0;
   padding: 0;
 }
+.ele-legend {
+  border-style: none;
+  border-width: 0;
+  font-size: 16px;
+  line-height: 20px;
+  margin-bottom: 0;
+}

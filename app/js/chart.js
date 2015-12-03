@@ -432,6 +432,9 @@ D3Graph.prototype.graphText = function() {
 
 D3Graph.prototype.getTrackColor = function(track_id) {
   var track = collectionSet.findTrackByID(track_id);
+  if(track === undefined){
+    return "#ffffff";
+  }
   return DataSource.trackColor(track.platform + track.sensorType);
 };
 
