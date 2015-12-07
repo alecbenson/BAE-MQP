@@ -176,6 +176,7 @@ DataSource.prototype.createTrackNode = function() {
   });
   this.trackNode = entity;
   entity.description = this.formatTrackNodeDesc();
+  entity.name = entity.parentTrack;
   this._setLoadStatus(false);
 };
 
