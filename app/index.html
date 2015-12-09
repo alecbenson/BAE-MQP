@@ -15,6 +15,7 @@
   <script src="/js/lib/jquery.form.min.js"></script>
   <script src="/js/lib/moment.min.js"></script>
   <script src="/js/lib/wNumb.js"></script>
+  <script src="/js/lib/async.min.js"></script>
   <script src="/js/lib/nouislider.min.js"></script>
   <script src="/js/lib/bootstrap/bootstrap.min.js"></script>
   <script src="/js/lib/bootstrap/bootstrap-toggle.min.js"></script>
@@ -30,7 +31,6 @@
   <link rel="stylesheet" href="/css/font-awesome.min.css">
   <link rel="stylesheet" href="/css/index.css">
   <link rel="stylesheet" href="/css/chart.css">
-
 </head>
 
 <body>
@@ -82,8 +82,8 @@
       <h4>Filters</h4>
       <div id="filters"></div>
     </div>
-
   </div>
+
   <div id="cesiumContainer">
     <a class="btn btn-primary btn-hideControls">
       <i class="fa fa-chevron-left"></i>
@@ -92,12 +92,21 @@
       <div id="chart"></div>
     </div>
   </div>
-  <script src="/js/trackDataSource.js"></script>
-  <script src="/js/sensorDataSource.js"></script>
-  <script src="/js/collection.js"></script>
+
+  <div id="loadingModal" class="modal">
+    <div class="modal-body">
+      <span class="fa fa-spinner loadSpinner fa-spin"></span>
+    </div>
+  </div>
+
+  <script src="/js/datasources/dataSource.js"></script>
+  <script src="/js/datasources/trackDataSource.js"></script>
+  <script src="/js/datasources/sensorDataSource.js"></script>
   <script src="/js/templates.js"></script>
   <script src="/js/buttonEvents.js"></script>
+  <script src="/js/collection.js"></script>
   <script src="/js/collectionSet.js"></script>
+  <script src="/js/history.js"></script>
   <script src="/js/filter.js"></script>
   <script src="/js/chart.js"></script>
   <script src="/js/index.js"></script>

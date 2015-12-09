@@ -5,7 +5,7 @@
   `npm install .`
 
 2. run the server:
-  `node server.js localhost`
+  `node app.js localhost`
 
 
 The generator.py script can be used to generate sample data for testing.

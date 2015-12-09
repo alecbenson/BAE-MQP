@@ -4,9 +4,9 @@ html, body {
   margin: 0px;
   padding: 0px;
   overflow: hidden;
-  background-color: #2D2D2D;
+  background-color: #21252b;
   color: white;
-  font-family: Verdana;
+  font-family: FontAwesome;
 }
 .nav-section {
   display: block;
@@ -52,7 +52,8 @@ h3 {
   z-index: 1;
 }
 #ele-slider {
-  margin: 30px;
+  margin-top: 30px;
+  margin-bottom: 30px;
 }
 .noUi-connect {
   background: #337ab7;
@@ -127,4 +128,42 @@ h3 {
   float: left;
   color: grey;
   text-indent: 5px;
+}
+#history-panel {
+  position: absolute;
+  display: block;
+  width: 300px;
+  bottom: 40px;
+  right: 40px;
+}
+#history-slider {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+.loadSpinner {
+  font-size: 15em;
+}
+#loadingModal {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  margin: 0;
+  padding: 0;
+}
+.ele-legend {
+  border-style: none;
+  border-width: 0;
+  font-size: 16px;
+  line-height: 20px;
+  margin-bottom: 0;
+}
+#search-results {
+  margin-right: 5px;
+}
+#search-results::after {
+  content: " results";
+}
+.track-label {
+  font-size: 14px;
+  color: black;
 }

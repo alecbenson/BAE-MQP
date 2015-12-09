@@ -17,7 +17,7 @@
   transform-origin: 0 0;
   transition-property: transform;
   transition-duration: 1s;
-  z-index: 100
+  z-index: 101
 }
 #chart:hover {
   -webkit-transform: scale(1.5);
@@ -28,10 +28,9 @@
   stroke: #ffffff;
   stroke-width: 2px;
 }
-.link-label {
+.link-label, .node-label {
   font-size: 20px;
   paint-order: stroke;
-  fill: white;
   stroke: black;
   stroke-width: 3px;
   stroke-linecap: butt;

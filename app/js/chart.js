@@ -32,6 +32,8 @@ function D3Graph(width, height, el) {
   //Initialize empty selectors
   this._edge_line = this._container.selectAll();
   this._edge_text = this._container.selectAll();
+  this._node_circle = this.container.selectAll();
+  this._node_name = this._container.selectAll();
 
   this._rect = this.container.append("rect")
     .attr("width", width * 10)
@@ -44,8 +46,8 @@ function D3Graph(width, height, el) {
     .links(this.edges)
     .charge(-500)
     .linkDistance(function(d) {
-      var w = Math.max(0, (1.0 - d.weight));
-      return 50 + (w * 150);
+      var w = Math.abs(parseFloat(d.weight));
+      return 150 + (w * 2);
     })
     .size([width, height]);
 
@@ -112,6 +114,22 @@ Object.defineProperties(D3Graph.prototype, {
     },
     set: function(vertice_el) {
       this._vertice_el = vertice_el;
+    }
+  },
+  'node_circle': {
+    get: function() {
+      return this._node_circle;
+    },
+    set: function(node_circle) {
+      this._node_circle = node_circle;
+    }
+  },
+  'node_name': {
+    get: function() {
+      return this._node_name;
+    },
+    set: function(node_name) {
+      this._node_name = node_name;
     }
   },
   //List of edges that are loaded, but cannot be displayed because
@@ -348,6 +366,7 @@ D3Graph.prototype.findVertice = function(id, list) {
 };
 
 D3Graph.prototype._start = function() {
+  var outerScope = this;
   this.edge_el = this.edge_el.data(this.force.links(), function(d) {
     return d.source.id + "-" + d.target.id;
   });
@@ -359,23 +378,40 @@ D3Graph.prototype._start = function() {
     .attr("class", "link-label")
     .text(function(d) {
       return parseFloat(d.weight);
-    });
+    })
+    .attr("fill", "white");
   this.edge_el.exit().remove();
 
   this.vertice_el = this.vertice_el.data(this.force.nodes(), function(d) {
     return d.id;
   });
-  this.vertice_el.enter()
-    .insert("circle")
+  this.node_circle = this.vertice_el.enter().insert("g")
     .attr("class", function(d) {
       return "node " + d.id;
     })
-    .attr("r", 12)
+    .insert("circle")
+    .attr("class", function(d) {
+      return "node-circle " + d.id;
+    })
+    .attr("r", function(d) {
+      if (d.id === outerScope.root.id) {
+        return 20;
+      }
+      return 12;
+    })
     .attr("fill", function(d) {
-      return D3Graph.trackColor(d.id);
+      return outerScope.getTrackColor(d.id);
     })
     .on("click", this._click)
     .call(this.drag);
+  this.node_name = this.vertice_el.insert("text")
+    .attr("class", "node-label")
+    .text(function(d) {
+      return d.id;
+    })
+    .attr("fill", function(d) {
+      return outerScope.getTrackColor(d.id);
+    });
   this.vertice_el.exit().remove();
   this.force.start();
 };
@@ -402,11 +438,17 @@ D3Graph.prototype._tick = function() {
       return (d.source.y + d.target.y) / 2;
     });
 
-  this.vertice_el.attr("cx", function(d) {
+  this.node_circle.attr("cx", function(d) {
       return d.x;
     })
     .attr("cy", function(d) {
       return d.y;
+    });
+  this.node_name.attr("x", function(d) {
+      return d.x + 20;
+    })
+    .attr("y", function(d) {
+      return d.y + 20;
     });
   this.text.text(this.graphText());
 };
@@ -423,6 +465,14 @@ D3Graph.prototype.graphText = function() {
   } else {
     return "";
   }
+};
+
+D3Graph.prototype.getTrackColor = function(track_id) {
+  var track = collectionSet.findTrackByID(track_id);
+  if (track === undefined) {
+    return "#ffffff";
+  }
+  return DataSource.trackColor(track.platform + track.sensorType);
 };
 
 D3Graph.prototype.displayAdjacencies = function(track_id) {
@@ -460,16 +510,22 @@ D3Graph.prototype.getAdjacencies = function(root, level, edgeList, vis) {
   }
   for (var i = 0; i < edgeList.length; i++) {
     var edge = edgeList[i];
-    if (edge.source == root && vis.indexOf(edge.target) == -1) {
-      res = this.getAdjacencies(edge.target, level - 1, edgeList, vis);
-      adj.vertices.push.apply(adj.vertices, res.vertices);
+    if (edge.source == root && vis.indexOf(edge) == -1) {
+      vis.push(edge);
+      if (vis.indexOf(edge.target) == -1) {
+        res = this.getAdjacencies(edge.target, level - 1, edgeList, vis);
+        adj.vertices.push.apply(adj.vertices, res.vertices);
+        adj.edges.push.apply(adj.edges, res.edges);
+      }
       adj.edges.push(edge);
-      adj.edges.push.apply(adj.edges, res.edges);
-    } else if (edge.target == root && vis.indexOf(edge.source) == -1) {
-      res = this.getAdjacencies(edge.source, level - 1, edgeList, vis);
-      adj.vertices.push.apply(adj.vertices, res.vertices);
+    } else if (edge.target == root && vis.indexOf(edge) == -1) {
+      vis.push(edge);
+      if (vis.indexOf(edge.source) == -1) {
+        res = this.getAdjacencies(edge.source, level - 1, edgeList, vis);
+        adj.vertices.push.apply(adj.vertices, res.vertices);
+        adj.edges.push.apply(adj.edges, res.edges);
+      }
       adj.edges.push(edge);
-      adj.edges.push.apply(adj.edges, res.edges);
     }
   }
   return adj;
@@ -532,25 +588,6 @@ D3Graph.prototype.unloadGraphEntities = function(data) {
   this._start();
 };
 
-D3Graph.trackColor = function(trackId) {
-  var id = 0;
-  for (var i = 0; i < trackId.length; i++) {
-    id += trackId.charCodeAt(i);
-  }
-  var red = D3Graph._colorSeed(id + 1);
-  var green = D3Graph._colorSeed(id + 4);
-  var blue = D3Graph._colorSeed(id + 7);
-  var result = "#" + red + green + blue;
-  return result;
-};
-
-D3Graph._colorSeed = function(id) {
-  var num = Math.sin(id) * 10000;
-  num = num - Math.floor(num);
-  result = Math.round((num * 154) + 100).toString(16);
-  return result;
-};
-
 function zoomed() {
   graph.container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 }
@@ -569,11 +606,12 @@ D3Graph.prototype._click = function(d) {
 
   if (trackNode.isAvailable(currentTime)) {
     var currentPos = trackNode.position.getValue(currentTime);
-    if(currentPos === undefined){
+    if (currentPos === undefined) {
       return;
     }
     var boundingSphere = new Cesium.BoundingSphere(currentPos, 5000);
     viewer.selectedEntity = trackNode;
+    viewer.trackedEntity = trackNode;
     viewer.camera.flyToBoundingSphere(boundingSphere);
   } else {
     viewer.flyTo(entities);

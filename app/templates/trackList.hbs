@@ -4,9 +4,9 @@
     <div class="panel-group" id="source-{{@key}}">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <span class="accordion collapsed" data-toggle="collapse" data-target="#tracks-{{@key}}">{{@key}}</span>
+          <span class="accordion collapsed" id="#source-{{@key}}" data-toggle="collapse" data-target="#tracks-{{@key}}">{{@key}}</span>
           <span class="navbar-right">
-            <input class="btn-visibility" data-size="mini" data-source="{{@key}}" data-collection="{{../name}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide">
+            <input class="btn-visibility" data-size="mini" data-source="{{@key}}" data-collection="{{../name}}" type="checkbox" checked data-toggle="toggle" data-on="Show" data-off="Hide" data-offstyle="danger">
             <button type="button" class="btn btn-deleteSource btn-danger btn-xs" data-source="{{@key}}" data-collection="{{../name}}">
               <i class="fa fa-trash-o"></i>
             </button>
@@ -17,10 +17,10 @@
           <div class="list-group">
             {{#each this}}
               <div class="list-group-item">
+                <span class="label label-primary track-label track-label-{{@key}}" style="display:inline-block; width:40px">{{@key}}</span>
                 <span class="navbar-right">
-                  <input class="btn-visibility" data-size="mini" data-trackid="{{@key}}" data-collection="{{../../name}}" data-source="{{@../key}}" type="checkbox" checked data-toggle="toggle">
+                  <input class="btn-visibility" data-size="mini" data-trackid="{{@key}}" data-collection="{{../../name}}" data-source="{{@../key}}" type="checkbox" checked data-toggle="toggle" data-offstyle="danger">
                 </span>
-                {{@key}}
               </div>
             {{/each}}
           </div>

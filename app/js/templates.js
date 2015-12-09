@@ -2,13 +2,12 @@
  * All partial views used within handlebar templates should be registered in this function *
  **/
 function registerAllPartials() {
+  registerExternalPartial("datepicker");
   registerExternalPartial("sourceUpload");
   registerExternalPartial("modelUpload");
   registerExternalPartial("collectionList");
   registerExternalPartial("trackList");
   registerExternalPartial("graphList");
-  registerExternalPartial("datepicker");
-  registerExternalPartial("numberpicker");
 }
 
 /**
