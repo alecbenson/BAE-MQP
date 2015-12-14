@@ -86,28 +86,6 @@ function bindSubmitCollectionButton() {
 }
 
 /**
- * Binds a checkbox to a data source in cesium so that clicking the checkbox
- * will toggle the visiblity of the source
- * @param checkbox - a checkbox object selection
- */
-function bindDataVisibilityToggle(checkbox) {
-  $(checkbox).on('change', function() {
-    var sourceName = $(this).data("source");
-    var graphName = $(this).data("graph");
-    var collectionName = $(this).attr('data-collection');
-    var collection = collectionSet.collections[collectionName];
-    var state = $(this).prop('checked');
-
-    if (graphName === undefined) {
-      var trackId = $(this).data("trackid");
-      collection.setTrackVisibility(sourceName, trackId, state);
-    } else {
-      collection.setGraphVisibility(graphName, state);
-    }
-  });
-}
-
-/**
  * Binds a file selection box so that choosing a file will update the text field
  * next to it, displaying the name of the selected file
  */

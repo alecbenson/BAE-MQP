@@ -1,7 +1,8 @@
-function Collection(obj, name, model) {
+function Collection(obj, name, div, model) {
   this._tracks = {};
   this._sensors = {};
   this._name = name;
+  this._div = div;
   this._model = model;
   for (var prop in obj) this[prop] = obj[prop];
 }
@@ -13,6 +14,14 @@ Object.defineProperties(Collection.prototype, {
     },
     set: function(name) {
       this._name = name;
+    }
+  },
+  'div': {
+    get: function() {
+      return this._div;
+    },
+    set: function(div) {
+      this._div = div;
     }
   },
   'tracks': {
@@ -93,13 +102,12 @@ Collection.prototype.setTrackVisibility = function(sourceName, trackID, state) {
   }
 };
 
-Collection.prototype.setAllTrackVisibility = function(state) {
-  for (var sourceName in this.tracks) {
-    var sourceTracks = this.tracks[sourceName];
-    for (var id in sourceTracks) {
-      this.setTrackVisibility(sourceName, id, state);
-    }
+Collection.prototype.setTrackFileVisibility = function(sourceName, state) {
+  var sourceTracks = this.tracks[sourceName];
+  for (var id in sourceTracks) {
+    this.setTrackVisibility(sourceName, id, state);
   }
+  var sourceToggles = $(this.div).children("input[type=checkbox]");
 };
 
 Collection.prototype.setGraphVisibility = function(graphName, state) {
@@ -329,12 +337,12 @@ Collection.prototype.deleteSourceSensors = function(sourceName) {
   delete this.sensors[sourceName];
 };
 
-Collection.prototype.renderCollection = function(div) {
+Collection.prototype.renderCollection = function() {
   //Append the template to the div
   var outerScope = this;
   getTemplateHTML('dataCollection').done(function(data) {
     var templated = applyTemplate(data, outerScope);
-    var target = $(templated).prependTo(div);
+    var target = $(templated).prependTo(outerScope.div);
   });
   this.loadCollection();
 };
@@ -345,9 +353,7 @@ Collection.prototype.renderSources = function() {
     result = applyTemplate(data, outerScope);
     var list = "#collectionList" + "-" + outerScope.name;
     $(list).html(result);
-    var checkbox = $(list).find("input[type='checkbox']");
-    checkbox.bootstrapToggle();
-    bindDataVisibilityToggle(checkbox);
+    outerScope.bindAllToggles(list);
     outerScope.setTrackLabelColor();
   });
 };
@@ -456,5 +462,58 @@ Collection.prototype.deleteGraphData = function(graphName) {
     error: function(xhr, desc, err) {
       console.log("Failed: " + desc + err);
     }
+  });
+};
+
+Collection.prototype.bindAllToggles = function(list) {
+  //Binds the toggle for each file to respond when the checkbox is toggled
+  var fileToggles = $(list).find(".fileToggle");
+  fileToggles.bootstrapToggle();
+  this.bindFileToggles(fileToggles, list);
+
+  //Binds all individual track/graph checkboxes to respond when a checkbox is toggled
+  var dataToggles = $(list).find(".dataToggle");
+  dataToggles.bootstrapToggle();
+  this.bindDataToggles(dataToggles);
+
+  //Binds the toggle for graph elements to toggle when the checkbox is clicked
+  var graphToggles = $(list).find(".graphToggle");
+  graphToggles.bootstrapToggle();
+  this.bindGraphToggles(graphToggles);
+};
+
+/**
+ * Binds a checkbox to a data source in cesium so that clicking the checkbox
+ * will toggle the visiblity of the source
+ * @param checkbox - a checkbox object selection
+ */
+Collection.prototype.bindDataToggles = function(checkbox) {
+  var outerScope = this;
+  $(checkbox).on('change', function() {
+    var sourceName = $(this).data("source");
+    var state = $(this).prop('checked');
+
+    var trackId = $(this).data("trackid");
+    outerScope.setTrackVisibility(sourceName, trackId, state);
+  });
+};
+
+Collection.prototype.bindFileToggles = function(checkbox, list) {
+  var outerScope = this;
+
+  $(checkbox).on('change', function() {
+    var sourceName = $(this).data("source");
+    var dataToggles = $(list).find(".dataToggle-" + sourceName);
+    var state = $(this).prop('checked') ? 'on' : 'off';
+    dataToggles.bootstrapToggle(state);
+  });
+};
+
+Collection.prototype.bindGraphToggles = function(checkbox) {
+  var outerScope = this;
+  $(checkbox).on('change', function() {
+    var graphName = $(this).data("graph");
+    var state = $(this).prop('checked');
+    outerScope.setGraphVisibility(graphName, state);
   });
 };
