@@ -52,6 +52,7 @@ CollectionSet.prototype.populateCollections = function(json) {
 };
 
 CollectionSet.prototype.addCollection = function(collection) {
+  collection.div = this.div;
   collection.renderCollection();
   this.collections[collection.name] = collection;
 };
