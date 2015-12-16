@@ -85,17 +85,11 @@ DataStorage.prototype._writeXMLFile = function(req, file, cb) {
 };
 
 DataStorage.prototype._removeFile = function _removeFile(req, file, cb) {
-  var uploadType = req.body.uploadType;
-  if (uploadType === 'sage') {
-    delete file.buffer;
-    cb(null);
-  } else {
     var path = file.path;
     delete file.destination;
     delete file.filename;
     delete file.path;
     fs.unlink(path, cb);
-  }
 };
 
 module.exports = function(opts) {
