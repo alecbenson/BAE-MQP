@@ -482,7 +482,6 @@ D3Graph.prototype.displayAdjacencies = function(track_id) {
   if (root === undefined) {
     return;
   }
-  console.log("HI");
   this.root = root;
   var adj = this.getAdjacencies(root, this.adj_level, graphEdges);
   this.clearGraph();
