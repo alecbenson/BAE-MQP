@@ -46,13 +46,13 @@ CollectionSet.prototype.getCollections = function() {
 CollectionSet.prototype.populateCollections = function(json) {
   for (var name in json) {
     var c = json[name];
-    var collection = new Collection(c, name);
+    var collection = new Collection(c, name, this.div);
     this.addCollection(collection);
   }
 };
 
 CollectionSet.prototype.addCollection = function(collection) {
-  collection.renderCollection(this.div);
+  collection.renderCollection();
   this.collections[collection.name] = collection;
 };
 
